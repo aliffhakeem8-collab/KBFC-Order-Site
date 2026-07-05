@@ -105,7 +105,7 @@
 
   /* ================= LANDING VIEW ================= */
   .hero{
-    position:relative; height:100vh; min-height:640px;
+    position:relative; height:100vh; min-height:800px;
     overflow:hidden;
   }
   .slides{
@@ -120,7 +120,7 @@
   }
   .slide.active{opacity:1; visibility:visible;}
   .slide-art{
-    width:min(46vw, 420px); height:auto;
+    width:min(60vw, 550px); height:auto;
   }
   .slide-art path, .slide-art circle, .slide-art line{
     stroke:var(--ink); fill:none;
@@ -193,8 +193,8 @@
     display:flex; gap:8px; justify-content:center;
   }
   .dot-tag{
-    font-family:'JetBrains Mono',monospace; font-size:11px;
-    padding:6px 10px; border:1px solid var(--line); color:var(--muted);
+    font-family:'JetBrains Mono',monospace; font-size:13px; font-weight:500;
+    padding:10px 16px; border:1px solid var(--line); color:var(--muted);
     cursor:pointer; background:var(--surface);
     transition:all .25s ease;
   }
@@ -476,8 +476,8 @@
       max-width:calc(100% - 24px);
       flex-wrap:nowrap; overflow-x:auto; gap:5px; justify-content:center;
     }
-    .dot-tag{font-size:9px; padding:4px 6px; white-space:nowrap;}
-    .slide-art{ width:min(70vw, 400px); }
+    .dot-tag{font-size:12px; padding:9px 14px; white-space:nowrap;}
+    .slide-art{ width:min(90vw, 480px); }
     .field-row{grid-template-columns:1fr;}
     .topbar{padding:18px 20px;}
     .btn-mini{padding:8px 12px; font-size:0;}
