@@ -325,6 +325,19 @@
     background:var(--line-soft); padding:2px 6px;
   }
 
+  .size-tabs{ display:flex; gap:10px; margin-bottom:24px; }
+  .size-tab-btn{
+    font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:0.06em;
+    text-transform:uppercase; padding:10px 22px;
+    border:1px solid var(--line); background:transparent; color:var(--muted);
+    cursor:pointer; transition:all .2s ease; border-radius:999px;
+  }
+  .size-tab-btn:hover{ border-color:var(--accent); color:var(--ink); }
+  .size-tab-btn.active{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
+
+  .size-tab-panel{ display:none; }
+  .size-tab-panel.active{ display:block; }
+
   .size-table-wrap{ overflow-x:auto; }
   .size-table{
     width:100%; border-collapse:collapse;
@@ -798,24 +811,50 @@
       <h2>Sizing</h2>
     </div>
 
-    <div class="size-table-wrap">
-      <table class="size-table">
-        <thead>
-          <tr><th class="mono">SIZE</th><th class="mono">WIDTH (IN)</th><th class="mono">LENGTH (IN)</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>XS</td><td class="mono">18</td><td class="mono">24</td></tr>
-          <tr><td>S</td><td class="mono">19</td><td class="mono">25</td></tr>
-          <tr><td>M</td><td class="mono">20</td><td class="mono">26</td></tr>
-          <tr><td>L</td><td class="mono">21</td><td class="mono">27</td></tr>
-          <tr><td>XL</td><td class="mono">22</td><td class="mono">28</td></tr>
-          <tr><td>2XL</td><td class="mono">23</td><td class="mono">29</td></tr>
-          <tr><td>3XL</td><td class="mono">24</td><td class="mono">30</td></tr>
-          <tr><td>4XL</td><td class="mono">25</td><td class="mono">31</td></tr>
-        </tbody>
-      </table>
+    <div class="size-tabs" role="tablist" aria-label="Sizing category">
+      <button type="button" class="size-tab-btn active" id="sizeTabAdultBtn" role="tab" aria-selected="true" aria-controls="sizeTabAdult" onclick="switchSizeTab('adult')">Adult</button>
+      <button type="button" class="size-tab-btn" id="sizeTabKidsBtn" role="tab" aria-selected="false" aria-controls="sizeTabKids" onclick="switchSizeTab('kids')">Kids</button>
     </div>
-    <p class="ps-note">Raglan cutting, advisable to take one upsize from your current size. Measurements are of the garment laid flat, not your body. </p>
+
+    <div class="size-tab-panel active" id="sizeTabAdult" role="tabpanel" aria-labelledby="sizeTabAdultBtn">
+      <div class="size-table-wrap">
+        <table class="size-table">
+          <thead>
+            <tr><th class="mono">SIZE</th><th class="mono">WIDTH (IN)</th><th class="mono">LENGTH (IN)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>XS</td><td class="mono">18</td><td class="mono">24</td></tr>
+            <tr><td>S</td><td class="mono">19</td><td class="mono">25</td></tr>
+            <tr><td>M</td><td class="mono">20</td><td class="mono">26</td></tr>
+            <tr><td>L</td><td class="mono">21</td><td class="mono">27</td></tr>
+            <tr><td>XL</td><td class="mono">22</td><td class="mono">28</td></tr>
+            <tr><td>2XL</td><td class="mono">23</td><td class="mono">29</td></tr>
+            <tr><td>3XL</td><td class="mono">24</td><td class="mono">30</td></tr>
+            <tr><td>4XL</td><td class="mono">25</td><td class="mono">31</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="ps-note">Raglan cutting, advisable to take one upsize from your current size. Measurements are of the garment laid flat, not your body. </p>
+    </div>
+
+    <div class="size-tab-panel" id="sizeTabKids" role="tabpanel" aria-labelledby="sizeTabKidsBtn">
+      <div class="size-table-wrap">
+        <table class="size-table">
+          <thead>
+            <tr><th class="mono">SIZE</th><th class="mono">WIDTH (IN)</th><th class="mono">LENGTH (IN)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>XS (2-3 YO)</td><td class="mono">12</td><td class="mono">15.5</td></tr>
+            <tr><td>S (4-5 YO)</td><td class="mono">13</td><td class="mono">17.5</td></tr>
+            <tr><td>M (6-7 YO)</td><td class="mono">14</td><td class="mono">19.5</td></tr>
+            <tr><td>L (8-9 YO)</td><td class="mono">15</td><td class="mono">22.5</td></tr>
+            <tr><td>XL (10-11 YO)</td><td class="mono">16</td><td class="mono">23</td></tr>
+            <tr><td>2XL (12-13 YO)</td><td class="mono">17</td><td class="mono">24</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="ps-note">Raglan cutting, advisable to take one upsize from your current size. Measurements are of the garment laid flat, not your body. </p>
+    </div>
 </section>
 
   <section class="jersey-story" id="jersey-story">
@@ -1018,6 +1057,17 @@
     root.setAttribute('data-theme', next);
     localStorage.setItem('kit-theme', next);
   });
+
+  /* ---------------- SIZE TABS (ADULT / KIDS) ---------------- */
+  function switchSizeTab(which){
+    const isAdult = which === 'adult';
+    document.getElementById('sizeTabAdult').classList.toggle('active', isAdult);
+    document.getElementById('sizeTabKids').classList.toggle('active', !isAdult);
+    document.getElementById('sizeTabAdultBtn').classList.toggle('active', isAdult);
+    document.getElementById('sizeTabKidsBtn').classList.toggle('active', !isAdult);
+    document.getElementById('sizeTabAdultBtn').setAttribute('aria-selected', isAdult);
+    document.getElementById('sizeTabKidsBtn').setAttribute('aria-selected', !isAdult);
+  }
 
   /* ---------------- SLIDE DATA ---------------- */
   // Placeholder line-art. Swap these for real product photos:
