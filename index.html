@@ -258,11 +258,20 @@
   .footer-logos{ display:flex; align-items:center; gap:18px; }
   .footer-logos a{ display:inline-flex; line-height:0; }
   .footer-logos img{
-    height:22px; width:auto; object-fit:contain;
+    height:16px; width:auto; object-fit:contain;
     filter:grayscale(1) invert(1); opacity:.75;
+    transition:filter .2s ease, opacity .2s ease;
+  }
+  .footer-logos a:hover img{
+    filter:grayscale(1) brightness(0.4) sepia(1) saturate(6) hue-rotate(-50deg);
+    opacity:1;
   }
   html[data-theme="dark"] .footer-logos img{
     filter:grayscale(1) brightness(1.6); opacity:.85;
+  }
+  html[data-theme="dark"] .footer-logos a:hover img{
+    filter:grayscale(1) brightness(0.6) sepia(1) saturate(6) hue-rotate(-50deg);
+    opacity:1;
   }
 
   .cta-band{
@@ -286,7 +295,7 @@
   .sizing-header{ margin-top:88px; }
 
   .pricing-grid{
-    display:grid; grid-template-columns:repeat(2,1fr); gap:24px; max-width:720px;
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:24px; max-width:1080px;
   }
   .price-card{
     position:relative;
@@ -303,6 +312,9 @@
     position:absolute; top:-13px; left:28px;
     background:var(--accent); color:#fff;
     font-size:10.5px; padding:5px 10px;
+  }
+  .price-category{
+    font-size:10.5px; color:var(--accent); letter-spacing:0.08em;
   }
   .price-name{ font-size:12px; color:var(--muted); }
   .price-tag{
@@ -786,6 +798,7 @@
 
     <div class="pricing-grid">
       <div class="price-card">
+        <div class="price-category mono">ADULT</div>
         <div class="price-name mono">JERSEY ONLY</div>
         <div class="price-tag">RM 55</div>
         <ul class="price-list">
@@ -796,12 +809,23 @@
 
       <div class="price-card featured">
         <div class="price-badge mono">RECOMMENDED</div>
+        <div class="price-category mono">ADULT</div>
         <div class="price-name mono">JERSEY + SHORTS</div>
         <div class="price-tag">RM 85</div>
         <ul class="price-list">
           <li>Match Jersey, Name + Number print</li>
           <li>Matching shorts</li>
           <li>No deposit, full amount at order</li>
+        </ul>
+      </div>
+
+      <div class="price-card">
+        <div class="price-category mono">KIDS</div>
+        <div class="price-name mono">JERSEY ONLY</div>
+        <div class="price-tag">RM 45</div>
+        <ul class="price-list">
+          <li>Name + Number print</li>
+          <li>Full amount at order</li>
         </ul>
       </div>
     </div>
@@ -1175,7 +1199,7 @@
   const qtyValueEl = document.getElementById('qtyValue');
   const jerseyEntriesEl = document.getElementById('jerseyEntries');
 
-  const SET_PRICES = { 'Jersey Only': 55, 'Jersey + Shorts': 85 };
+  const SET_PRICES = { 'Jersey Only': 55, 'Jersey + Shorts': 85, 'Kids Jersey Only': 45 };
 
   function renderJerseyEntries(){
     // preserve values already typed when qty changes
@@ -1198,6 +1222,7 @@
             <option value="" disabled selected>Select set</option>
             <option value="Jersey Only">Jersey Only — RM 55</option>
             <option value="Jersey + Shorts">Jersey + Shorts — RM 85</option>
+            <option value="Kids Jersey Only">Kids Jersey Only — RM 45</option>
           </select>
         </div>
         <div class="field-row">
