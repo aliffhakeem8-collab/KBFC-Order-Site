@@ -1,1 +1,699 @@
-1
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KBFC | My Account</title>
+<link rel="icon" type="image/png" href="../images/Favicon.png">
+<link rel="apple-touch-icon" href="../images/Favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+  :root{
+    --bg:#FAFAF8;
+    --surface:#FFFFFF;
+    --ink:#14171C;
+    --muted:#6B7280;
+    --accent:#b91321;
+    --line: rgba(20,23,28,0.12);
+    --line-soft: rgba(20,23,28,0.06);
+    --shadow: 0 20px 60px rgba(20,23,28,0.10);
+    --gold:#b8860b;
+    --gold-bg: rgba(184,134,11,0.10);
+    --success:#1f8a4c;
+    --success-bg: rgba(31,138,76,0.10);
+    --panel-dark:#14171C;
+  }
+  html[data-theme="dark"]{
+    --bg:#0D0F12;
+    --surface:#15181D;
+    --ink:#F2F1EC;
+    --muted:#9CA3AF;
+    --accent:#b91321;
+    --line: rgba(242,241,236,0.14);
+    --line-soft: rgba(242,241,236,0.07);
+    --shadow: 0 20px 60px rgba(0,0,0,0.45);
+    --gold:#d9ab3f;
+    --gold-bg: rgba(217,171,63,0.12);
+    --success:#3fbd7c;
+    --success-bg: rgba(63,189,124,0.12);
+    --panel-dark:#0A0B0D;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    transition:background .35s ease, color .35s ease;
+  }
+  .mono{font-family:'JetBrains Mono',monospace; letter-spacing:0.06em;}
+
+  /* ---------- topbar ---------- */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 32px;
+    background:var(--bg);
+    border-bottom:1px solid var(--line);
+    color:var(--ink);
+    transition:background .35s ease, border-color .35s ease;
+  }
+  .brand{ display:flex; align-items:center; gap:10px; font-size:14px; font-weight:600; letter-spacing:0.08em; cursor:pointer; }
+  .brand-logo{ width:24px; height:24px; object-fit:contain; }
+  .brand span{font-family:'JetBrains Mono',monospace;}
+  .theme-toggle{
+    width:40px;height:40px;border-radius:50%;
+    border:1px solid var(--line); background:transparent;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer; color:var(--ink);
+  }
+  .theme-toggle svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;}
+  .theme-toggle .moon{display:none;}
+  html[data-theme="dark"] .theme-toggle .sun{display:none;}
+  html[data-theme="dark"] .theme-toggle .moon{display:block;}
+
+  /* ---------- split layout ---------- */
+  .split{
+    display:grid; grid-template-columns:1.05fr 1fr;
+    min-height:100vh;
+  }
+
+  .visual-eyebrow{
+    font-size:11.5px; font-weight:600; letter-spacing:.12em;
+    color:var(--accent); text-transform:uppercase; margin-bottom:14px;
+  }
+  .visual-panel{
+    position:relative; overflow:hidden;
+    display:flex; flex-direction:column; justify-content:flex-end;
+    padding:110px 5vw 60px;
+    background:
+      linear-gradient(180deg, rgba(10,10,10,.45), rgba(10,10,10,.92) 90%),
+      url('../images/Frontpic.jpg');
+    background-size:cover;
+    background-position:center;
+    color:#fff;
+  }
+  /* To go back to the placeholder pattern instead of a real photo, swap
+     the background above for:
+     background:
+       linear-gradient(180deg, rgba(10,10,10,.15), rgba(10,10,10,.88) 90%),
+       repeating-linear-gradient(135deg, #0D0F12, #0D0F12 22px, #14171B 22px, #14171B 44px);
+  */
+  .visual-panel h1{
+    font-family:'Oswald',sans-serif; font-size:clamp(30px,4vw,44px);
+    font-weight:600; letter-spacing:-0.01em; color:#fff; line-height:1.15; margin-bottom:14px;
+  }
+  .visual-panel p{
+    font-size:14px; color:rgba(255,255,255,.65); max-width:340px; line-height:1.6;
+  }
+  .visual-stats{ display:flex; gap:28px; margin-top:32px; }
+  .visual-stats div b{
+    display:block; font-family:'Oswald',sans-serif; font-size:22px; font-weight:600; color:#fff;
+  }
+  .visual-stats div span{ font-size:11px; color:rgba(255,255,255,.5); text-transform:uppercase; letter-spacing:.05em; }
+
+  .form-panel{
+    background:var(--bg); color:var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    padding:120px 48px 60px;
+  }
+  .form-inner{ width:100%; max-width:360px; }
+
+  .form-eyebrow{
+    font-size:11px; font-weight:600; letter-spacing:.12em;
+    color:var(--accent); text-transform:uppercase; margin-bottom:10px;
+  }
+  .form-panel h2{
+    font-family:'Oswald',sans-serif; font-size:clamp(24px,2.6vw,28px);
+    font-weight:600; margin-bottom:8px; color:var(--ink);
+  }
+  .form-sub{ font-size:13px; color:var(--muted); margin-bottom:26px; line-height:1.5; }
+
+  .tab-row{ display:flex; gap:6px; margin-bottom:24px; }
+  .tab{
+    flex:1; padding:10px; border:1px solid var(--line); background:transparent;
+    color:var(--muted); font-family:'Inter',sans-serif; font-size:12.5px; font-weight:600;
+    border-radius:999px; cursor:pointer; transition:all .2s ease;
+  }
+  .tab.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
+
+  label{
+    font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em;
+    display:block; margin-bottom:7px; font-family:'JetBrains Mono',monospace;
+  }
+  input{
+    width:100%; background:var(--line-soft); border:1px solid var(--line); color:var(--ink);
+    border-radius:8px; padding:13px 14px; font-size:15px; margin-bottom:17px; outline:none;
+    font-family:'Inter',sans-serif; transition:border-color .2s ease;
+  }
+  input::placeholder{ color:var(--muted); opacity:.7; }
+  input:focus{ border-color:var(--accent); }
+
+  .password-wrap{ position:relative; }
+  .password-wrap input{ padding-right:44px; margin-bottom:0; }
+  .password-wrap{ margin-bottom:17px; }
+  .eye-toggle{
+    position:absolute; right:4px; top:0; bottom:0; margin:auto 0;
+    background:none; border:none; cursor:pointer; color:var(--muted);
+    width:34px; height:34px; display:flex; align-items:center; justify-content:center;
+    border-radius:8px;
+  }
+  .eye-toggle:hover{ color:var(--ink); background:var(--line-soft); }
+  .eye-toggle svg{ width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.7; }
+
+  .hint{ font-size:11.5px; color:var(--muted); line-height:1.5; margin:-8px 0 18px; }
+
+  button.primary{
+    width:100%; padding:14px; border:none; border-radius:999px; font-weight:600;
+    font-size:13.5px; letter-spacing:.02em; cursor:pointer;
+    background:var(--accent); color:#fff; font-family:'Inter',sans-serif;
+    transition:transform .2s ease, opacity .2s ease, box-shadow .2s ease;
+  }
+  button.primary:hover{ transform:translateY(-1px); box-shadow:0 10px 24px rgba(185,19,33,.35); }
+  button.primary:disabled{ opacity:.5; cursor:default; transform:none; box-shadow:none; }
+
+  button.link{
+    display:block; width:100%; background:none; border:none; color:var(--muted);
+    font-size:12.5px; font-weight:500; padding:14px 0 0; cursor:pointer;
+    text-decoration:underline; font-family:'Inter',sans-serif; text-align:center;
+  }
+  button.link:hover{ color:var(--accent); }
+
+  .msg{ font-size:12.5px; margin:0 0 14px; line-height:1.5; }
+  .msg.error{ color:var(--accent); }
+  .msg.success{ color:var(--success); }
+  .hidden{ display:none; }
+
+  /* ---------- account view ---------- */
+  .account-head{ display:flex; align-items:center; gap:12px; margin-bottom:22px; }
+  .avatar{
+    width:48px; height:48px; border-radius:50%; background:rgba(185,19,33,.14);
+    border:1px solid rgba(185,19,33,.4);
+    display:flex; align-items:center; justify-content:center; font-weight:700;
+    font-family:'Oswald',sans-serif; color:var(--accent); flex-shrink:0; font-size:16px;
+  }
+  .account-head .name{ font-family:'Oswald',sans-serif; font-weight:600; font-size:17px; margin-bottom:1px; color:var(--ink); }
+  .account-head .email{ font-size:12px; color:var(--muted); }
+
+  .premium-badge{
+    background:var(--gold-bg); border:1px solid var(--gold); border-radius:10px;
+    padding:14px 15px; margin-bottom:24px; font-size:12.5px; color:var(--gold);
+  }
+  .premium-badge b{ display:flex; align-items:center; gap:6px; margin-bottom:3px; font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:.02em; }
+  .premium-badge b svg{ width:14px; height:14px; stroke:var(--gold); fill:var(--gold); }
+  .premium-badge span{ color:var(--muted); font-weight:400; }
+
+  .section-label{
+    font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent); margin:0 0 14px; font-family:'JetBrains Mono',monospace;
+  }
+  .order{
+    border-top:1px solid var(--line); padding:14px 0; font-size:13px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .order:last-child{ border-bottom:1px solid var(--line); }
+  .order .left b{ display:block; font-size:14px; font-family:'JetBrains Mono',monospace; font-weight:500; letter-spacing:.02em; color:var(--ink); }
+  .order .left span{ color:var(--muted); font-size:11.5px; }
+  .status{ font-size:11px; padding:5px 12px; border-radius:999px; font-weight:600; text-transform:uppercase; letter-spacing:.03em; white-space:nowrap; }
+  .status.paid{ background:var(--success-bg); color:var(--success); }
+  .status.pending, .status.pay-later{ background:var(--gold-bg); color:var(--gold); }
+
+  .empty{ font-size:13px; color:var(--muted); padding:6px 0 2px; }
+
+  .logout-row{ margin-top:26px; padding-top:20px; border-top:1px solid var(--line); text-align:center; }
+  .logout-row button{
+    background:none; border:1px solid var(--line); color:var(--muted);
+    font-weight:500; border-radius:999px; padding:9px 20px; font-size:12.5px;
+    cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  .logout-row button:hover{ border-color:var(--accent); color:var(--accent); }
+
+  @media (max-width:860px){
+    .split{ grid-template-columns:1fr; }
+    .visual-panel{ min-height:280px; padding:110px 6vw 32px; }
+    .form-panel{ padding:48px 6vw 60px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand" id="brandHome">
+    <img src="../images/Favicon.png" alt="Kelapa Bali FC logo" class="brand-logo">
+    <span>KELAPA BALI FC <span style="opacity:.7">SEASON 26/27</span></span>
+  </div>
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark theme">
+    <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="4" y1="4" x2="5.8" y2="5.8"/><line x1="18.2" y1="18.2" x2="20" y2="20"/><line x1="1.5" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22.5" y2="12"/><line x1="4" y1="20" x2="5.8" y2="18.2"/><line x1="18.2" y1="5.8" x2="20" y2="4"/></svg>
+    <svg class="moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg>
+  </button>
+</div>
+
+<div class="split">
+
+  <div class="visual-panel" id="visualPanel">
+     <div class="visual-eyebrow">Members area</div>
+    <h1>Your club.<br>Your account.</h1>
+    <p>Log in to track your jersey orders, payment status, and get early access to new releases before anyone else.</p>
+    <div class="visual-stats">
+      <div><b>26/27</b><span>Season</span></div>
+      <div><b>Early</b><span>Access</span></div>
+      <div><b>1-click</b><span>Order status</span></div>
+    </div>
+  </div>
+
+  <div class="form-panel">
+    <div class="form-inner">
+
+      <div id="loginCard">
+        <div class="form-eyebrow">Welcome</div>
+        <h2 id="formTitle">Log in</h2>
+        <p class="form-sub" id="formSub">Use the email and password you set up, or sign up if you haven't yet.</p>
+
+        <div id="googleBtnContainer" style="margin-bottom:16px; display:flex; justify-content:center;"></div>
+        <div id="googleMsg"></div>
+        <div style="display:flex; align-items:center; gap:12px; margin:18px 0;">
+          <div style="flex:1; height:1px; background:var(--line);"></div>
+          <span style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em;">or</span>
+          <div style="flex:1; height:1px; background:var(--line);"></div>
+        </div>
+
+        <div class="tab-row">
+          <button class="tab active" id="tabLogin" type="button">Log in</button>
+          <button class="tab" id="tabSignup" type="button">Sign up</button>
+        </div>
+
+        <div id="authMsg"></div>
+        <label>Email</label>
+        <input type="email" id="emailInput" placeholder="name@gmail.com" autocomplete="email" />
+        <label>Password</label>
+        <div class="password-wrap">
+          <input type="password" id="passwordInput" placeholder="••••••••" autocomplete="current-password" />
+          <button class="eye-toggle" id="passwordEyeBtn" type="button" aria-label="Show password">
+            <svg class="eye-open" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-closed" viewBox="0 0 24 24" style="display:none;"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 20c-7 0-11-8-11-8a20.3 20.3 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 11 8 11 8a20.3 20.3 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
+        <p class="hint hidden" id="signupHint">Must be at least 6 characters. If this email has an order with us, you'll get premium access automatically.</p>
+        <button class="primary" id="authSubmitBtn">Log in</button>
+        <button class="link" id="forgotLink" type="button">Forgot password?</button>
+      </div>
+
+      <div class="hidden" id="resetCard">
+        <div class="form-eyebrow">Reset</div>
+        <h2 id="resetTitle">Forgot password</h2>
+        <p class="form-sub" id="resetSub">Enter your email and we'll send you a reset code.</p>
+
+        <div id="resetMsg"></div>
+
+        <div id="resetStepRequest">
+          <label>Email</label>
+          <input type="email" id="resetEmailInput" placeholder="name@gmail.com" autocomplete="email" />
+          <button class="primary" id="requestResetBtn">Send reset code</button>
+        </div>
+
+        <div class="hidden" id="resetStepConfirm">
+          <label>Code</label>
+          <input type="text" id="resetCodeInput" maxlength="6" inputmode="numeric" placeholder="6-digit code" />
+          <label>New password</label>
+          <div class="password-wrap">
+            <input type="password" id="newPasswordInput" placeholder="••••••••" autocomplete="new-password" />
+            <button class="eye-toggle" id="newPasswordEyeBtn" type="button" aria-label="Show password">
+              <svg class="eye-open" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="eye-closed" viewBox="0 0 24 24" style="display:none;"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 20c-7 0-11-8-11-8a20.3 20.3 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 11 8 11 8a20.3 20.3 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+          <button class="primary" id="confirmResetBtn">Reset password</button>
+        </div>
+
+        <button class="link" id="backToLoginLink" type="button">Back to log in</button>
+      </div>
+
+      <div class="hidden" id="accountView">
+        <div class="account-head">
+          <div class="avatar" id="avatarInitials">--</div>
+          <div>
+            <p class="name">Welcome back</p>
+            <p class="email" id="accountEmail"></p>
+          </div>
+        </div>
+
+        <div class="premium-badge hidden" id="premiumBadge">
+          <b><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.6L22 9.3l-5 4.9 1.2 7-6.2-3.6L5.8 21.2 7 14.2 2 9.3l7.1-.7z"/></svg>Premium — early access unlocked</b>
+          <span>New release previews appear here before public launch.</span>
+        </div>
+
+        <p class="section-label">Your orders</p>
+        <div id="ordersList"></div>
+
+        <div class="logout-row">
+          <button id="logoutBtn">Log out</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const root = document.documentElement;
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('kit-theme');
+  if(savedTheme){ root.setAttribute('data-theme', savedTheme); }
+  themeToggle.addEventListener('click', () => {
+    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('kit-theme', next);
+  });
+  document.getElementById('brandHome').addEventListener('click', () => { window.location.href = '../'; });
+
+  // ---- CONFIG: replace with your deployed Apps Script Web App URL ----
+  const API_URL = 'https://kbfc-api.aliffhakeem8.workers.dev';
+  const STORAGE_KEY = 'kbfc_session_token';
+
+  function redirectAfterLogin(data){
+    window.location.href = data.isAdmin ? '../panel-x7k9/' : '../dashboard/';
+  }
+
+  // ---- Login hero background: uses the image the admin uploaded via
+  // Site Media, if one exists. Falls back to the placeholder pattern
+  // already set in CSS if nothing's been uploaded yet, or if this fails.
+  const SITE_ASSETS_SHEET_ID = '1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM';
+  (async function applyLoginHero(){
+    try {
+      const url = `https://docs.google.com/spreadsheets/d/${SITE_ASSETS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=SiteAssets`;
+      const text = await (await fetch(url)).text();
+      const json = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
+      const rows = json.table.rows || [];
+      const heroRow = rows.find(r => r.c[0] && r.c[0].v === 'login-hero');
+      const imageUrl = heroRow && heroRow.c[1] ? heroRow.c[1].v : '';
+      if (imageUrl){
+        const panel = document.getElementById('visualPanel');
+        panel.style.backgroundImage =
+          `linear-gradient(180deg, rgba(10,10,10,.15), rgba(10,10,10,.88) 90%), url('${imageUrl}')`;
+        panel.style.backgroundSize = 'cover';
+        panel.style.backgroundPosition = 'center';
+      }
+    } catch (err){
+      // Silently keep the CSS placeholder pattern if this fails for any reason.
+    }
+  })();
+
+  // Must match CLIENT_PASSWORD_SALT in the Apps Script backend exactly.
+  const PASSWORD_SALT = 'kbfc-club-salt-v1';
+
+  async function hashPassword(password){
+    const enc = new TextEncoder().encode(password + PASSWORD_SALT);
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  const els = {
+    loginCard: document.getElementById('loginCard'),
+    resetCard: document.getElementById('resetCard'),
+    accountView: document.getElementById('accountView'),
+    formTitle: document.getElementById('formTitle'),
+    formSub: document.getElementById('formSub'),
+    tabLogin: document.getElementById('tabLogin'),
+    tabSignup: document.getElementById('tabSignup'),
+    authMsg: document.getElementById('authMsg'),
+    emailInput: document.getElementById('emailInput'),
+    passwordInput: document.getElementById('passwordInput'),
+    signupHint: document.getElementById('signupHint'),
+    authSubmitBtn: document.getElementById('authSubmitBtn'),
+    forgotLink: document.getElementById('forgotLink'),
+    resetMsg: document.getElementById('resetMsg'),
+    resetStepRequest: document.getElementById('resetStepRequest'),
+    resetStepConfirm: document.getElementById('resetStepConfirm'),
+    resetEmailInput: document.getElementById('resetEmailInput'),
+    requestResetBtn: document.getElementById('requestResetBtn'),
+    resetCodeInput: document.getElementById('resetCodeInput'),
+    newPasswordInput: document.getElementById('newPasswordInput'),
+    confirmResetBtn: document.getElementById('confirmResetBtn'),
+    backToLoginLink: document.getElementById('backToLoginLink'),
+    avatarInitials: document.getElementById('avatarInitials'),
+    accountEmail: document.getElementById('accountEmail'),
+    premiumBadge: document.getElementById('premiumBadge'),
+    ordersList: document.getElementById('ordersList'),
+    logoutBtn: document.getElementById('logoutBtn')
+  };
+
+  let mode = 'login';
+
+  // ---- Password show/hide toggles ----
+  function wireEyeToggle(inputId, btnId){
+    const input = document.getElementById(inputId);
+    const btn = document.getElementById(btnId);
+    const eyeOpen = btn.querySelector('.eye-open');
+    const eyeClosed = btn.querySelector('.eye-closed');
+    btn.addEventListener('click', () => {
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      eyeOpen.style.display = isPassword ? 'none' : 'block';
+      eyeClosed.style.display = isPassword ? 'block' : 'none';
+      btn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
+    });
+  }
+  wireEyeToggle('passwordInput', 'passwordEyeBtn');
+  wireEyeToggle('newPasswordInput', 'newPasswordEyeBtn');
+
+  function showMsg(text, type){
+    els.authMsg.innerHTML = text ? `<p class="msg ${type}">${text}</p>` : '';
+  }
+
+  function setMode(next){
+    mode = next;
+    els.tabLogin.classList.toggle('active', mode === 'login');
+    els.tabSignup.classList.toggle('active', mode === 'signup');
+    els.signupHint.classList.toggle('hidden', mode !== 'signup');
+    els.formTitle.textContent = mode === 'login' ? 'Log in' : 'Create account';
+    els.formSub.textContent = mode === 'login'
+      ? "Use the email and password you set up, or sign up if you haven't yet."
+      : "If you've ordered with us before, use that email for automatic premium access.";
+    els.authSubmitBtn.textContent = mode === 'login' ? 'Log in' : 'Create account';
+    els.passwordInput.setAttribute('autocomplete', mode === 'login' ? 'current-password' : 'new-password');
+    showMsg('', '');
+  }
+
+  function showAccount(email, premium, orders){
+    els.loginCard.classList.add('hidden');
+    els.accountView.classList.remove('hidden');
+
+    els.accountEmail.textContent = email;
+    els.avatarInitials.textContent = email.split('@')[0].slice(0,2).toUpperCase();
+    els.premiumBadge.classList.toggle('hidden', !premium);
+
+    if (!orders || orders.length === 0){
+      els.ordersList.innerHTML = '<p class="empty">No orders found for this email.</p>';
+    } else {
+      els.ordersList.innerHTML = orders.map(o => {
+        const s = (o.status || '').toLowerCase().replace(/\s+/g, '-');
+        const cls = s === 'paid' ? 'paid' : (s === 'pay-later' ? 'pay-later' : 'pending');
+        return `
+        <div class="order">
+          <div class="left">
+            <b>${o.orderId || '—'}</b>
+            <span>#${o.jerseyNumber || '—'} · ${o.size || '—'} · ${o.set || ''}</span>
+          </div>
+          <span class="status ${cls}">${o.status || 'Pending'}</span>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  async function tryResumeSession(){
+    const token = localStorage.getItem(STORAGE_KEY);
+    if (!token) return;
+    try {
+      const data = await (await fetch(`${API_URL}?action=checkSession&token=${encodeURIComponent(token)}`)).json();
+      if (data.ok) redirectAfterLogin(data);
+      else localStorage.removeItem(STORAGE_KEY);
+    } catch (err){}
+  }
+
+  els.tabLogin.addEventListener('click', () => setMode('login'));
+  els.tabSignup.addEventListener('click', () => setMode('signup'));
+
+  function showResetMsg(text, type){
+    els.resetMsg.innerHTML = text ? `<p class="msg ${type}">${text}</p>` : '';
+  }
+
+  function openReset(){
+    els.loginCard.classList.add('hidden');
+    els.resetCard.classList.remove('hidden');
+    els.resetStepRequest.classList.remove('hidden');
+    els.resetStepConfirm.classList.add('hidden');
+    els.resetEmailInput.value = els.emailInput.value.trim();
+    showResetMsg('', '');
+  }
+
+  function closeReset(){
+    els.resetCard.classList.add('hidden');
+    els.loginCard.classList.remove('hidden');
+    els.resetCodeInput.value = '';
+    els.newPasswordInput.value = '';
+    setMode('login');
+  }
+
+  els.forgotLink.addEventListener('click', openReset);
+  els.backToLoginLink.addEventListener('click', closeReset);
+
+  let resetEmail = '';
+
+  els.requestResetBtn.addEventListener('click', async () => {
+    const email = els.resetEmailInput.value.trim();
+    if (!email || email.indexOf('@') === -1){
+      showResetMsg('Please enter a valid email address.', 'error');
+      return;
+    }
+
+    els.requestResetBtn.disabled = true;
+    els.requestResetBtn.textContent = 'Sending…';
+    showResetMsg('', '');
+
+    try {
+      const data = await (await fetch(`${API_URL}?action=requestReset&email=${encodeURIComponent(email)}`)).json();
+      if (data.ok){
+        resetEmail = email;
+        els.resetStepRequest.classList.add('hidden');
+        els.resetStepConfirm.classList.remove('hidden');
+        showResetMsg("If an account exists for this email, a reset code is on its way. Check your inbox.", 'success');
+      } else {
+        showResetMsg(data.error || 'Something went wrong. Please try again.', 'error');
+      }
+    } catch (err){
+      showResetMsg('Could not reach the server. Please try again.', 'error');
+    }
+
+    els.requestResetBtn.disabled = false;
+    els.requestResetBtn.textContent = 'Send reset code';
+  });
+
+  els.confirmResetBtn.addEventListener('click', async () => {
+    const code = els.resetCodeInput.value.trim();
+    const newPassword = els.newPasswordInput.value;
+
+    if (!code){
+      showResetMsg('Please enter the code from your email.', 'error');
+      return;
+    }
+    if (!newPassword || newPassword.length < 6){
+      showResetMsg('New password must be at least 6 characters.', 'error');
+      return;
+    }
+
+    els.confirmResetBtn.disabled = true;
+    els.confirmResetBtn.textContent = 'Resetting…';
+    showResetMsg('', '');
+
+    try {
+      const newPasswordHash = await hashPassword(newPassword);
+      const data = await (await fetch(`${API_URL}?action=resetPassword&email=${encodeURIComponent(resetEmail)}&code=${encodeURIComponent(code)}&newPasswordHash=${encodeURIComponent(newPasswordHash)}`)).json();
+      if (data.ok){
+        els.resetCard.classList.add('hidden');
+        localStorage.setItem(STORAGE_KEY, data.token);
+        redirectAfterLogin(data);
+      } else {
+        showResetMsg(data.error || 'Something went wrong. Please try again.', 'error');
+      }
+    } catch (err){
+      showResetMsg('Could not reach the server. Please try again.', 'error');
+    }
+
+    els.confirmResetBtn.disabled = false;
+    els.confirmResetBtn.textContent = 'Reset password';
+  });
+
+  els.authSubmitBtn.addEventListener('click', async () => {
+    const email = els.emailInput.value.trim();
+    const password = els.passwordInput.value;
+
+    if (!email || email.indexOf('@') === -1){
+      showMsg('Please enter a valid email address.', 'error');
+      return;
+    }
+    if (!password){
+      showMsg('Please enter your password.', 'error');
+      return;
+    }
+    if (mode === 'signup' && password.length < 6){
+      showMsg('Password must be at least 6 characters.', 'error');
+      return;
+    }
+
+    els.authSubmitBtn.disabled = true;
+    els.authSubmitBtn.textContent = mode === 'login' ? 'Logging in…' : 'Creating account…';
+    showMsg('', '');
+
+    try {
+      const passwordHash = await hashPassword(password);
+      const data = await (await fetch(`${API_URL}?action=${mode}&email=${encodeURIComponent(email)}&passwordHash=${encodeURIComponent(passwordHash)}`)).json();
+      if (data.ok){
+        localStorage.setItem(STORAGE_KEY, data.token);
+        redirectAfterLogin(data);
+      } else {
+        showMsg(data.error || 'Something went wrong. Please try again.', 'error');
+      }
+    } catch (err){
+      showMsg('Could not reach the server. Please try again.', 'error');
+    }
+
+    els.authSubmitBtn.disabled = false;
+    els.authSubmitBtn.textContent = mode === 'login' ? 'Log in' : 'Create account';
+  });
+
+  els.logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem(STORAGE_KEY);
+    els.emailInput.value = '';
+    els.passwordInput.value = '';
+    els.accountView.classList.add('hidden');
+    els.resetCard.classList.add('hidden');
+    els.loginCard.classList.remove('hidden');
+    setMode('login');
+  });
+
+  // ---- Google Sign-In ----
+  // Paste the same Client ID you used in the backend script here.
+  const GOOGLE_CLIENT_ID = '225342743611-g7lb9rnbdb0139gufv1u7k242ukjao53.apps.googleusercontent.com';
+
+  function showGoogleMsg(text, type){
+    const el = document.getElementById('googleMsg');
+    el.innerHTML = text ? `<p class="msg ${type}">${text}</p>` : '';
+  }
+
+  async function handleGoogleCredential(response){
+    showGoogleMsg('', '');
+    try {
+      const data = await (await fetch(`${API_URL}?action=googleLogin&idToken=${encodeURIComponent(response.credential)}`)).json();
+      if (data.ok){
+        localStorage.setItem(STORAGE_KEY, data.token);
+        redirectAfterLogin(data);
+      } else {
+        showGoogleMsg(data.error || 'Could not sign in with Google. Please try again.', 'error');
+      }
+    } catch (err){
+      showGoogleMsg('Could not reach the server. Please try again.', 'error');
+    }
+  }
+
+  function initGoogleButton(){
+    if (!window.google || GOOGLE_CLIENT_ID.indexOf('PASTE_YOUR') !== -1) return;
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handleGoogleCredential
+    });
+    google.accounts.id.renderButton(document.getElementById('googleBtnContainer'), {
+      theme: 'filled_black', size: 'large', width: 328, text: 'continue_with', shape: 'pill'
+    });
+  }
+  window.addEventListener('load', initGoogleButton);
+
+  setMode('login');
+  tryResumeSession();
+</script>
+</body>
+</html>
