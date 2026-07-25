@@ -315,7 +315,7 @@
     background:rgba(13,15,18,.6);
     border:1px solid rgba(255,255,255,.16);
     backdrop-filter:blur(8px);
-    border-radius:20px; padding:22px 32px;
+    border-radius:0; padding:22px 32px;
   }
   .hero-countdown-label{
     display:block; font-size:13px; color:rgba(255,255,255,.75);
@@ -324,7 +324,7 @@
   .hero-countdown-tiles{ display:flex; gap:16px; }
   .hero-cd-tile{
     background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.14);
-    border-radius:14px; padding:16px 18px; min-width:76px;
+    border-radius:0; padding:16px 18px; min-width:76px;
   }
   .hero-cd-tile span{
     display:block; font-family:'Oswald',sans-serif; font-size:clamp(34px,5vw,52px); font-weight:700;
@@ -339,7 +339,7 @@
     position:relative; overflow:hidden;
     margin:88px 6vw 36px; padding:26px 30px 26px 34px;
     background:linear-gradient(115deg, #14171C 0%, #1f1215 60%, #2a1215 100%);
-    border:1px solid rgba(185,19,33,.25); border-radius:18px;
+    border:1px solid rgba(185,19,33,.25); border-radius:0;
     box-shadow:0 24px 60px rgba(185,19,33,.14), 0 20px 60px rgba(20,23,28,0.14);
     display:flex; align-items:center; gap:22px;
   }
@@ -390,7 +390,7 @@
     pointer-events:none;
   }
   .login-promo-lock{
-    position:absolute; inset:0; z-index:8; border-radius:18px;
+    position:absolute; inset:0; z-index:8; border-radius:0;
     background:rgba(15,16,18,.62);
     backdrop-filter:grayscale(1) blur(1px);
     -webkit-backdrop-filter:grayscale(1) blur(1px);
@@ -401,7 +401,7 @@
     font-family:'Oswald',sans-serif; font-size:13px; font-weight:600;
     letter-spacing:.14em; text-transform:uppercase; color:#fff;
     background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.3);
-    padding:10px 20px; border-radius:999px;
+    padding:10px 20px; border-radius:0;
   }
   .login-promo-lock-pill svg{ width:14px; height:14px; stroke:#fff; fill:none; stroke-width:1.8; }
 
@@ -822,21 +822,24 @@
       padding-bottom:20px;
     }
     .hero-top{
-      order:1; padding-top:90px; gap:14px;
+      /* No 90px topbar-clearance needed here on mobile — the promo panel
+         above .hero already provides that clearance, so this only needs
+         a small gap of its own. */
+      order:1; padding-top:18px; gap:14px;
     }
     .slides{
       order:2; position:relative; inset:auto;
       height:62vw; min-height:260px; max-height:420px;
-      margin-top:28px;
+      margin-top:16px;
     }
     .hero-dark-overlay{ display:none; }
     .hero-scrim{ display:none; }
     .hero-countdown-badge{
       order:3; position:static; top:auto; right:auto; left:auto; bottom:auto;
-      transform:none; margin:20px auto 0; width:fit-content;
-      padding:14px 18px;
+      transform:none; margin:16px auto 0; width:fit-content;
+      padding:14px 18px; border-radius:0;
     }
-    .hero-cd-tile{ min-width:52px; padding:10px 10px; }
+    .hero-cd-tile{ min-width:52px; padding:10px 10px; border-radius:0; }
     .hero-countdown-label{ font-size:10.5px; margin-bottom:10px; }
     .hero-content{
       order:4; position:relative;
@@ -864,13 +867,13 @@
     }
     .field-row{grid-template-columns:1fr;}
     .topbar{padding:18px 20px;}
-    .hero-cta-row{ flex-wrap:nowrap; gap:8px; width:100%; }
+    .hero-cta-row{ flex-wrap:nowrap; gap:8px; width:100%; align-items:stretch; }
     .hero-cta-row .btn-primary,
     .hero-cta-row .btn-secondary{
-      flex:1 1 0; min-width:0;
+      flex:1 1 0; min-width:0; min-height:56px;
       justify-content:center; text-align:center;
-      padding:14px 8px; font-size:12.5px; letter-spacing:0; gap:6px;
-      white-space:normal;
+      padding:10px 8px; font-size:12.5px; letter-spacing:0; gap:6px;
+      white-space:normal; line-height:1.25;
     }
     .hero-cta-row .btn-primary svg,
     .hero-cta-row .btn-secondary svg{ width:13px; height:13px; flex-shrink:0; }
