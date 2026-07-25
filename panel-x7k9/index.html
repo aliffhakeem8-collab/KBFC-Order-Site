@@ -92,8 +92,15 @@
     .stat-tile{ padding:12px 14px !important; }
     .stat-tile b{ font-size:20px !important; }
 
-    /* Toolbar: search gets its own row, everything else wraps in a tidy grid */
-    .toolbar{ display:grid !important; grid-template-columns:1fr !important; gap:8px !important; }
+    /* Toolbar: search+filter share a row, CSV+refresh share a row —
+       only the primary "Send Payment Reminders" action gets its own full row */
+    .toolbar{ display:flex !important; flex-direction:column; gap:8px !important; }
+    .toolbar-find{
+      display:grid !important; grid-template-columns:1.6fr 1fr; gap:8px; width:100%;
+    }
+    .toolbar-secondary{
+      display:grid !important; grid-template-columns:1fr 1fr; gap:8px; width:100%;
+    }
     .toolbar input[type="text"]{ width:100%; min-width:0 !important; }
     .toolbar select, .toolbar button{ width:100%; }
 
@@ -121,6 +128,9 @@
   .view-section.active{ display:block; }
 
   .toolbar{ display:flex; gap:10px; align-items:center; margin-bottom:16px; flex-wrap:wrap; }
+  /* On desktop these wrappers are invisible to layout — children sit directly
+     in the .toolbar flex row, same as before. Mobile overrides this below. */
+  .toolbar-find, .toolbar-secondary{ display:contents; }
   .toolbar input[type="text"]{
     flex:1; min-width:200px; background:var(--surface); border:1px solid var(--line); color:var(--ink);
     padding:9px 14px; border-radius:9px; font-size:13px; font-family:'Inter',sans-serif; outline:none;
@@ -156,8 +166,9 @@
   .media-preview{ width:100%; max-width:320px; border-radius:10px; border:1px solid var(--line); display:block; margin-bottom:14px; }
   .card h3{ font-family:'Oswald',sans-serif; font-size:15px; font-weight:600; margin-bottom:3px; }
   .card .card-sub{ font-size:12px; color:var(--muted); margin:0; }
-  .project-card{ transition:transform .15s ease, border-color .15s ease; }
+  .project-card{ display:flex; flex-direction:column; transition:transform .15s ease, border-color .15s ease; }
   .project-card:hover{ transform:translateY(-2px); border-color:var(--accent); }
+  .project-card > *:last-child{ margin-top:auto; padding-top:10px; }
   .stat-tile b{ display:block; font-family:'Oswald',sans-serif; font-size:24px; font-weight:600; }
   .stat-tile span{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
 
@@ -283,7 +294,7 @@
               <span style="font-family:'Oswald',sans-serif; font-size:32px; font-weight:600;" id="overviewProductionTotal">—</span>
               <span style="font-size:12px; color:var(--muted);">jerseys tracked</span>
             </div>
-            <span style="font-size:12px; color:var(--accent); font-weight:600; display:inline-block; margin-top:10px;">Open →</span>
+            <span style="font-size:12px; color:var(--accent); font-weight:600; display:inline-block;">Open →</span>
           </div>
           <div class="card project-card" id="openOrdersBtn" style="cursor:pointer;">
             <h3>Orders</h3>
@@ -292,7 +303,7 @@
               <span style="font-family:'Oswald',sans-serif; font-size:32px; font-weight:600;" id="overviewOrdersTotal">—</span>
               <span style="font-size:12px; color:var(--muted);">total orders</span>
             </div>
-            <span style="font-size:12px; color:var(--accent); font-weight:600; display:inline-block; margin-top:10px;">Open →</span>
+            <span style="font-size:12px; color:var(--accent); font-weight:600; display:inline-block;">Open →</span>
           </div>
         </div>
       </div>
@@ -321,18 +332,22 @@
         <p style="font-size:12.5px;color:var(--muted);margin:0 0 14px;">Every order, grouped by Order ID. Click a column header to sort.</p>
         <div class="stat-row" id="orderStats"></div>
         <div class="toolbar">
-          <input type="text" id="orderSearch" placeholder="Search by email, order ID, or name…">
-          <select id="orderFilter">
-            <option value="all">All statuses</option>
-            <option value="Paid">Paid</option>
-            <option value="Pay Later">Pay Later</option>
-          </select>
+          <div class="toolbar-find">
+            <input type="text" id="orderSearch" placeholder="Search by email, order ID, or name…">
+            <select id="orderFilter">
+              <option value="all">All statuses</option>
+              <option value="Paid">Paid</option>
+              <option value="Pay Later">Pay Later</option>
+            </select>
+          </div>
           <button class="action" id="sendRemindersBtn">Send Payment Reminders</button>
-          <button class="ghost" id="exportOrdersBtn">Download CSV</button>
-          <button class="ghost" id="refreshOrdersBtn">Refresh</button>
+          <div class="toolbar-secondary">
+            <button class="ghost" id="exportOrdersBtn">Download CSV</button>
+            <button class="ghost" id="refreshOrdersBtn">Refresh</button>
+          </div>
         </div>
-        <div id="lastReminderPanel" style="display:flex; align-items:center; gap:8px; margin-bottom:14px; padding:10px 14px; border-radius:10px; background:var(--surface-2); border:1px solid var(--line); font-size:12.5px; color:var(--muted);">
-          <span style="width:7px; height:7px; border-radius:50%; background:var(--muted); flex-shrink:0;" id="lastReminderDot"></span>
+        <div id="lastReminderPanel" style="display:flex; align-items:center; gap:7px; margin-bottom:14px; font-size:12px; color:var(--muted);">
+          <span style="width:6px; height:6px; border-radius:50%; background:var(--muted); flex-shrink:0;" id="lastReminderDot"></span>
           <span id="lastReminderText">Last reminder send: checking…</span>
         </div>
         <div id="reminderResultBanner" style="display:none; margin-bottom:14px; padding:12px 16px; border-radius:10px; font-size:13px; font-weight:600;"></div>
