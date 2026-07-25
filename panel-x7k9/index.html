@@ -173,12 +173,12 @@
     position:relative; overflow:hidden; border-radius:12px; border:1px solid var(--line);
     display:flex; min-height:88px;
     background:linear-gradient(115deg,
-      rgba(185,19,33,.10) 0%, rgba(185,19,33,.10) 47%,
-      var(--line) 47%, var(--line) 53%,
-      rgba(46,158,91,.12) 53%, rgba(46,158,91,.12) 100%);
+      rgba(185,19,33,.10) 0%, rgba(185,19,33,.10) calc(var(--split, 50%) - 3%),
+      var(--line) calc(var(--split, 50%) - 3%), var(--line) calc(var(--split, 50%) + 3%),
+      rgba(46,158,91,.12) calc(var(--split, 50%) + 3%), rgba(46,158,91,.12) 100%);
   }
   .stat-summary-half{
-    flex:1; display:flex; flex-direction:column; justify-content:center;
+    flex:1 1 50%; min-width:96px; display:flex; flex-direction:column; justify-content:center;
     padding:16px 20px; position:relative; z-index:1;
   }
   .stat-summary-half.pending{ align-items:flex-start; text-align:left; }
@@ -639,14 +639,22 @@
     const paid = allOrders.filter(o => o.status === 'Paid').length;
     const pending = allOrders.filter(o => o.status === 'Pay Later').length;
     const revenue = allOrders.filter(o => o.status === 'Paid').reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
+
+    // Proportional split: the pending/paid divider (both the diagonal seam
+    // and each half's actual width) reflects the real ratio between the
+    // two — e.g. 15 paid out of 40 sits at 37.5%, not frozen at the middle.
+    const splitDenom = pending + paid;
+    const pendingPct = splitDenom ? (pending / splitDenom * 100) : 50;
+    const paidPct = 100 - pendingPct;
+
     els.orderStats.innerHTML = `
       <div class="stat-summary-top">
         <div class="stat-summary-tile"><b>${total}</b><span>Total orders</span></div>
         <div class="stat-summary-tile"><b>RM ${revenue.toFixed(0)}</b><span>Total sales</span></div>
       </div>
-      <div class="stat-summary-split">
-        <div class="stat-summary-half pending"><b>${pending}</b><span>Pay later — not yet paid</span></div>
-        <div class="stat-summary-half paid"><b>${paid}</b><span>Paid</span></div>
+      <div class="stat-summary-split" style="--split:${pendingPct.toFixed(1)}%;">
+        <div class="stat-summary-half pending" style="flex-basis:${pendingPct.toFixed(1)}%;"><b>${pending}</b><span>Pay later — not yet paid</span></div>
+        <div class="stat-summary-half paid" style="flex-basis:${paidPct.toFixed(1)}%;"><b>${paid}</b><span>Paid</span></div>
       </div>
     `;
     els.overviewOrdersTotal.textContent = total;
