@@ -331,6 +331,10 @@
           <button class="ghost" id="exportOrdersBtn">Download CSV</button>
           <button class="ghost" id="refreshOrdersBtn">Refresh</button>
         </div>
+        <div id="lastReminderPanel" style="display:flex; align-items:center; gap:8px; margin-bottom:14px; padding:10px 14px; border-radius:10px; background:var(--surface-2); border:1px solid var(--line); font-size:12.5px; color:var(--muted);">
+          <span style="width:7px; height:7px; border-radius:50%; background:var(--muted); flex-shrink:0;" id="lastReminderDot"></span>
+          <span id="lastReminderText">Last reminder send: checking…</span>
+        </div>
         <div id="reminderResultBanner" style="display:none; margin-bottom:14px; padding:12px 16px; border-radius:10px; font-size:13px; font-weight:600;"></div>
         <div class="table-wrap">
           <table>
@@ -495,6 +499,8 @@
     orderFilter: document.getElementById('orderFilter'),
     sendRemindersBtn: document.getElementById('sendRemindersBtn'),
     reminderResultBanner: document.getElementById('reminderResultBanner'),
+    lastReminderText: document.getElementById('lastReminderText'),
+    lastReminderDot: document.getElementById('lastReminderDot'),
     membersTableBody: document.getElementById('membersTableBody'),
     memberSearch: document.getElementById('memberSearch'),
     playersTableBody: document.getElementById('playersTableBody'),
@@ -737,6 +743,7 @@
     allOrders = data.orders;
     renderOrderStats();
     renderOrdersTable();
+    renderLastReminderPanel();
   }
 
   els.orderSearch.addEventListener('input', renderOrdersTable);
@@ -775,6 +782,43 @@
     });
     downloadCsv('kbfc-orders.csv', flat);
   });
+
+  function formatLastReminderDate(iso){
+    const d = new Date(iso);
+    const now = new Date();
+    const sameDay = d.toDateString() === now.toDateString();
+    const dateStr = sameDay
+      ? 'today'
+      : d.toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: d.getFullYear() !== now.getFullYear() ? 'numeric' : undefined });
+    const timeStr = d.toLocaleTimeString('en-MY', { hour: 'numeric', minute: '2-digit' });
+    return `${dateStr} at ${timeStr}`;
+  }
+
+  // Derives "last reminder sent" from the orders themselves (the
+  // backend stamps a "Last Reminder Sent" timestamp per row whenever a
+  // reminder goes out — from the dashboard button or the sheet's own
+  // "KBFC Tools" menu). This reflects the true state in the sheet,
+  // visible from any device, not just wherever the button was clicked.
+  function renderLastReminderPanel(){
+    let latest = null;
+    let latestOrderId = null;
+    allOrders.forEach(o => {
+      if (o.lastReminderSent && (!latest || o.lastReminderSent > latest)){
+        latest = o.lastReminderSent;
+        latestOrderId = o.orderId;
+      }
+    });
+
+    if (!latest){
+      els.lastReminderText.textContent = 'Last reminder send: never';
+      els.lastReminderDot.style.background = 'var(--muted)';
+      return;
+    }
+
+    const stillPending = allOrders.filter(o => o.status === 'Pay Later').length;
+    els.lastReminderText.textContent = `Last reminder send: ${formatLastReminderDate(latest)} (order ${latestOrderId})${stillPending ? ` — ${stillPending} still marked Pay Later` : ''}`;
+    els.lastReminderDot.style.background = 'var(--success, #2e9e5b)';
+  }
 
   function showReminderBanner(text, kind){
     const el = els.reminderResultBanner;
@@ -1237,6 +1281,7 @@
     els.adminContent.style.display = 'block';
     renderOrderStats();
     renderOrdersTable();
+    renderLastReminderPanel();
     loadMembers();
     loadPlayers();
     loadProduction();
