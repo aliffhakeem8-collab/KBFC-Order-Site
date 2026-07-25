@@ -124,6 +124,10 @@
   .topbar-menu .btn-mini:disabled{
     cursor:not-allowed; opacity:.5;
   }
+  .btn-mini.is-locked{
+    cursor:not-allowed; opacity:.5; pointer-events:none;
+    filter:grayscale(1);
+  }
   .menu-item-soon{ font-size:10px; opacity:.8; margin-left:2px; }
   .btn-mini.menu-toggle-btn{
     display:flex; width:40px; height:40px; padding:0;
@@ -299,18 +303,113 @@
   .strip .cell .label{font-size:11px;color:var(--muted); margin-bottom:10px;}
   .strip .cell .value{font-size:17px; font-weight:500;}
 
-  .countdown-band{
-    display:flex; align-items:center; justify-content:center; gap:10px;
-    padding:20px 6vw; text-align:center;
-    border-top:1px solid var(--line);
+  /* ---------- countdown badge, overlaid on the hero slide ---------- */
+  .hero-dark-overlay{
+    position:absolute; inset:0; z-index:2;
+    background:rgba(0,0,0,.14);
+    pointer-events:none;
   }
-  .countdown-band-label{
-    font-size:11px; color:var(--muted); letter-spacing:.05em;
+  .hero-countdown-badge{
+    position:absolute; top:50%; right:7%; left:auto; transform:translateY(-50%);
+    z-index:6; text-align:center;
+    background:rgba(13,15,18,.6);
+    border:1px solid rgba(255,255,255,.16);
+    backdrop-filter:blur(8px);
+    border-radius:20px; padding:22px 32px;
   }
-  .countdown-band-value{
-    font-size:13px; color:var(--ink); font-variant-numeric:tabular-nums;
+  .hero-countdown-label{
+    display:block; font-size:13px; color:rgba(255,255,255,.75);
+    letter-spacing:.14em; margin-bottom:16px; font-weight:600;
   }
-  .countdown-band-value.closed{ color:var(--accent); }
+  .hero-countdown-tiles{ display:flex; gap:16px; }
+  .hero-cd-tile{
+    background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.14);
+    border-radius:14px; padding:16px 18px; min-width:76px;
+  }
+  .hero-cd-tile span{
+    display:block; font-family:'Oswald',sans-serif; font-size:clamp(34px,5vw,52px); font-weight:700;
+    color:#fff; font-variant-numeric:tabular-nums; line-height:1;
+  }
+  .hero-cd-tile small{
+    display:block; font-size:11.5px; color:rgba(255,255,255,.6); letter-spacing:.06em; margin-top:8px;
+  }
+
+  /* ---------- login feature promo: single compact panel ---------- */
+  .login-promo-compact{
+    position:relative; overflow:hidden;
+    margin:88px 6vw 36px; padding:26px 30px 26px 34px;
+    background:linear-gradient(115deg, #14171C 0%, #1f1215 60%, #2a1215 100%);
+    border:1px solid rgba(185,19,33,.25); border-radius:18px;
+    box-shadow:0 24px 60px rgba(185,19,33,.14), 0 20px 60px rgba(20,23,28,0.14);
+    display:flex; align-items:center; gap:22px;
+  }
+  .login-promo-compact::before{
+    content:''; position:absolute; left:0; top:0; bottom:0; width:5px;
+    background:linear-gradient(180deg, var(--accent), #ff5a5a);
+  }
+  .login-promo-compact::after{
+    content:''; position:absolute; top:-40%; right:-8%;
+    width:220px; height:220px; border-radius:50%;
+    background:radial-gradient(circle, rgba(185,19,33,.28) 0%, rgba(185,19,33,0) 70%);
+    pointer-events:none;
+  }
+  .login-promo-icon{
+    position:relative; width:52px; height:52px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(135deg, var(--accent), #7a0e15);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 20px rgba(185,19,33,.35);
+  }
+  .login-promo-icon svg{ width:24px; height:24px; stroke:#fff; fill:none; stroke-width:1.8; }
+  .login-promo-text{ position:relative; flex:1; min-width:220px; }
+  .login-promo-tag{
+    font-size:10px; font-weight:700; color:#ff8a8a; letter-spacing:.1em;
+    display:inline-block; margin-bottom:6px;
+    background:rgba(255,255,255,.06); padding:3px 9px; border-radius:999px;
+  }
+  .login-promo-text h2{
+    font-family:'Oswald',sans-serif; font-size:20px; font-weight:600; margin-bottom:4px;
+    color:#fff;
+  }
+  .login-promo-text p{ font-size:12.5px; color:rgba(255,255,255,.6); line-height:1.4; }
+  .login-promo-actions{
+    position:relative; display:flex; flex-direction:column; align-items:flex-end; gap:9px; flex-shrink:0;
+  }
+  .login-promo-actions .btn-primary{
+    white-space:nowrap; background:#fff; color:#14171C; border-color:#fff;
+    font-weight:700;
+  }
+  .login-promo-actions .btn-primary:hover{ background:#f2f2f2; }
+  .login-promo-google{
+    display:flex; align-items:center; gap:6px;
+    font-size:11px; color:rgba(255,255,255,.55);
+  }
+
+  /* ---------- "coming soon" lock overlay — sits on top, keeps the panel underneath intact ---------- */
+  .login-promo-compact.is-locked .login-promo-actions,
+  .login-promo-compact.is-locked .login-promo-google{
+    pointer-events:none;
+  }
+  .login-promo-lock{
+    position:absolute; inset:0; z-index:8; border-radius:18px;
+    background:rgba(15,16,18,.62);
+    backdrop-filter:grayscale(1) blur(1px);
+    -webkit-backdrop-filter:grayscale(1) blur(1px);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .login-promo-lock-pill{
+    display:inline-flex; align-items:center; gap:8px;
+    font-family:'Oswald',sans-serif; font-size:13px; font-weight:600;
+    letter-spacing:.14em; text-transform:uppercase; color:#fff;
+    background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.3);
+    padding:10px 20px; border-radius:999px;
+  }
+  .login-promo-lock-pill svg{ width:14px; height:14px; stroke:#fff; fill:none; stroke-width:1.8; }
+
+  @media (max-width:720px){
+    .login-promo-compact{ flex-direction:column; align-items:flex-start; text-align:left; margin:80px 5vw 30px; }
+    .login-promo-actions{ align-items:flex-start; width:100%; }
+    .login-promo-actions .btn-primary{ width:100%; justify-content:center; }
+  }
 
   footer{
     display:flex; justify-content:space-between; align-items:flex-end;
@@ -717,7 +816,7 @@
     .strip .cell{border-left:none; border-top:1px solid var(--line);}
     .strip .cell:first-child{border-top:none;}
 
-    /* stack hero as: title/nav -> photo -> copy, instead of overlapping layers */
+    /* stack hero as: nav -> photo -> countdown -> copy, instead of overlapping layers */
     .hero{
       height:auto; min-height:0; overflow:visible;
       padding-bottom:20px;
@@ -730,9 +829,17 @@
       height:62vw; min-height:260px; max-height:420px;
       margin-top:28px;
     }
+    .hero-dark-overlay{ display:none; }
     .hero-scrim{ display:none; }
+    .hero-countdown-badge{
+      order:3; position:static; top:auto; right:auto; left:auto; bottom:auto;
+      transform:none; margin:20px auto 0; width:fit-content;
+      padding:14px 18px;
+    }
+    .hero-cd-tile{ min-width:52px; padding:10px 10px; }
+    .hero-countdown-label{ font-size:10.5px; margin-bottom:10px; }
     .hero-content{
-      order:3; position:relative;
+      order:4; position:relative;
       flex-direction:column; align-items:flex-start; gap:22px;
       margin-top:0; padding:24px 6vw 0;
     }
@@ -858,15 +965,52 @@
     Check order
     <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
   </button>
+
+  <div class="menu-group-label mono">Account</div>
+  <a class="btn-mini is-locked" href="login/" aria-disabled="true" tabindex="-1" title="Coming soon">
+    Log in <span class="menu-item-soon">· coming soon</span>
+    <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+  </a>
 </div>
 
 <!-- ============ VIEW 1: LANDING ============ -->
 <section class="view active" id="view-landing">
+
+  <div class="login-promo-compact is-locked">
+    <div class="login-promo-icon">
+      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+    </div>
+    <div class="login-promo-text">
+      <span class="mono login-promo-tag">NEW</span>
+      <h2>Your club, your account.</h2>
+      <p>Track your order, view your digital membership card, and get early access to drops.</p>
+    </div>
+    <div class="login-promo-actions">
+      <a class="btn-primary" href="login/" tabindex="-1" aria-disabled="true">
+        Log in / Sign up
+        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <span class="login-promo-google">
+        <svg width="13" height="13" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
+        or sign up instantly with Google
+      </span>
+    </div>
+    <!-- Coming-soon lock: purely visual, sits above everything above.
+         Remove the "is-locked" class on .login-promo-compact (and delete
+         this .login-promo-lock div) to relaunch — nothing else changes. -->
+    <div class="login-promo-lock">
+      <span class="login-promo-lock-pill">
+        <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+        Coming soon
+      </span>
+    </div>
+  </div>
+
   <div class="hero">
     <div class="slides" id="slides"></div>
+    <div class="hero-dark-overlay"></div>
 
     <div class="hero-top">
-      <div class="kit-title">&nbsp; OFFICIAL AWAY KIT</div>
       <div class="top-nav" id="topNav">
         <div class="slide-nav">
           <button class="nav-btn" id="prevBtn" aria-label="Previous slide"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -876,12 +1020,21 @@
       </div>
     </div>
 
+    <div class="hero-countdown-badge">
+      <span class="hero-countdown-label mono">ORDER CLOSES IN</span>
+      <div class="hero-countdown-tiles">
+        <div class="hero-cd-tile"><span id="cdDays">00</span><small>D</small></div>
+        <div class="hero-cd-tile"><span id="cdHours">00</span><small>H</small></div>
+        <div class="hero-cd-tile"><span id="cdMins">00</span><small>M</small></div>
+        <div class="hero-cd-tile"><span id="cdSecs">00</span><small>S</small></div>
+      </div>
+    </div>
+
     <div class="hero-scrim"></div>
     <div class="hero-content">
       <div class="hero-copy">
         <div class="season-tag mono">DROP 01 · PRE-ORDER WINDOW OPEN</div>
         <h1 id="slideTitle">FRONT<br>VIEW <em>26/27</em></h1>
-        <p id="slideDesc">Reserve your shirt before the window closes (Number cannot be duplicated). Personalise it with your name and number, printed and shipped once the kit lands.</p>
 
         <div class="hero-cta-row">
           <button class="btn-primary" id="preorderBtn">
@@ -910,11 +1063,6 @@
       <div class="label mono">SIZING</div>
       <div class="value">XS — 4XL, true to size</div>
     </div>
-  </div>
-
-  <div class="countdown-band">
-    <span class="countdown-band-label mono">ORDER CLOSES</span>
-    <span class="countdown-band-value mono" id="countdownValue">31 July, 11:59 PM</span>
   </div>
 
   <section class="pricing-sizing" id="pricing-sizing">
@@ -1198,13 +1346,17 @@
   const PREORDER_DEADLINE = new Date('2026-07-31T23:59:59+08:00');
   let countdownTimer;
   function updateCountdown(){
-    const el = document.getElementById('countdownValue');
-    if(!el) return;
+    const daysEl = document.getElementById('cdDays');
+    const hoursEl = document.getElementById('cdHours');
+    const minsEl = document.getElementById('cdMins');
+    const secsEl = document.getElementById('cdSecs');
+    const labelEl = document.querySelector('.hero-countdown-label');
+    if(!daysEl) return;
     const remainingMs = PREORDER_DEADLINE.getTime() - Date.now();
 
     if(remainingMs <= 0){
-      el.textContent = 'Window closed';
-      el.classList.add('closed');
+      daysEl.textContent = hoursEl.textContent = minsEl.textContent = secsEl.textContent = '00';
+      if(labelEl) labelEl.textContent = 'ORDER WINDOW CLOSED';
       clearInterval(countdownTimer);
       return;
     }
@@ -1216,9 +1368,10 @@
     const secs = totalSeconds % 60;
     const pad = (n) => String(n).padStart(2, '0');
 
-    el.textContent = days > 0
-      ? `${days}d ${pad(hours)}h ${pad(mins)}m left`
-      : `${pad(hours)}h ${pad(mins)}m ${pad(secs)}s left`;
+    daysEl.textContent = pad(days);
+    hoursEl.textContent = pad(hours);
+    minsEl.textContent = pad(mins);
+    secsEl.textContent = pad(secs);
   }
   updateCountdown();
   countdownTimer = setInterval(updateCountdown, 1000);
@@ -1350,7 +1503,6 @@
   function render(){
     document.querySelectorAll('.slide').forEach((el,i)=> el.classList.toggle('active', i===current));
     document.getElementById('slideTitle').innerHTML = slideData[current].title;
-    document.getElementById('slideDesc').textContent = slideData[current].desc;
     document.getElementById('curNum').textContent = String(current+1).padStart(2,'0');
   }
   function goTo(i){ current = (i + slideData.length) % slideData.length; render(); }
