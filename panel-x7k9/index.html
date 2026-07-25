@@ -907,6 +907,14 @@
   }
 
   els.sendRemindersBtn.addEventListener('click', async () => {
+    const pendingCount = allOrders.filter(o => o.status === 'Pay Later').length;
+    if (pendingCount === 0){
+      showReminderBanner('No orders are currently marked "Pay Later" — nothing to remind.', 'info');
+      return;
+    }
+    const confirmed = confirm(`This will email ${pendingCount} customer${pendingCount === 1 ? '' : 's'} still marked "Pay Later". Continue?`);
+    if (!confirmed) return;
+
     els.sendRemindersBtn.disabled = true;
     els.sendRemindersBtn.textContent = 'Sending…';
     els.reminderResultBanner.style.display = 'none';
