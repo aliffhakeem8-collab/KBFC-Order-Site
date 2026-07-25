@@ -74,8 +74,10 @@
     .sidebar.open{ transform:translateX(0); }
     .mobile-topbar{
       display:flex; position:fixed; top:0; left:0; right:0; z-index:50;
-      align-items:center; justify-content:space-between; padding:14px 18px;
+      align-items:center; justify-content:space-between;
+      padding:14px 18px; padding-top:calc(14px + env(safe-area-inset-top, 0px));
       background:var(--bg); border-bottom:1px solid var(--line);
+      transform:translateZ(0); /* keeps the fixed bar fully opaque during momentum scroll on iOS */
     }
     .mobile-topbar .brand{ display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; }
     .mobile-topbar .brand img{ width:20px; height:20px; }
@@ -84,7 +86,7 @@
       opacity:0; pointer-events:none; transition:opacity .25s ease;
     }
     .sidebar-overlay.open{ opacity:1; pointer-events:auto; }
-    main{ margin-left:0 !important; padding-top:84px !important; }
+    main{ margin-left:0 !important; padding-top:calc(104px + env(safe-area-inset-top, 0px)) !important; }
     .card-add-drop > div{ grid-template-columns:1fr !important; }
 
     /* Compact stat tiles */
@@ -154,6 +156,44 @@
   .stat-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
   @media (max-width:900px){ .stat-row{ grid-template-columns:repeat(2,1fr); } }
   .stat-tile{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; }
+  .stat-tile-highlight{
+    grid-column:1 / -1;
+    display:flex; align-items:baseline; gap:10px;
+    border-color:var(--accent);
+  }
+  .stat-tile-highlight b{ color:var(--accent); }
+
+  /* ---------- order stat summary: totals on top, Pay Later / Paid split below ---------- */
+  .stat-summary{ display:flex; flex-direction:column; gap:12px; margin-bottom:20px; }
+  .stat-summary-top{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .stat-summary-tile{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; }
+  .stat-summary-tile b{ display:block; font-family:'Oswald',sans-serif; font-size:24px; font-weight:600; }
+  .stat-summary-tile span{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+  .stat-summary-split{
+    position:relative; overflow:hidden; border-radius:12px; border:1px solid var(--line);
+    display:flex; min-height:88px;
+    background:linear-gradient(115deg,
+      rgba(185,19,33,.10) 0%, rgba(185,19,33,.10) 47%,
+      var(--line) 47%, var(--line) 53%,
+      rgba(46,158,91,.12) 53%, rgba(46,158,91,.12) 100%);
+  }
+  .stat-summary-half{
+    flex:1; display:flex; flex-direction:column; justify-content:center;
+    padding:16px 20px; position:relative; z-index:1;
+  }
+  .stat-summary-half.pending{ align-items:flex-start; text-align:left; }
+  .stat-summary-half.paid{ align-items:flex-end; text-align:right; }
+  .stat-summary-half b{ display:block; font-family:'Oswald',sans-serif; font-size:26px; font-weight:600; }
+  .stat-summary-half.pending b{ color:var(--accent); }
+  .stat-summary-half.paid b{ color:#2e9e5b; }
+  .stat-summary-half span{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-top:4px; }
+  @media (max-width:900px){
+    .stat-summary-tile{ padding:12px 14px; }
+    .stat-summary-tile b{ font-size:20px; }
+    .stat-summary-half{ padding:12px 14px; }
+    .stat-summary-half b{ font-size:21px; }
+    .stat-summary-split{ min-height:76px; }
+  }
   .card{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px 22px; }
 
   .media-upload-zone{
@@ -330,7 +370,7 @@
         <button class="ghost" id="backFromOrdersBtn" style="margin-bottom:16px;">← Back to Project</button>
         <h3 style="font-family:'Oswald',sans-serif; font-size:15px; font-weight:600; margin:0 0 4px;">Orders</h3>
         <p style="font-size:12.5px;color:var(--muted);margin:0 0 14px;">Every order, grouped by Order ID. Click a column header to sort.</p>
-        <div class="stat-row" id="orderStats"></div>
+        <div class="stat-summary" id="orderStats"></div>
         <div class="toolbar">
           <div class="toolbar-find">
             <input type="text" id="orderSearch" placeholder="Search by email, order ID, or name…">
@@ -340,11 +380,11 @@
               <option value="Pay Later">Pay Later</option>
             </select>
           </div>
-          <button class="action" id="sendRemindersBtn">Send Payment Reminders</button>
           <div class="toolbar-secondary">
             <button class="ghost" id="exportOrdersBtn">Download CSV</button>
             <button class="ghost" id="refreshOrdersBtn">Refresh</button>
           </div>
+          <button class="action" id="sendRemindersBtn">Send Payment Reminders</button>
         </div>
         <div id="lastReminderPanel" style="display:flex; align-items:center; gap:7px; margin-bottom:14px; font-size:12px; color:var(--muted);">
           <span style="width:6px; height:6px; border-radius:50%; background:var(--muted); flex-shrink:0;" id="lastReminderDot"></span>
@@ -600,10 +640,14 @@
     const pending = allOrders.filter(o => o.status === 'Pay Later').length;
     const revenue = allOrders.filter(o => o.status === 'Paid').reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
     els.orderStats.innerHTML = `
-      <div class="stat-tile"><b>${total}</b><span>Total orders</span></div>
-      <div class="stat-tile"><b>${paid}</b><span>Paid</span></div>
-      <div class="stat-tile"><b>${pending}</b><span>Pay later</span></div>
-      <div class="stat-tile"><b>RM ${revenue.toFixed(0)}</b><span>Revenue collected</span></div>
+      <div class="stat-summary-top">
+        <div class="stat-summary-tile"><b>${total}</b><span>Total orders</span></div>
+        <div class="stat-summary-tile"><b>RM ${revenue.toFixed(0)}</b><span>Total sales</span></div>
+      </div>
+      <div class="stat-summary-split">
+        <div class="stat-summary-half pending"><b>${pending}</b><span>Pay later — not yet paid</span></div>
+        <div class="stat-summary-half paid"><b>${paid}</b><span>Paid</span></div>
+      </div>
     `;
     els.overviewOrdersTotal.textContent = total;
   }
