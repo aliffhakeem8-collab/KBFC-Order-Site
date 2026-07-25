@@ -172,10 +172,16 @@
   .stat-summary-split{
     position:relative; overflow:hidden; border-radius:12px; border:1px solid var(--line);
     display:flex; min-height:88px;
-    background:linear-gradient(115deg,
-      rgba(185,19,33,.10) 0%, rgba(185,19,33,.10) calc(var(--split, 50%) - 3%),
-      var(--line) calc(var(--split, 50%) - 3%), var(--line) calc(var(--split, 50%) + 3%),
-      rgba(46,158,91,.12) calc(var(--split, 50%) + 3%), rgba(46,158,91,.12) 100%);
+    background:linear-gradient(100deg,
+      rgba(185,19,33,.14) 0%,
+      rgba(185,19,33,.14) calc(var(--split, 50%) - 16%),
+      rgba(46,158,91,.14) calc(var(--split, 50%) + 16%),
+      rgba(46,158,91,.14) 100%);
+  }
+  .stat-summary-split::after{
+    content:''; position:absolute; inset:0; pointer-events:none; z-index:0;
+    background:radial-gradient(180px 100% at var(--split, 50%) 50%, rgba(255,255,255,.3), rgba(255,255,255,0) 68%);
+    mix-blend-mode:overlay;
   }
   .stat-summary-half{
     flex:1 1 50%; min-width:96px; display:flex; flex-direction:column; justify-content:center;
