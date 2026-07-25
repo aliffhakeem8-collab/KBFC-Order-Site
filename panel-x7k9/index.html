@@ -1,1 +1,1250 @@
-1
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KBFC | Admin</title>
+<link rel="icon" type="image/png" href="../images/Favicon.png">
+<link rel="apple-touch-icon" href="../images/Favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAFAF8; --surface:#FFFFFF; --surface-2:#F3F3F1; --ink:#14171C; --muted:#6B7280;
+    --accent:#b91321; --accent-dim: rgba(185,19,33,0.10);
+    --line: rgba(20,23,28,0.12); --line-soft: rgba(20,23,28,0.06);
+    --shadow: 0 20px 50px rgba(20,23,28,0.10);
+    --gold:#b8860b; --gold-bg: rgba(184,134,11,0.10);
+    --success:#1f8a4c; --success-bg: rgba(31,138,76,0.10);
+    --sidebar-w:230px;
+  }
+  html[data-theme="dark"]{
+    --bg:#0D0F12; --surface:#15181D; --surface-2:#1B1F24; --ink:#F2F1EC; --muted:#9CA3AF;
+    --accent:#b91321; --accent-dim: rgba(185,19,33,0.16);
+    --line: rgba(242,241,236,0.14); --line-soft: rgba(242,241,236,0.07);
+    --shadow: 0 20px 50px rgba(0,0,0,0.4);
+    --gold:#d9ab3f; --gold-bg: rgba(217,171,63,0.12);
+    --success:#3fbd7c; --success-bg: rgba(63,189,124,0.12);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{ background:var(--bg); color:var(--ink); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; min-height:100vh; }
+
+  .sidebar{
+    position:fixed; top:0; left:0; bottom:0; width:var(--sidebar-w); z-index:60;
+    background:var(--surface); border-right:1px solid var(--line);
+    display:flex; flex-direction:column; padding:20px 14px;
+    transition:transform .3s ease;
+  }
+  .sidebar-brand{ display:flex; align-items:center; gap:10px; padding:4px 8px 22px; }
+  .sidebar-brand img{ width:24px; height:24px; }
+  .sidebar-brand span{ font-family:'JetBrains Mono',monospace; font-size:12.5px; font-weight:700; }
+  .sidebar-brand .tag{
+    font-size:9px; font-weight:700; background:var(--accent-dim); color:var(--accent);
+    padding:2px 6px; border-radius:5px; margin-left:4px; letter-spacing:.03em;
+  }
+  .nav-item{
+    display:flex; align-items:center; gap:11px; padding:11px 12px; border-radius:9px;
+    background:none; border:none; color:var(--muted); font-family:'Inter',sans-serif;
+    font-size:13.5px; font-weight:500; cursor:pointer; text-align:left; width:100%; margin-bottom:2px;
+  }
+  .nav-item:hover{ background:var(--surface-2); color:var(--ink); }
+  .nav-item.active{ background:var(--accent-dim); color:var(--accent); font-weight:600; }
+  .nav-item svg{ width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:1.7; flex-shrink:0; }
+  .sidebar-footer{ margin-top:auto; display:flex; gap:8px; padding-top:16px; border-top:1px solid var(--line); }
+  .icon-btn{
+    width:34px;height:34px;border-radius:9px; border:1px solid var(--line); background:var(--surface-2);
+    display:flex;align-items:center;justify-content:center; cursor:pointer; color:var(--ink);
+  }
+  .icon-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7;}
+  .theme-toggle .moon{display:none;}
+  html[data-theme="dark"] .theme-toggle .sun{display:none;}
+  html[data-theme="dark"] .theme-toggle .moon{display:block;}
+  .logout-pill{
+    flex:1; border:1px solid var(--line); background:var(--surface-2); color:var(--muted);
+    font-size:12px; font-weight:500; padding:9px; border-radius:9px; cursor:pointer;
+  }
+  .logout-pill:hover{ border-color:var(--accent); color:var(--accent); }
+
+  .mobile-topbar{ display:none; }
+  .sidebar-overlay{ display:none; }
+
+  @media (max-width:900px){
+    .sidebar{ transform:translateX(-100%); box-shadow:0 0 60px rgba(0,0,0,.5); }
+    .sidebar.open{ transform:translateX(0); }
+    .mobile-topbar{
+      display:flex; position:fixed; top:0; left:0; right:0; z-index:50;
+      align-items:center; justify-content:space-between; padding:14px 18px;
+      background:var(--bg); border-bottom:1px solid var(--line);
+    }
+    .mobile-topbar .brand{ display:flex; align-items:center; gap:8px; font-size:13px; font-weight:700; }
+    .mobile-topbar .brand img{ width:20px; height:20px; }
+    .sidebar-overlay{
+      display:block; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:55;
+      opacity:0; pointer-events:none; transition:opacity .25s ease;
+    }
+    .sidebar-overlay.open{ opacity:1; pointer-events:auto; }
+    main{ margin-left:0 !important; padding-top:84px !important; }
+    .card-add-drop > div{ grid-template-columns:1fr !important; }
+
+    /* Compact stat tiles */
+    .stat-row{ grid-template-columns:repeat(2,1fr) !important; gap:10px !important; margin-bottom:14px !important; }
+    .stat-tile{ padding:12px 14px !important; }
+    .stat-tile b{ font-size:20px !important; }
+
+    /* Toolbar: search gets its own row, everything else wraps in a tidy grid */
+    .toolbar{ display:grid !important; grid-template-columns:1fr !important; gap:8px !important; }
+    .toolbar input[type="text"]{ width:100%; min-width:0 !important; }
+    .toolbar select, .toolbar button{ width:100%; }
+
+    /* Keep the identifying column visible while the rest of a wide table scrolls */
+    .table-wrap table td:first-child, .table-wrap table th:first-child{
+      position:sticky; left:0; z-index:2; background:var(--surface);
+      box-shadow:4px 0 8px -4px rgba(0,0,0,.25);
+    }
+    .table-wrap thead th:first-child{ background:var(--surface-2); }
+  }
+
+  main{ margin-left:var(--sidebar-w); padding:32px 36px 60px; max-width:1400px; }
+
+  #loadingState, #authRequired{ text-align:center; padding:120px 20px; color:var(--muted); font-size:13px; }
+  #authRequired h2{ font-family:'Oswald',sans-serif; font-size:20px; color:var(--ink); margin-bottom:8px; }
+  #authRequired a{
+    display:inline-block; margin-top:14px; padding:11px 24px; background:var(--accent); color:#fff;
+    text-decoration:none; border-radius:999px; font-weight:600; font-size:13px;
+  }
+  #adminContent{ display:none; }
+
+  .page-title{ font-family:'Oswald',sans-serif; font-size:22px; font-weight:600; margin-bottom:20px; }
+
+  .view-section{ display:none; }
+  .view-section.active{ display:block; }
+
+  .toolbar{ display:flex; gap:10px; align-items:center; margin-bottom:16px; flex-wrap:wrap; }
+  .toolbar input[type="text"]{
+    flex:1; min-width:200px; background:var(--surface); border:1px solid var(--line); color:var(--ink);
+    padding:9px 14px; border-radius:9px; font-size:13px; font-family:'Inter',sans-serif; outline:none;
+  }
+  .toolbar select{
+    background:var(--surface); border:1px solid var(--line); color:var(--ink);
+    padding:9px 12px; border-radius:9px; font-size:13px; font-family:'Inter',sans-serif;
+  }
+  button.action{
+    background:var(--accent); color:#fff; border:none; padding:9px 18px; border-radius:9px;
+    font-size:12.5px; font-weight:600; cursor:pointer; white-space:nowrap;
+  }
+  button.action:hover{ filter:brightness(1.08); }
+  button.action:disabled{ opacity:.5; cursor:default; }
+  button.ghost{
+    background:var(--surface); color:var(--ink); border:1px solid var(--line); padding:9px 16px;
+    border-radius:9px; font-size:12.5px; font-weight:600; cursor:pointer;
+  }
+  button.ghost:hover{ border-color:var(--accent); color:var(--accent); }
+
+  .stat-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
+  @media (max-width:900px){ .stat-row{ grid-template-columns:repeat(2,1fr); } }
+  .stat-tile{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; }
+  .card{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px 22px; }
+
+  .media-upload-zone{
+    border:1.5px dashed var(--line); border-radius:12px; padding:24px; text-align:center;
+    cursor:pointer; transition:border-color .2s ease, background .2s ease;
+  }
+  .media-upload-zone:hover{ border-color:var(--accent); }
+  .media-upload-zone.drag-active{ border-color:var(--accent); background:var(--accent-dim); }
+  .media-upload-zone input{ display:none; }
+  .media-preview{ width:100%; max-width:320px; border-radius:10px; border:1px solid var(--line); display:block; margin-bottom:14px; }
+  .card h3{ font-family:'Oswald',sans-serif; font-size:15px; font-weight:600; margin-bottom:3px; }
+  .card .card-sub{ font-size:12px; color:var(--muted); margin:0; }
+  .project-card{ transition:transform .15s ease, border-color .15s ease; }
+  .project-card:hover{ transform:translateY(-2px); border-color:var(--accent); }
+  .stat-tile b{ display:block; font-family:'Oswald',sans-serif; font-size:24px; font-weight:600; }
+  .stat-tile span{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; }
+
+  table{ width:100%; border-collapse:collapse; background:var(--surface); border:1px solid var(--line); border-radius:12px; overflow:hidden; }
+  thead th{
+    text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted);
+    padding:12px 14px; background:var(--surface-2); font-weight:600; border-bottom:1px solid var(--line);
+  }
+  thead th.sortable{ cursor:pointer; user-select:none; }
+  thead th.sortable:hover{ color:var(--ink); }
+  .sort-arrow{ display:inline-block; font-size:9px; margin-left:2px; opacity:.4; }
+  thead th.sort-active .sort-arrow{ opacity:1; color:var(--accent); }
+  tbody td{ padding:12px 14px; font-size:13px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody tr:hover{ background:var(--surface-2); }
+  .mono{ font-family:'JetBrains Mono',monospace; font-size:12.5px; }
+  .table-wrap{ overflow-x:auto; border-radius:12px; }
+
+  select.status-select{
+    background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
+    padding:6px 10px; border-radius:7px; font-size:12px; font-family:'Inter',sans-serif; cursor:pointer;
+  }
+  .toggle{
+    width:38px; height:22px; border-radius:999px; background:var(--line); border:none; cursor:pointer;
+    position:relative; flex-shrink:0;
+  }
+  .toggle.on{ background:var(--gold); }
+  .toggle::after{
+    content:''; position:absolute; top:2px; left:2px; width:18px; height:18px; border-radius:50%;
+    background:#fff; transition:left .15s ease;
+  }
+  .toggle.on::after{ left:18px; }
+  .save-btn{
+    background:none; border:1px solid var(--line); color:var(--muted); padding:5px 12px; border-radius:7px;
+    font-size:11px; font-weight:600; cursor:pointer;
+  }
+  .save-btn:hover{ border-color:var(--success); color:var(--success); }
+  .save-btn.saved{ border-color:var(--success); color:var(--success); }
+
+  .empty{ text-align:center; padding:40px; color:var(--muted); font-size:13px; }
+  .toast{
+    position:fixed; bottom:24px; right:24px; background:var(--ink); color:var(--bg);
+    padding:12px 20px; border-radius:10px; font-size:13px; font-weight:500; z-index:100;
+    opacity:0; transform:translateY(10px); transition:all .25s ease; pointer-events:none;
+  }
+  .toast.show{ opacity:1; transform:translateY(0); }
+  .img-thumb{ width:32px; height:32px; border-radius:6px; object-fit:cover; background:var(--surface-2); }
+  .edit-input{
+    background:var(--surface-2); border:1px solid var(--line); color:var(--ink); padding:6px 8px;
+    border-radius:6px; font-size:12px; width:100%; font-family:'Inter',sans-serif;
+  }
+</style>
+</head>
+<body>
+
+<div class="mobile-topbar">
+  <div class="brand" id="brandHomeMobile">
+    <img src="../images/Favicon.png" alt="Kelapa Bali FC logo">
+    <span>KBFC ADMIN</span>
+  </div>
+  <button class="icon-btn" id="menuBtn" aria-label="Open menu">
+    <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+</div>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<div class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <img src="../images/Favicon.png" alt="Kelapa Bali FC logo">
+    <span>KBFC <span class="tag">ADMIN</span></span>
+  </div>
+  <button class="nav-item active" data-view="orders">
+    <svg viewBox="0 0 24 24"><path d="M3 3h18v18H3z"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+    Project
+  </button>
+  <button class="nav-item" data-view="members">
+    <svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 0 1 4-4h6a4 4 0 0 1 4 4v2"/><path d="M17 8a3 3 0 0 1 0 6"/></svg>
+    Members
+  </button>
+  <button class="nav-item" data-view="players">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+    Players
+  </button>
+  <button class="nav-item" data-view="drops">
+    <svg viewBox="0 0 24 24"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+    Shop Drops
+  </button>
+  <button class="nav-item" data-view="media">
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+    Site Media
+  </button>
+  <div class="sidebar-footer">
+    <button class="icon-btn theme-toggle" id="themeToggle" aria-label="Toggle theme">
+      <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="4" y1="4" x2="5.8" y2="5.8"/><line x1="18.2" y1="18.2" x2="20" y2="20"/><line x1="1.5" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22.5" y2="12"/><line x1="4" y1="20" x2="5.8" y2="18.2"/><line x1="18.2" y1="5.8" x2="20" y2="4"/></svg>
+      <svg class="moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg>
+    </button>
+    <button class="logout-pill" id="logoutBtn">Log out</button>
+  </div>
+</div>
+
+<main>
+  <div id="loadingState">Checking admin access…</div>
+  <div id="authRequired" style="display:none;">
+    <h2>Not authorized</h2>
+    <p>This account doesn't have admin access, or you're not logged in.</p>
+    <a href="../login/">Go to login</a>
+  </div>
+
+  <div id="adminContent">
+
+    <!-- PROJECT (production summary + orders) -->
+    <section class="view-section active" id="view-orders">
+      <div class="page-title">Project</div>
+
+      <!-- OVERVIEW: two clickable summary cards -->
+      <div id="projectOverview">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <div class="card project-card" id="openProductionBtn" style="cursor:pointer;">
+            <h3>Production Summary</h3>
+            <p class="card-sub">Size/type breakdown for your supplier.</p>
+            <div style="display:flex; align-items:baseline; gap:8px; margin-top:6px;">
+              <span style="font-family:'Oswald',sans-serif; font-size:32px; font-weight:600;" id="overviewProductionTotal">—</span>
+              <span style="font-size:12px; color:var(--muted);">jerseys tracked</span>
+            </div>
+            <span style="font-size:12px; color:var(--accent); font-weight:600; display:inline-block; margin-top:10px;">Open →</span>
+          </div>
+          <div class="card project-card" id="openOrdersBtn" style="cursor:pointer;">
+            <h3>Orders</h3>
+            <p class="card-sub">Every order, status, and payment.</p>
+            <div style="display:flex; align-items:baseline; gap:8px; margin-top:6px;">
+              <span style="font-family:'Oswald',sans-serif; font-size:32px; font-weight:600;" id="overviewOrdersTotal">—</span>
+              <span style="font-size:12px; color:var(--muted);">total orders</span>
+            </div>
+            <span style="font-size:12px; color:var(--accent); font-weight:600; display:inline-block; margin-top:10px;">Open →</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRODUCTION DETAIL -->
+      <div id="productionDetail" style="display:none;">
+        <button class="ghost" id="backFromProductionBtn" style="margin-bottom:16px;">← Back to Project</button>
+        <h3 style="font-family:'Oswald',sans-serif; font-size:15px; font-weight:600; margin:0 0 4px;">Production Summary</h3>
+        <p style="font-size:12.5px;color:var(--muted);margin:0 0 14px;">Size and type breakdown across all orders — hand this to your jersey supplier.</p>
+        <div class="toolbar">
+          <select id="productionScope">
+            <option value="both">Paid + Pay Later</option>
+            <option value="Paid">Paid only</option>
+            <option value="Pay Later">Pay Later only</option>
+          </select>
+          <button class="ghost" id="exportProductionBtn">Download CSV</button>
+          <button class="ghost" id="refreshProductionBtn">Refresh</button>
+        </div>
+        <div id="productionContent"></div>
+      </div>
+
+      <!-- ORDERS DETAIL -->
+      <div id="ordersDetail" style="display:none;">
+        <button class="ghost" id="backFromOrdersBtn" style="margin-bottom:16px;">← Back to Project</button>
+        <h3 style="font-family:'Oswald',sans-serif; font-size:15px; font-weight:600; margin:0 0 4px;">Orders</h3>
+        <p style="font-size:12.5px;color:var(--muted);margin:0 0 14px;">Every order, grouped by Order ID. Click a column header to sort.</p>
+        <div class="stat-row" id="orderStats"></div>
+        <div class="toolbar">
+          <input type="text" id="orderSearch" placeholder="Search by email, order ID, or name…">
+          <select id="orderFilter">
+            <option value="all">All statuses</option>
+            <option value="Paid">Paid</option>
+            <option value="Pay Later">Pay Later</option>
+          </select>
+          <button class="action" id="sendRemindersBtn">Send Payment Reminders</button>
+          <button class="ghost" id="exportOrdersBtn">Download CSV</button>
+          <button class="ghost" id="refreshOrdersBtn">Refresh</button>
+        </div>
+        <div id="reminderResultBanner" style="display:none; margin-bottom:14px; padding:12px 16px; border-radius:10px; font-size:13px; font-weight:600;"></div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="sortable" data-sort="orderId">Order ID <span class="sort-arrow"></span></th>
+                <th class="sortable" data-sort="email">Email <span class="sort-arrow"></span></th>
+                <th class="sortable" data-sort="itemCount">Items <span class="sort-arrow"></span></th>
+                <th class="sortable" data-sort="total">Total <span class="sort-arrow"></span></th>
+                <th class="sortable" data-sort="status">Status <span class="sort-arrow"></span></th>
+                <th>Premium</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- MEMBERS -->
+    <section class="view-section" id="view-members">
+      <div class="page-title">Members</div>
+      <p style="font-size:12.5px;color:var(--muted);margin:-12px 0 16px;">Accounts without an order — grant premium manually here.</p>
+      <div class="toolbar">
+        <input type="text" id="memberSearch" placeholder="Search by email…">
+        <button class="ghost" id="exportMembersBtn">Download CSV</button>
+        <button class="ghost" id="refreshMembersBtn">Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Email</th><th>Account created</th><th>Premium</th><th></th></tr></thead>
+          <tbody id="membersTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- PLAYERS -->
+    <section class="view-section" id="view-players">
+      <div class="page-title">Players</div>
+      <p style="font-size:12.5px;color:var(--muted);margin:-12px 0 16px;">Edit number, name, position, season stats, or photo/GIF links shown on the public Players page.</p>
+      <div class="toolbar">
+        <input type="text" id="playerSearch" placeholder="Search by name or number…">
+        <button class="ghost" id="exportPlayersBtn">Download CSV</button>
+        <button class="ghost" id="refreshPlayersBtn">Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Name</th><th>Position</th><th>Apps</th><th>Goals</th><th>Assists</th><th>Clean sheets</th><th>Photo</th><th>GIF</th><th></th></tr></thead>
+          <tbody id="playersTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SHOP DROPS -->
+    <section class="view-section" id="view-drops">
+      <div class="page-title">Premium Shop — Drops</div>
+      <p style="font-size:12.5px;color:var(--muted);margin:-12px 0 16px;">Items shown to premium members before public release.</p>
+
+      <div class="card-add-drop" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px;">
+        <div style="display:grid; grid-template-columns:2fr 1fr 2fr 1fr auto; gap:10px; align-items:end;">
+          <div>
+            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Item name</label>
+            <input type="text" id="newDropName" class="edit-input" placeholder="26/27 Away Kit">
+          </div>
+          <div>
+            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Price (RM)</label>
+            <input type="text" id="newDropPrice" class="edit-input" placeholder="90">
+          </div>
+          <div>
+            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Image URL</label>
+            <input type="text" id="newDropImage" class="edit-input" placeholder="https://…">
+          </div>
+          <div>
+            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Status</label>
+            <select id="newDropStatus" class="edit-input">
+              <option>Early access</option>
+              <option>Coming soon</option>
+              <option>Available</option>
+            </select>
+          </div>
+          <button class="action" id="addDropBtn">Add item</button>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <button class="ghost" id="refreshDropsBtn">Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Price</th><th>Image URL</th><th>Status</th><th></th></tr></thead>
+          <tbody id="dropsTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SITE MEDIA -->
+    <section class="view-section" id="view-media">
+      <div class="page-title">Site Media</div>
+      <p style="font-size:12.5px;color:var(--muted);margin:-12px 0 20px;">Upload images used across the site. Every upload is logged below and can be deleted.</p>
+
+      <div class="card" style="margin-bottom:20px;">
+        <h3>Upload new image</h3>
+        <p class="card-sub" style="margin-bottom:16px;">Choose where it lands, then select or drag a file.</p>
+        <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:6px;">Upload to</label>
+        <select id="mediaSlotSelect" class="edit-input" style="margin-bottom:14px; max-width:320px;"></select>
+        <label class="media-upload-zone" id="mediaUploadZone">
+          <input type="file" accept="image/*" id="mediaFileInput">
+          <div id="mediaZoneLabel">Click to choose an image, or drag one here</div>
+          <p style="font-size:12px;color:var(--muted);margin-top:6px;">JPG or PNG</p>
+        </label>
+        <div class="preview-row hidden" id="mediaPreviewRow" style="display:none; align-items:center; gap:14px; margin-top:14px;">
+          <img id="mediaPreviewThumb" class="img-thumb" style="width:56px; height:56px;">
+          <span id="mediaPreviewName" style="font-size:12.5px;color:var(--muted);"></span>
+        </div>
+        <div id="mediaUploadMsg"></div>
+        <button class="action" id="mediaUploadBtn" disabled style="margin-top:14px;">Upload</button>
+      </div>
+
+      <h3 style="font-family:'Oswald',sans-serif; font-size:15px; font-weight:600; margin:0 0 4px;">Upload log</h3>
+      <p style="font-size:12.5px;color:var(--muted);margin:0 0 14px;">Newest first. The top entry per slot is the one currently live on the site.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th></th><th>Slot</th><th>Uploaded</th><th>Size</th><th>Status</th><th></th></tr></thead>
+          <tbody id="mediaLogTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const root = document.documentElement;
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('kit-theme');
+  if(savedTheme){ root.setAttribute('data-theme', savedTheme); }
+  themeToggle.addEventListener('click', () => {
+    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('kit-theme', next);
+  });
+
+  const sidebar = document.getElementById('sidebar');
+  const sidebarOverlay = document.getElementById('sidebarOverlay');
+  function openSidebar(){ sidebar.classList.add('open'); sidebarOverlay.classList.add('open'); }
+  function closeSidebar(){ sidebar.classList.remove('open'); sidebarOverlay.classList.remove('open'); }
+  document.getElementById('menuBtn').addEventListener('click', openSidebar);
+  sidebarOverlay.addEventListener('click', closeSidebar);
+
+  const API_URL = 'https://kbfc-api.aliffhakeem8.workers.dev';
+  const STORAGE_KEY = 'kbfc_session_token';
+
+  const els = {
+    loadingState: document.getElementById('loadingState'),
+    authRequired: document.getElementById('authRequired'),
+    adminContent: document.getElementById('adminContent'),
+    orderStats: document.getElementById('orderStats'),
+    ordersTableBody: document.getElementById('ordersTableBody'),
+    orderSearch: document.getElementById('orderSearch'),
+    orderFilter: document.getElementById('orderFilter'),
+    sendRemindersBtn: document.getElementById('sendRemindersBtn'),
+    reminderResultBanner: document.getElementById('reminderResultBanner'),
+    membersTableBody: document.getElementById('membersTableBody'),
+    memberSearch: document.getElementById('memberSearch'),
+    playersTableBody: document.getElementById('playersTableBody'),
+    playerSearch: document.getElementById('playerSearch'),
+    productionContent: document.getElementById('productionContent'),
+    projectOverview: document.getElementById('projectOverview'),
+    productionDetail: document.getElementById('productionDetail'),
+    ordersDetail: document.getElementById('ordersDetail'),
+    overviewProductionTotal: document.getElementById('overviewProductionTotal'),
+    overviewOrdersTotal: document.getElementById('overviewOrdersTotal'),
+    productionScope: document.getElementById('productionScope'),
+    dropsTableBody: document.getElementById('dropsTableBody'),
+    mediaSlotSelect: document.getElementById('mediaSlotSelect'),
+    mediaUploadZone: document.getElementById('mediaUploadZone'),
+    mediaFileInput: document.getElementById('mediaFileInput'),
+    mediaPreviewRow: document.getElementById('mediaPreviewRow'),
+    mediaPreviewThumb: document.getElementById('mediaPreviewThumb'),
+    mediaPreviewName: document.getElementById('mediaPreviewName'),
+    mediaUploadMsg: document.getElementById('mediaUploadMsg'),
+    mediaUploadBtn: document.getElementById('mediaUploadBtn'),
+    mediaLogTableBody: document.getElementById('mediaLogTableBody'),
+    toast: document.getElementById('toast'),
+    logoutBtn: document.getElementById('logoutBtn')
+  };
+
+  let token = null;
+  let allOrders = [];
+  let allMembers = [];
+  let allPlayers = [];
+  let allDrops = [];
+  let orderSortKey = null;
+  let orderSortDir = 'asc';
+
+  function showToast(msg){
+    els.toast.textContent = msg;
+    els.toast.classList.add('show');
+    setTimeout(() => els.toast.classList.remove('show'), 2200);
+  }
+
+  /** Converts an array of flat objects into a CSV file and triggers a browser download. */
+  function downloadCsv(filename, rows){
+    if (!rows || rows.length === 0){ showToast('Nothing to export yet.'); return; }
+    const headers = Object.keys(rows[0]);
+    const escapeCell = (val) => {
+      const s = String(val === undefined || val === null ? '' : val);
+      return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    };
+    const lines = [
+      headers.join(','),
+      ...rows.map(row => headers.map(h => escapeCell(row[h])).join(','))
+    ];
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  document.querySelectorAll('.nav-item').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.view-section').forEach(s => s.classList.remove('active'));
+      document.getElementById('view-' + btn.dataset.view).classList.add('active');
+      closeSidebar();
+    });
+  });
+
+  els.logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem(STORAGE_KEY);
+    window.location.href = '../login/';
+  });
+
+  // ---------------- ORDERS ----------------
+  function renderOrderStats(){
+    const total = allOrders.length;
+    const paid = allOrders.filter(o => o.status === 'Paid').length;
+    const pending = allOrders.filter(o => o.status === 'Pay Later').length;
+    const revenue = allOrders.filter(o => o.status === 'Paid').reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
+    els.orderStats.innerHTML = `
+      <div class="stat-tile"><b>${total}</b><span>Total orders</span></div>
+      <div class="stat-tile"><b>${paid}</b><span>Paid</span></div>
+      <div class="stat-tile"><b>${pending}</b><span>Pay later</span></div>
+      <div class="stat-tile"><b>RM ${revenue.toFixed(0)}</b><span>Revenue collected</span></div>
+    `;
+    els.overviewOrdersTotal.textContent = total;
+  }
+
+  // ---------------- PROJECT NAVIGATION ----------------
+  function showProjectView(view){
+    els.projectOverview.style.display = view === 'overview' ? 'block' : 'none';
+    els.productionDetail.style.display = view === 'production' ? 'block' : 'none';
+    els.ordersDetail.style.display = view === 'orders' ? 'block' : 'none';
+  }
+  document.getElementById('openProductionBtn').addEventListener('click', () => showProjectView('production'));
+  document.getElementById('openOrdersBtn').addEventListener('click', () => showProjectView('orders'));
+  document.getElementById('backFromProductionBtn').addEventListener('click', () => showProjectView('overview'));
+  document.getElementById('backFromOrdersBtn').addEventListener('click', () => showProjectView('overview'));
+
+  function renderOrdersTable(){
+    const q = els.orderSearch.value.trim().toLowerCase();
+    const filter = els.orderFilter.value;
+    const filtered = allOrders.filter(o => {
+      if (filter !== 'all' && o.status !== filter) return false;
+      if (!q) return true;
+      const itemMatch = o.items.some(it => (it.nameOnJersey || '').toLowerCase().includes(q));
+      return o.email.toLowerCase().includes(q) || o.orderId.toLowerCase().includes(q) || itemMatch;
+    });
+
+    if (orderSortKey){
+      filtered.sort((a, b) => {
+        let av = a[orderSortKey], bv = b[orderSortKey];
+        if (orderSortKey === 'total' || orderSortKey === 'itemCount'){
+          av = Number(av) || 0; bv = Number(bv) || 0;
+        } else {
+          av = String(av || '').toLowerCase(); bv = String(bv || '').toLowerCase();
+        }
+        if (av < bv) return orderSortDir === 'asc' ? -1 : 1;
+        if (av > bv) return orderSortDir === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    if (filtered.length === 0){
+      els.ordersTableBody.innerHTML = `<tr><td colspan="7" class="empty">No orders match.</td></tr>`;
+      return;
+    }
+
+    els.ordersTableBody.innerHTML = filtered.map((o, idx) => {
+      const summary = o.items.length === 1
+        ? `#${o.items[0].jerseyNumber || '—'} · ${o.items[0].size || '—'}`
+        : `${o.items.length} items`;
+      const rowNumbersStr = o.rowNumbers.join(',');
+
+      return `
+      <tr class="order-summary-row" data-idx="${idx}" style="cursor:pointer;">
+        <td class="mono">${o.orderId} <span class="order-chevron" style="display:inline-block;transition:transform .2s ease;">›</span></td>
+        <td>${o.email}</td>
+        <td>${summary}</td>
+        <td class="mono">RM ${o.total.toFixed(0)}</td>
+        <td>
+          <select class="status-select" data-rows="${rowNumbersStr}">
+            <option value="Paid" ${o.status === 'Paid' ? 'selected' : ''}>Paid</option>
+            <option value="Pay Later" ${o.status === 'Pay Later' ? 'selected' : ''}>Pay Later</option>
+          </select>
+        </td>
+        <td>
+          <button class="toggle ${o.premium ? 'on' : ''}" data-rows="${rowNumbersStr}" data-kind="order-premium"></button>
+        </td>
+        <td>
+          <button class="save-btn" data-rows="${rowNumbersStr}" data-order-id="${o.orderId}" data-kind="delete-order">Delete</button>
+        </td>
+      </tr>
+      ${`
+      <tr class="order-detail-row" data-idx="${idx}" style="display:none;">
+        <td colspan="7" style="padding:0;">
+          <div style="background:var(--surface-2); padding:10px 14px 14px 34px; border-bottom:1px solid var(--line);">
+            <table style="width:100%; border:none;">
+              <thead><tr>
+                <th style="background:none; border:none; padding:6px 8px;">Name on jersey</th>
+                <th style="background:none; border:none; padding:6px 8px;">Number</th>
+                <th style="background:none; border:none; padding:6px 8px;">Size</th>
+                <th style="background:none; border:none; padding:6px 8px;">Type</th>
+                <th style="background:none; border:none; padding:6px 8px;">Set</th>
+                <th style="background:none; border:none; padding:6px 8px;">Price</th>
+              </tr></thead>
+              <tbody>
+                ${o.items.map(it => `
+                  <tr>
+                    <td style="border:none; padding:6px 8px;">${it.nameOnJersey || '—'}</td>
+                    <td style="border:none; padding:6px 8px;" class="mono">#${it.jerseyNumber || '—'}</td>
+                    <td style="border:none; padding:6px 8px;">${it.size || '—'}</td>
+                    <td style="border:none; padding:6px 8px;">${it.adultKid || 'Adult'}</td>
+                    <td style="border:none; padding:6px 8px;">${it.set || '—'}</td>
+                    <td style="border:none; padding:6px 8px;" class="mono">RM ${it.total || '0'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </td>
+      </tr>`}
+      `;
+    }).join('');
+
+    els.ordersTableBody.querySelectorAll('.order-summary-row').forEach(row => {
+      row.addEventListener('click', (e) => {
+        if (e.target.closest('select') || e.target.closest('button')) return;
+        const idx = row.dataset.idx;
+        const detailRow = els.ordersTableBody.querySelector(`.order-detail-row[data-idx="${idx}"]`);
+        if (!detailRow) return;
+        const isOpen = detailRow.style.display !== 'none';
+        detailRow.style.display = isOpen ? 'none' : 'table-row';
+        const chevron = row.querySelector('.order-chevron');
+        if (chevron) chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(90deg)';
+      });
+    });
+
+    els.ordersTableBody.querySelectorAll('.status-select').forEach(sel => {
+      sel.addEventListener('change', async (e) => {
+        e.stopPropagation();
+        await updateOrder(sel.dataset.rows, { status: sel.value });
+        showToast('Status updated');
+      });
+      sel.addEventListener('click', (e) => e.stopPropagation());
+    });
+    els.ordersTableBody.querySelectorAll('[data-kind="order-premium"]').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const nowOn = !btn.classList.contains('on');
+        btn.classList.toggle('on', nowOn);
+        await updateOrder(btn.dataset.rows, { premium: String(nowOn) });
+        showToast(nowOn ? 'Premium granted' : 'Premium removed');
+      });
+    });
+    els.ordersTableBody.querySelectorAll('[data-kind="delete-order"]').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        if (!confirm(`Delete order ${btn.dataset.orderId} entirely? This can't be undone.`)) return;
+        const params = new URLSearchParams({ action: 'adminDeleteOrder', token, rowNumbers: btn.dataset.rows });
+        await fetch(`${API_URL}?${params.toString()}`);
+        showToast('Order deleted');
+        loadOrders();
+      });
+    });
+  }
+
+  async function updateOrder(rowNumbers, fields){
+    const params = new URLSearchParams({ action: 'adminUpdateOrder', token, rowNumbers, ...fields });
+    await fetch(`${API_URL}?${params.toString()}`);
+  }
+
+  async function loadOrders(){
+    const data = await (await fetch(`${API_URL}?action=adminGetOrders&token=${encodeURIComponent(token)}`)).json();
+    if (!data.ok) { showToast(data.error || 'Failed to load orders'); return; }
+    allOrders = data.orders;
+    renderOrderStats();
+    renderOrdersTable();
+  }
+
+  els.orderSearch.addEventListener('input', renderOrdersTable);
+  els.orderFilter.addEventListener('change', renderOrdersTable);
+
+  document.querySelectorAll('th.sortable').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.dataset.sort;
+      if (orderSortKey === key){
+        orderSortDir = orderSortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        orderSortKey = key;
+        orderSortDir = 'asc';
+      }
+      document.querySelectorAll('th.sortable').forEach(t => {
+        t.classList.remove('sort-active');
+        t.querySelector('.sort-arrow').textContent = '';
+      });
+      th.classList.add('sort-active');
+      th.querySelector('.sort-arrow').textContent = orderSortDir === 'asc' ? '▲' : '▼';
+      renderOrdersTable();
+    });
+  });
+  document.getElementById('refreshOrdersBtn').addEventListener('click', loadOrders);
+  document.getElementById('exportOrdersBtn').addEventListener('click', () => {
+    const flat = [];
+    allOrders.forEach(o => {
+      o.items.forEach(it => {
+        flat.push({
+          'Order ID': o.orderId, 'Email': o.email, 'Buyer Name': o.name,
+          'Name on Jersey': it.nameOnJersey, 'Jersey Number': it.jerseyNumber,
+          'Size': it.size, 'Type': it.adultKid, 'Set': it.set, 'Item Price (RM)': it.total,
+          'Order Status': o.status, 'Premium': o.premium ? 'Yes' : 'No', 'Has Password': o.hasPassword ? 'Yes' : 'No'
+        });
+      });
+    });
+    downloadCsv('kbfc-orders.csv', flat);
+  });
+
+  function showReminderBanner(text, kind){
+    const el = els.reminderResultBanner;
+    el.textContent = text;
+    el.style.display = 'block';
+    if (kind === 'success'){
+      el.style.background = 'var(--success-bg)'; el.style.color = 'var(--success)';
+    } else if (kind === 'info'){
+      el.style.background = 'var(--gold-bg)'; el.style.color = 'var(--gold)';
+    } else {
+      el.style.background = 'var(--accent-dim)'; el.style.color = 'var(--accent)';
+    }
+  }
+
+  els.sendRemindersBtn.addEventListener('click', async () => {
+    els.sendRemindersBtn.disabled = true;
+    els.sendRemindersBtn.textContent = 'Sending…';
+    els.reminderResultBanner.style.display = 'none';
+    try {
+      const res = await fetch(`${API_URL}?action=adminSendReminders&token=${encodeURIComponent(token)}`);
+      const data = await res.json();
+      if (data.ok){
+        if (data.totalPending === 0){
+          showReminderBanner('No orders are currently marked "Pay Later" — nothing to remind.', 'info');
+        } else if (data.failed > 0){
+          showReminderBanner(`Sent ${data.sent} of ${data.totalPending} reminders — ${data.failed} failed. Check Apps Script execution logs for details.`, 'error');
+        } else {
+          showReminderBanner(`Sent ${data.sent} payment reminder${data.sent === 1 ? '' : 's'} successfully.`, 'success');
+        }
+        loadOrders();
+      } else {
+        showReminderBanner(data.error || 'Failed to send reminders.', 'error');
+      }
+    } catch(err){
+      showReminderBanner('Could not reach the server. Check your connection and try again.', 'error');
+    }
+    els.sendRemindersBtn.disabled = false;
+    els.sendRemindersBtn.textContent = 'Send Payment Reminders';
+  });
+
+  // ---------------- MEMBERS ----------------
+  function renderMembersTable(){
+    const q = els.memberSearch.value.trim().toLowerCase();
+    const filtered = allMembers.filter(m => !q || m.email.toLowerCase().includes(q));
+    if (filtered.length === 0){
+      els.membersTableBody.innerHTML = `<tr><td colspan="4" class="empty">No members match.</td></tr>`;
+      return;
+    }
+    els.membersTableBody.innerHTML = filtered.map(m => `
+      <tr>
+        <td>${m.email}</td>
+        <td class="mono">${m.createdAt ? m.createdAt.split('T')[0] : '—'}</td>
+        <td><button class="toggle ${m.premium ? 'on' : ''}" data-row="${m.rowNumber}" data-kind="member-premium"></button></td>
+        <td><button class="save-btn" data-row="${m.rowNumber}" data-email="${m.email}" data-kind="delete-member">Delete</button></td>
+      </tr>
+    `).join('');
+
+    els.membersTableBody.querySelectorAll('[data-kind="member-premium"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const nowOn = !btn.classList.contains('on');
+        btn.classList.toggle('on', nowOn);
+        const params = new URLSearchParams({ action: 'adminUpdateMember', token, rowNumber: btn.dataset.row, premium: String(nowOn) });
+        await fetch(`${API_URL}?${params.toString()}`);
+        showToast(nowOn ? 'Premium granted' : 'Premium removed');
+      });
+    });
+    els.membersTableBody.querySelectorAll('[data-kind="delete-member"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm(`Delete the account for ${btn.dataset.email}? This can't be undone.`)) return;
+        const params = new URLSearchParams({ action: 'adminDeleteMember', token, rowNumber: btn.dataset.row });
+        await fetch(`${API_URL}?${params.toString()}`);
+        showToast('Member deleted');
+        loadMembers();
+      });
+    });
+  }
+
+  async function loadMembers(){
+    const data = await (await fetch(`${API_URL}?action=adminGetMembers&token=${encodeURIComponent(token)}`)).json();
+    if (!data.ok) { showToast(data.error || 'Failed to load members'); return; }
+    allMembers = data.members;
+    renderMembersTable();
+  }
+  els.memberSearch.addEventListener('input', renderMembersTable);
+  document.getElementById('refreshMembersBtn').addEventListener('click', loadMembers);
+  document.getElementById('exportMembersBtn').addEventListener('click', () => {
+    downloadCsv('kbfc-members.csv', allMembers.map(m => ({
+      'Email': m.email, 'Has Password': m.hasPassword ? 'Yes' : 'No',
+      'Created At': m.createdAt, 'Premium': m.premium ? 'Yes' : 'No'
+    })));
+  });
+
+  // ---------------- PLAYERS ----------------
+  function renderPlayersTable(){
+    const q = els.playerSearch.value.trim().toLowerCase();
+    const filtered = allPlayers.filter(p => !q || p.name.toLowerCase().includes(q) || p.number.includes(q));
+    if (filtered.length === 0){
+      els.playersTableBody.innerHTML = `<tr><td colspan="10" class="empty">No players match.</td></tr>`;
+      return;
+    }
+    els.playersTableBody.innerHTML = filtered.map(p => `
+      <tr data-row="${p.rowNumber}">
+        <td><input class="edit-input mono" data-field="number" value="${p.number}" style="width:50px;"></td>
+        <td><input class="edit-input" data-field="name" value="${p.name.replace(/"/g,'&quot;')}"></td>
+        <td>
+          <select class="edit-input" data-field="position">
+            ${['','Goalkeeper','Defender','Midfielder','Forward'].map(pos =>
+              `<option value="${pos}" ${p.position === pos ? 'selected' : ''}>${pos || '—'}</option>`
+            ).join('')}
+          </select>
+        </td>
+        <td><input class="edit-input" data-field="appearances" type="number" min="0" value="${p.appearances}" style="width:56px;"></td>
+        <td><input class="edit-input" data-field="goals" type="number" min="0" value="${p.goals}" style="width:56px;"></td>
+        <td><input class="edit-input" data-field="assists" type="number" min="0" value="${p.assists}" style="width:56px;"></td>
+        <td><input class="edit-input" data-field="cleanSheets" type="number" min="0" value="${p.cleanSheets}" style="width:56px;"></td>
+        <td>${p.photo ? `<img class="img-thumb" src="${p.photo}" onerror="this.style.display='none'">` : '—'}</td>
+        <td>${p.gif ? `<img class="img-thumb" src="${p.gif}" onerror="this.style.display='none'">` : '—'}</td>
+        <td style="white-space:nowrap;">
+          <button class="save-btn" data-kind="save-player">Save</button>
+          <button class="save-btn" data-kind="delete-player" style="margin-left:6px;">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+
+    els.playersTableBody.querySelectorAll('[data-kind="save-player"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const tr = btn.closest('tr');
+        const rowNumber = tr.dataset.row;
+        const number = tr.querySelector('[data-field="number"]').value;
+        const name = tr.querySelector('[data-field="name"]').value;
+        const position = tr.querySelector('[data-field="position"]').value;
+        const appearances = tr.querySelector('[data-field="appearances"]').value;
+        const goals = tr.querySelector('[data-field="goals"]').value;
+        const assists = tr.querySelector('[data-field="assists"]').value;
+        const cleanSheets = tr.querySelector('[data-field="cleanSheets"]').value;
+        btn.textContent = 'Saving…';
+        const params = new URLSearchParams({ action: 'adminUpdatePlayer', token, rowNumber, number, name, position, appearances, goals, assists, cleanSheets });
+        await fetch(`${API_URL}?${params.toString()}`);
+        btn.textContent = 'Saved';
+        btn.classList.add('saved');
+        setTimeout(() => { btn.textContent = 'Save'; btn.classList.remove('saved'); }, 1500);
+      });
+    });
+
+    els.playersTableBody.querySelectorAll('[data-kind="delete-player"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const tr = btn.closest('tr');
+        const name = tr.querySelector('[data-field="name"]').value || 'this player';
+        if (!confirm(`Delete ${name} from the Players list? This can't be undone.`)) return;
+        const params = new URLSearchParams({ action: 'adminDeletePlayer', token, rowNumber: tr.dataset.row });
+        await fetch(`${API_URL}?${params.toString()}`);
+        showToast('Player deleted');
+        loadPlayers();
+      });
+    });
+  }
+
+  async function loadPlayers(){
+    const data = await (await fetch(`${API_URL}?action=adminGetPlayers&token=${encodeURIComponent(token)}`)).json();
+    if (!data.ok) { showToast(data.error || 'Failed to load players'); return; }
+    allPlayers = data.players;
+    renderPlayersTable();
+  }
+  els.playerSearch.addEventListener('input', renderPlayersTable);
+  document.getElementById('refreshPlayersBtn').addEventListener('click', loadPlayers);
+  document.getElementById('exportPlayersBtn').addEventListener('click', () => {
+    downloadCsv('kbfc-players.csv', allPlayers.map(p => ({
+      'Number': p.number, 'Name': p.name, 'Position': p.position,
+      'Appearances': p.appearances, 'Goals': p.goals, 'Assists': p.assists, 'Clean Sheets': p.cleanSheets,
+      'Photo': p.photo, 'GIF': p.gif
+    })));
+  });
+
+  // ---------------- PRODUCTION SUMMARY ----------------
+  function renderProductionSummary(breakdown, totalPaid, totalPending){
+    const scope = els.productionScope.value;
+    const buckets = scope === 'both' ? ['Paid', 'Pay Later'] : [scope];
+    els.overviewProductionTotal.textContent = totalPaid + totalPending;
+
+    // Merge selected buckets into one { adultKid: { size: count } } view.
+    const merged = {};
+    buckets.forEach(bucket => {
+      const b = breakdown[bucket] || {};
+      Object.keys(b).forEach(adultKid => {
+        if (!merged[adultKid]) merged[adultKid] = {};
+        Object.keys(b[adultKid]).forEach(size => {
+          merged[adultKid][size] = (merged[adultKid][size] || 0) + b[adultKid][size];
+        });
+      });
+    });
+
+    const groups = Object.keys(merged);
+    if (groups.length === 0){
+      els.productionContent.innerHTML = `<div class="card locked-panel"><p style="color:var(--muted);">No orders yet.</p></div>`;
+      return;
+    }
+
+    const totalShown = scope === 'both' ? totalPaid + totalPending : (scope === 'Paid' ? totalPaid : totalPending);
+
+    els.productionContent.innerHTML = `
+      <div class="stat-row" style="grid-template-columns:repeat(3,1fr);">
+        <div class="stat-tile"><b>${totalShown}</b><span>Total jerseys (this view)</span></div>
+        <div class="stat-tile"><b>${totalPaid}</b><span>Paid</span></div>
+        <div class="stat-tile"><b>${totalPending}</b><span>Pay later</span></div>
+      </div>
+      ${groups.map(adultKid => {
+        const sizes = merged[adultKid];
+        const groupTotal = Object.values(sizes).reduce((s, n) => s + n, 0);
+        return `
+        <div class="card" style="margin-bottom:14px;">
+          <h3>${adultKid} <span style="color:var(--muted); font-weight:500;">— ${groupTotal} total</span></h3>
+          <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;">
+            ${Object.keys(sizes).sort().map(size => `
+              <div style="background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:10px 16px; text-align:center; min-width:70px;">
+                <div style="font-family:'Oswald',sans-serif; font-size:20px; font-weight:600;">${sizes[size]}</div>
+                <div style="font-size:10.5px; color:var(--muted); text-transform:uppercase;">${size}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+      }).join('')}
+    `;
+  }
+
+  let lastProductionData = null;
+
+  async function loadProduction(){
+    const data = await (await fetch(`${API_URL}?action=adminGetProductionSummary&token=${encodeURIComponent(token)}`)).json();
+    if (!data.ok) { showToast(data.error || 'Failed to load production summary'); return; }
+    lastProductionData = data;
+    renderProductionSummary(data.breakdown, data.totalPaid, data.totalPending);
+  }
+  els.productionScope.addEventListener('change', () => {
+    if (lastProductionData) renderProductionSummary(lastProductionData.breakdown, lastProductionData.totalPaid, lastProductionData.totalPending);
+  });
+  document.getElementById('refreshProductionBtn').addEventListener('click', loadProduction);
+  document.getElementById('exportProductionBtn').addEventListener('click', () => {
+    if (!lastProductionData) { showToast('Nothing to export yet.'); return; }
+    const rows = [];
+    ['Paid', 'Pay Later'].forEach(bucket => {
+      const b = lastProductionData.breakdown[bucket] || {};
+      Object.keys(b).forEach(adultKid => {
+        Object.keys(b[adultKid]).forEach(size => {
+          rows.push({ 'Status': bucket, 'Type': adultKid, 'Size': size, 'Count': b[adultKid][size] });
+        });
+      });
+    });
+    downloadCsv('kbfc-production-summary.csv', rows);
+  });
+
+  // ---------------- SHOP DROPS ----------------
+  function renderDropsTable(){
+    if (allDrops.length === 0){
+      els.dropsTableBody.innerHTML = `<tr><td colspan="5" class="empty">No drops yet — add one above.</td></tr>`;
+      return;
+    }
+    els.dropsTableBody.innerHTML = allDrops.map(d => `
+      <tr data-row="${d.rowNumber}">
+        <td><input class="edit-input" data-field="name" value="${d.name.replace(/"/g,'&quot;')}"></td>
+        <td><input class="edit-input" data-field="price" value="${d.price}" style="width:70px;"></td>
+        <td><input class="edit-input" data-field="imageUrl" value="${d.imageUrl.replace(/"/g,'&quot;')}"></td>
+        <td>
+          <select class="edit-input" data-field="status">
+            ${['Early access','Coming soon','Available'].map(s => `<option ${d.status === s ? 'selected' : ''}>${s}</option>`).join('')}
+          </select>
+        </td>
+        <td style="white-space:nowrap;">
+          <button class="save-btn" data-kind="save-drop">Save</button>
+          <button class="save-btn" data-kind="delete-drop" style="margin-left:6px;">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+
+    els.dropsTableBody.querySelectorAll('[data-kind="save-drop"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const tr = btn.closest('tr');
+        const rowNumber = tr.dataset.row;
+        const name = tr.querySelector('[data-field="name"]').value;
+        const price = tr.querySelector('[data-field="price"]').value;
+        const imageUrl = tr.querySelector('[data-field="imageUrl"]').value;
+        const status = tr.querySelector('[data-field="status"]').value;
+        btn.textContent = 'Saving…';
+        const params = new URLSearchParams({ action: 'adminUpdateDrop', token, rowNumber, name, price, imageUrl, status });
+        await fetch(`${API_URL}?${params.toString()}`);
+        btn.textContent = 'Saved';
+        btn.classList.add('saved');
+        setTimeout(() => { btn.textContent = 'Save'; btn.classList.remove('saved'); }, 1500);
+      });
+    });
+    els.dropsTableBody.querySelectorAll('[data-kind="delete-drop"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const tr = btn.closest('tr');
+        const name = tr.querySelector('[data-field="name"]').value || 'this item';
+        if (!confirm(`Remove "${name}" from the shop?`)) return;
+        const params = new URLSearchParams({ action: 'adminDeleteDrop', token, rowNumber: tr.dataset.row });
+        await fetch(`${API_URL}?${params.toString()}`);
+        showToast('Drop removed');
+        loadDrops();
+      });
+    });
+  }
+
+  async function loadDrops(){
+    const data = await (await fetch(`${API_URL}?action=adminGetDrops&token=${encodeURIComponent(token)}`)).json();
+    if (!data.ok) { showToast(data.error || 'Failed to load drops'); return; }
+    allDrops = data.drops;
+    renderDropsTable();
+  }
+  document.getElementById('refreshDropsBtn').addEventListener('click', loadDrops);
+  document.getElementById('addDropBtn').addEventListener('click', async () => {
+    const name = document.getElementById('newDropName').value.trim();
+    const price = document.getElementById('newDropPrice').value.trim();
+    const imageUrl = document.getElementById('newDropImage').value.trim();
+    const status = document.getElementById('newDropStatus').value;
+    if (!name){ showToast('Item name is required.'); return; }
+    const params = new URLSearchParams({ action: 'adminAddDrop', token, name, price, imageUrl, status });
+    await fetch(`${API_URL}?${params.toString()}`);
+    document.getElementById('newDropName').value = '';
+    document.getElementById('newDropPrice').value = '';
+    document.getElementById('newDropImage').value = '';
+    showToast('Item added');
+    loadDrops();
+  });
+
+  // ---------------- SITE MEDIA ----------------
+  // Add a new entry here whenever a new uploadable image spot is needed
+  // elsewhere on the site — it'll automatically appear in the dropdown.
+  const SITE_MEDIA_SLOTS = [
+    { key: 'login-hero', label: 'Login Page Background' },
+    { key: 'homepage-hero', label: 'Homepage Hero' },
+    { key: 'players-hero', label: 'Players Page Hero' }
+  ];
+
+  els.mediaSlotSelect.innerHTML = SITE_MEDIA_SLOTS.map(s => `<option value="${s.key}">${s.label}</option>`).join('');
+
+  let mediaSelectedFile = null;
+  let mediaLog = [];
+
+  function fileToBase64(file){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function showMediaMsg(text, type){
+    const color = type === 'success' ? 'var(--success)' : (type === 'error' ? 'var(--accent)' : 'var(--muted)');
+    els.mediaUploadMsg.innerHTML = text ? `<p style="color:${color}; font-size:12.5px; margin-top:10px;">${text}</p>` : '';
+  }
+
+  function selectMediaFile(file){
+    if (!file || !file.type.startsWith('image/')) return;
+    mediaSelectedFile = file;
+    els.mediaPreviewThumb.src = URL.createObjectURL(file);
+    els.mediaPreviewName.textContent = file.name;
+    els.mediaPreviewRow.style.display = 'flex';
+    els.mediaUploadBtn.disabled = false;
+    showMediaMsg('', '');
+  }
+
+  els.mediaFileInput.addEventListener('change', () => {
+    if (els.mediaFileInput.files[0]) selectMediaFile(els.mediaFileInput.files[0]);
+  });
+  ['dragenter', 'dragover'].forEach(evt => els.mediaUploadZone.addEventListener(evt, (e) => { e.preventDefault(); els.mediaUploadZone.classList.add('drag-active'); }));
+  ['dragleave', 'drop'].forEach(evt => els.mediaUploadZone.addEventListener(evt, (e) => { e.preventDefault(); els.mediaUploadZone.classList.remove('drag-active'); }));
+  els.mediaUploadZone.addEventListener('drop', (e) => { if (e.dataTransfer.files[0]) selectMediaFile(e.dataTransfer.files[0]); });
+
+  els.mediaUploadBtn.addEventListener('click', async () => {
+    if (!mediaSelectedFile) return;
+    const slot = els.mediaSlotSelect.value;
+    els.mediaUploadBtn.disabled = true;
+    els.mediaUploadBtn.textContent = 'Uploading…';
+    showMediaMsg('', '');
+    try {
+      const base64 = await fileToBase64(mediaSelectedFile);
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'adminUploadSiteImage', token, slot, mimeType: mediaSelectedFile.type, imageBase64: base64 })
+      });
+      const data = await res.json();
+      if (data.ok){
+        showMediaMsg(`Uploaded to "${SITE_MEDIA_SLOTS.find(s => s.key === slot).label}" (${data.sizeKb} KB).`, 'success');
+        mediaSelectedFile = null;
+        els.mediaFileInput.value = '';
+        els.mediaPreviewRow.style.display = 'none';
+        els.mediaUploadBtn.disabled = true;
+        loadSiteAssets();
+      } else {
+        showMediaMsg(data.error || 'Upload failed.', 'error');
+      }
+    } catch (err){
+      showMediaMsg('Could not reach the server.', 'error');
+    }
+    els.mediaUploadBtn.textContent = 'Upload';
+  });
+
+  function slotLabel(key){
+    const found = SITE_MEDIA_SLOTS.find(s => s.key === key);
+    return found ? found.label : key;
+  }
+
+  function renderMediaLog(){
+    if (mediaLog.length === 0){
+      els.mediaLogTableBody.innerHTML = `<tr><td colspan="6" class="empty">No uploads yet.</td></tr>`;
+      return;
+    }
+    // Only the newest entry per slot counts as "Live".
+    const liveRowNumbers = new Set();
+    SITE_MEDIA_SLOTS.forEach(s => {
+      const newest = mediaLog.find(e => e.slot === s.key); // mediaLog is newest-first
+      if (newest) liveRowNumbers.add(newest.rowNumber);
+    });
+
+    els.mediaLogTableBody.innerHTML = mediaLog.map(entry => `
+      <tr>
+        <td><img class="img-thumb" src="${entry.url}" onerror="this.style.display='none'"></td>
+        <td>${slotLabel(entry.slot)}</td>
+        <td class="mono">${entry.uploadedAt ? entry.uploadedAt.split('T')[0] : '—'}</td>
+        <td class="mono">${entry.sizeKb} KB</td>
+        <td>${liveRowNumbers.has(entry.rowNumber) ? '<span style="color:var(--success); font-weight:600; font-size:11.5px;">● Live</span>' : '<span style="color:var(--muted); font-size:11.5px;">Archived</span>'}</td>
+        <td><button class="save-btn" data-row="${entry.rowNumber}" data-kind="delete-media">Delete</button></td>
+      </tr>
+    `).join('');
+
+    els.mediaLogTableBody.querySelectorAll('[data-kind="delete-media"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Delete this upload? If it is the live image for its slot, the site will fall back to whatever was uploaded before it (or the default placeholder).')) return;
+        const params = new URLSearchParams({ action: 'adminDeleteSiteImage', token, rowNumber: btn.dataset.row });
+        await fetch(`${API_URL}?${params.toString()}`);
+        showToast('Upload deleted');
+        loadSiteAssets();
+      });
+    });
+  }
+
+  async function loadSiteAssets(){
+    const data = await (await fetch(`${API_URL}?action=adminGetSiteAssets&token=${encodeURIComponent(token)}`)).json();
+    if (!data.ok) { showToast(data.error || 'Failed to load site media'); return; }
+    mediaLog = data.log;
+    renderMediaLog();
+  }
+
+  // ---------------- INIT ----------------
+  async function init(){
+    token = localStorage.getItem(STORAGE_KEY);
+    if (!token){
+      window.location.replace('../');
+      return;
+    }
+    // Admin check happens implicitly: adminGetOrders returns ok:false for non-admins.
+    const data = await (await fetch(`${API_URL}?action=adminGetOrders&token=${encodeURIComponent(token)}`)).json();
+    if (!data.ok){
+      window.location.replace('../');
+      return;
+    }
+    allOrders = data.orders;
+    els.loadingState.style.display = 'none';
+    els.adminContent.style.display = 'block';
+    renderOrderStats();
+    renderOrdersTable();
+    loadMembers();
+    loadPlayers();
+    loadProduction();
+    loadDrops();
+    loadSiteAssets();
+  }
+
+  init();
+</script>
+</body>
+</html>
