@@ -673,8 +673,9 @@
 
   async function handleGoogleCredential(response){
     showGoogleMsg('', '');
+    const googleAction = mode === 'signup' ? 'googleSignup' : 'googleLogin';
     try {
-      const data = await (await fetch(`${API_URL}?action=googleLogin&idToken=${encodeURIComponent(response.credential)}`)).json();
+      const data = await (await fetch(`${API_URL}?action=${googleAction}&idToken=${encodeURIComponent(response.credential)}`)).json();
       if (data.ok){
         localStorage.setItem(STORAGE_KEY, data.token);
         redirectAfterLogin(data);
