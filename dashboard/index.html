@@ -353,7 +353,7 @@
   <div id="authRequired">
     <h2>You're not logged in</h2>
     <p>Please log in to view your dashboard.</p>
-    <a href="../account/">Go to login</a>
+    <a href="../login/">Go to login</a>
   </div>
 
   <div id="dashboardContent">
@@ -814,7 +814,7 @@
 
   els.logoutBtn.addEventListener('click', () => {
     localStorage.removeItem(STORAGE_KEY);
-    window.location.href = '../account/';
+    window.location.href = '../login/';
   });
 
   async function init(){
