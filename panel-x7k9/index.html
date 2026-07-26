@@ -233,10 +233,23 @@
   .mono{ font-family:'JetBrains Mono',monospace; font-size:12.5px; }
   .table-wrap{ overflow-x:auto; border-radius:12px; }
 
-  select.status-select{
-    background:var(--surface-2); border:1px solid var(--line); color:var(--ink);
-    padding:6px 10px; border-radius:7px; font-size:12px; font-family:'Inter',sans-serif; cursor:pointer;
+  .status-pill{
+    display:inline-flex; background:var(--surface-2); border:1px solid var(--line);
+    border-radius:8px; padding:2px; gap:2px;
   }
+  .status-pill button{
+    border:none; cursor:pointer; padding:6px 10px; border-radius:6px;
+    font-size:12px; font-weight:600; font-family:'Inter',sans-serif; background:transparent;
+    color:var(--muted); transition:background .15s ease, color .15s ease;
+  }
+  .status-pill button.on.paylater{ background:var(--accent-dim); color:var(--accent); }
+  .status-pill button.on.paid{ background:var(--success-bg); color:var(--success); }
+  .status-pending-badge{
+    display:inline-block; cursor:pointer; padding:6px 12px; border-radius:8px;
+    font-size:12px; font-weight:600; background:var(--surface-2); color:var(--muted);
+    border:1px dashed var(--line); transition:border-color .15s ease, color .15s ease;
+  }
+  .status-pending-badge:hover{ border-color:var(--accent); color:var(--ink); }
   .toggle{
     width:38px; height:22px; border-radius:999px; background:var(--line); border:none; cursor:pointer;
     position:relative; flex-shrink:0;
@@ -264,8 +277,52 @@
   .img-thumb{ width:32px; height:32px; border-radius:6px; object-fit:cover; background:var(--surface-2); }
   .edit-input{
     background:var(--surface-2); border:1px solid var(--line); color:var(--ink); padding:6px 8px;
-    border-radius:6px; font-size:12px; width:100%; font-family:'Inter',sans-serif;
+    border-radius:6px; font-size:12px; width:100%; font-family:'Inter',sans-serif; box-sizing:border-box;
   }
+
+  .item-edit-row{
+    display:grid; gap:8px; align-items:center; padding:8px 0;
+    grid-template-columns: 0.85fr 0.55fr 0.65fr 1px 0.6fr 1.35fr 1px 0.55fr 0.65fr;
+  }
+  .item-edit-row + .item-edit-row{ border-top:1px solid var(--line-soft); }
+  .item-edit-labels{
+    display:grid; gap:8px; margin-bottom:6px;
+    grid-template-columns: 0.85fr 0.55fr 0.65fr 1px 0.6fr 1.35fr 1px 0.55fr 0.65fr;
+  }
+  .item-edit-labels span{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; }
+  .item-divider{ width:1px; height:26px; background:var(--line); justify-self:center; }
+  .item-save-btn{
+    background:none; border:1px solid var(--line); color:var(--muted); padding:6px 10px; border-radius:6px;
+    font-size:11px; font-weight:600; cursor:default; width:100%; transition:all .15s ease;
+  }
+  .item-save-btn.dirty{ cursor:pointer; background:var(--accent); border-color:var(--accent); color:#fff; }
+  .item-save-btn.dirty:hover{ filter:brightness(1.1); }
+  .item-save-btn.saved{ cursor:default; background:none; border-color:var(--success); color:var(--success); }
+
+  .confirm-overlay{
+    display:flex; align-items:center; justify-content:center;
+    position:fixed; inset:0; z-index:200;
+    background:rgba(0,0,0,.55); backdrop-filter:blur(2px);
+    opacity:0; pointer-events:none; transition:opacity .18s ease;
+  }
+  .confirm-overlay.open{ opacity:1; pointer-events:auto; }
+  .confirm-modal{
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    box-shadow:var(--shadow); padding:22px 24px; max-width:380px; width:calc(100% - 40px);
+    transform:translateY(8px) scale(.98); transition:transform .18s ease;
+  }
+  .confirm-overlay.open .confirm-modal{ transform:translateY(0) scale(1); }
+  .confirm-message{ font-size:14px; color:var(--ink); line-height:1.55; }
+  .confirm-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
+  .confirm-btn{
+    padding:9px 18px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;
+    font-family:'Inter',sans-serif; border:1px solid var(--line);
+  }
+  .confirm-cancel{ background:none; color:var(--muted); }
+  .confirm-cancel:hover{ color:var(--ink); }
+  .confirm-ok{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
+  .confirm-ok:hover{ filter:brightness(1.15); }
+  .confirm-ok.danger{ background:var(--accent); color:#fff; border-color:var(--accent); }
 </style>
 </head>
 <body>
@@ -406,7 +463,7 @@
                 <th class="sortable" data-sort="itemCount">Items <span class="sort-arrow"></span></th>
                 <th class="sortable" data-sort="total">Total <span class="sort-arrow"></span></th>
                 <th class="sortable" data-sort="status">Status <span class="sort-arrow"></span></th>
-                <th>Premium</th><th></th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="ordersTableBody"></tbody>
@@ -529,6 +586,16 @@
 
 <div class="toast" id="toast"></div>
 
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-modal">
+    <p class="confirm-message" id="confirmMessage"></p>
+    <div class="confirm-actions">
+      <button class="confirm-btn confirm-cancel" id="confirmCancelBtn">Cancel</button>
+      <button class="confirm-btn confirm-ok" id="confirmOkBtn">Continue</button>
+    </div>
+  </div>
+</div>
+
 <script>
   const root = document.documentElement;
   const themeToggle = document.getElementById('themeToggle');
@@ -599,6 +666,50 @@
     els.toast.textContent = msg;
     els.toast.classList.add('show');
     setTimeout(() => els.toast.classList.remove('show'), 2200);
+  }
+
+  /**
+   * In-app replacement for the native confirm() popup — same yes/no
+   * question, but styled to match the dashboard instead of flashing a
+   * generic browser dialog. Returns a Promise<boolean>, so call sites
+   * just swap `confirm(msg)` for `await confirmDialog(msg)`.
+   * opts.okLabel overrides the confirm button text (default "Continue"),
+   * opts.danger colors it red for destructive actions (deletes).
+   */
+  function confirmDialog(message, opts = {}){
+    return new Promise(resolve => {
+      const overlay = document.getElementById('confirmOverlay');
+      const msgEl = document.getElementById('confirmMessage');
+      const okBtn = document.getElementById('confirmOkBtn');
+      const cancelBtn = document.getElementById('confirmCancelBtn');
+
+      msgEl.textContent = message;
+      okBtn.textContent = opts.okLabel || 'Continue';
+      okBtn.classList.toggle('danger', !!opts.danger);
+      overlay.classList.add('open');
+      okBtn.focus();
+
+      function cleanup(result){
+        overlay.classList.remove('open');
+        okBtn.removeEventListener('click', onOk);
+        cancelBtn.removeEventListener('click', onCancel);
+        overlay.removeEventListener('click', onOverlayClick);
+        document.removeEventListener('keydown', onKeydown);
+        resolve(result);
+      }
+      function onOk(){ cleanup(true); }
+      function onCancel(){ cleanup(false); }
+      function onOverlayClick(e){ if (e.target === overlay) cleanup(false); }
+      function onKeydown(e){
+        if (e.key === 'Escape') cleanup(false);
+        if (e.key === 'Enter') cleanup(true);
+      }
+
+      okBtn.addEventListener('click', onOk);
+      cancelBtn.addEventListener('click', onCancel);
+      overlay.addEventListener('click', onOverlayClick);
+      document.addEventListener('keydown', onKeydown);
+    });
   }
 
   /** Converts an array of flat objects into a CSV file and triggers a browser download. */
@@ -702,7 +813,7 @@
     }
 
     if (filtered.length === 0){
-      els.ordersTableBody.innerHTML = `<tr><td colspan="7" class="empty">No orders match.</td></tr>`;
+      els.ordersTableBody.innerHTML = `<tr><td colspan="6" class="empty">No orders match.</td></tr>`;
       return;
     }
 
@@ -719,13 +830,7 @@
         <td>${summary}</td>
         <td class="mono">RM ${o.total.toFixed(0)}</td>
         <td>
-          <select class="status-select" data-rows="${rowNumbersStr}">
-            <option value="Paid" ${o.status === 'Paid' ? 'selected' : ''}>Paid</option>
-            <option value="Pay Later" ${o.status === 'Pay Later' ? 'selected' : ''}>Pay Later</option>
-          </select>
-        </td>
-        <td>
-          <button class="toggle ${o.premium ? 'on' : ''}" data-rows="${rowNumbersStr}" data-kind="order-premium"></button>
+          <div class="status-control" data-rows="${rowNumbersStr}" data-status="${o.status}"></div>
         </td>
         <td>
           <button class="save-btn" data-rows="${rowNumbersStr}" data-order-id="${o.orderId}" data-kind="delete-order">Delete</button>
@@ -733,38 +838,46 @@
       </tr>
       ${`
       <tr class="order-detail-row" data-idx="${idx}" style="display:none;">
-        <td colspan="7" style="padding:0;">
+        <td colspan="6" style="padding:0;">
           <div style="background:var(--surface-2); padding:10px 14px 14px 34px; border-bottom:1px solid var(--line);">
-            <table style="width:100%; border:none;">
-              <thead><tr>
-                <th style="background:none; border:none; padding:6px 8px;">Name on jersey</th>
-                <th style="background:none; border:none; padding:6px 8px;">Number</th>
-                <th style="background:none; border:none; padding:6px 8px;">Size</th>
-                <th style="background:none; border:none; padding:6px 8px;">Type</th>
-                <th style="background:none; border:none; padding:6px 8px;">Set</th>
-                <th style="background:none; border:none; padding:6px 8px;">Price</th>
-              </tr></thead>
-              <tbody>
-                ${o.items.map(it => `
-                  <tr>
-                    <td style="border:none; padding:6px 8px;">${it.nameOnJersey || '—'}</td>
-                    <td style="border:none; padding:6px 8px;" class="mono">
-                      <span class="jersey-num-display" data-row="${it.rowNumber}">#${it.jerseyNumber || '—'}</span>
-                      <button class="edit-jersey-btn" data-row="${it.rowNumber}" data-current="${it.jerseyNumber || ''}" data-kind="${it.adultKid || 'Adult'}" title="Change jersey number" style="border:none; background:none; color:var(--accent); cursor:pointer; font-size:12px; margin-left:6px; padding:2px 4px;">✎</button>
-                    </td>
-                    <td style="border:none; padding:6px 8px;">${it.size || '—'}</td>
-                    <td style="border:none; padding:6px 8px;">${it.adultKid || 'Adult'}</td>
-                    <td style="border:none; padding:6px 8px;">${it.set || '—'}</td>
-                    <td style="border:none; padding:6px 8px;" class="mono">RM ${it.total || '0'}</td>
-                  </tr>
-                `).join('')}
-              </tbody>
-            </table>
+            <div class="item-edit-labels">
+              <span>Name</span>
+              <span>Number</span>
+              <span>Size</span>
+              <span></span>
+              <span>Type</span>
+              <span>Set</span>
+              <span></span>
+              <span>Price</span>
+              <span></span>
+            </div>
+            ${o.items.map(it => `
+              <div class="item-edit-row" data-item-row="${it.rowNumber}">
+                <input class="edit-input item-field" data-field="nameOnJersey" maxlength="8" value="${(it.nameOnJersey || '').replace(/"/g,'&quot;')}">
+                <input class="edit-input item-field mono" data-field="jerseyNumber" maxlength="3" value="${(it.jerseyNumber || '').replace(/"/g,'&quot;')}">
+                <input class="edit-input item-field" data-field="size" value="${(it.size || '').replace(/"/g,'&quot;')}">
+                <div class="item-divider"></div>
+                <select class="edit-input item-field" data-field="adultKid">
+                  <option value="Adult" ${(it.adultKid || 'Adult') === 'Adult' ? 'selected' : ''}>Adult</option>
+                  <option value="Kid" ${it.adultKid === 'Kid' ? 'selected' : ''}>Kid</option>
+                </select>
+                <select class="edit-input item-field" data-field="set">
+                  <option value="Jersey Only" ${it.set === 'Jersey Only' ? 'selected' : ''}>Jersey Only</option>
+                  <option value="Jersey + Shorts" ${it.set === 'Jersey + Shorts' ? 'selected' : ''}>Jersey + Shorts</option>
+                </select>
+                <div class="item-divider"></div>
+                <span class="mono" style="color:var(--muted); font-size:12.5px;">RM ${it.total || '0'}</span>
+                <button class="item-save-btn" data-row="${it.rowNumber}">Save</button>
+              </div>
+            `).join('')}
           </div>
         </td>
       </tr>`}
       `;
     }).join('');
+
+    // Render each order's status control (pill for Paid/Pay Later, badge for anything else)
+    els.ordersTableBody.querySelectorAll('.status-control').forEach(el => renderStatusControl(el));
 
     els.ordersTableBody.querySelectorAll('.order-summary-row').forEach(row => {
       row.addEventListener('click', (e) => {
@@ -779,27 +892,65 @@
       });
     });
 
-    els.ordersTableBody.querySelectorAll('.status-select').forEach(sel => {
-      sel.addEventListener('change', async (e) => {
-        e.stopPropagation();
-        await updateOrder(sel.dataset.rows, { status: sel.value });
-        showToast('Status updated');
-      });
-      sel.addEventListener('click', (e) => e.stopPropagation());
-    });
-    els.ordersTableBody.querySelectorAll('[data-kind="order-premium"]').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        const nowOn = !btn.classList.contains('on');
-        btn.classList.toggle('on', nowOn);
-        await updateOrder(btn.dataset.rows, { premium: String(nowOn) });
-        showToast(nowOn ? 'Premium granted' : 'Premium removed');
-      });
-    });
+    function renderStatusControl(el){
+      const rows = el.dataset.rows;
+      const status = el.dataset.status;
+      if (status === 'Paid' || status === 'Pay Later'){
+        const paidOn = status === 'Paid';
+        el.innerHTML = `
+          <div class="status-pill">
+            <button type="button" class="${!paidOn ? 'on paylater' : ''}" data-set="Pay Later">Pay later</button>
+            <button type="button" class="${paidOn ? 'on paid' : ''}" data-set="Paid">Paid</button>
+          </div>`;
+      } else {
+        el.innerHTML = `<span class="status-pending-badge" title="Click to set Paid or Pay Later">Pending</span>`;
+      }
+
+      const wireButtons = () => {
+        el.querySelectorAll('[data-set]').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const newStatus = btn.dataset.set;
+            if (newStatus === el.dataset.status) return; // already this status — no-op, no need to nag
+
+            // Setting Paid or Pay Later can trigger a real receipt/reminder
+            // email to the customer (if one hasn't already gone out for
+            // that status) — confirm first so a stray click can't send one.
+            const confirmMsg = newStatus === 'Paid'
+              ? 'Mark this order as Paid? This may email the customer a payment-received receipt. Continue?'
+              : 'Mark this order as Pay Later? This may email the customer a payment-pending notice. Continue?';
+            if (!(await confirmDialog(confirmMsg, { okLabel: newStatus === 'Paid' ? 'Mark as Paid' : 'Mark as Pay later' }))) return;
+
+            await updateOrder(rows, { status: newStatus });
+            el.dataset.status = newStatus;
+            renderStatusControl(el);
+            showToast('Status updated');
+          });
+        });
+      };
+
+      const badge = el.querySelector('.status-pending-badge');
+      if (badge){
+        badge.addEventListener('click', (e) => {
+          e.stopPropagation();
+          // Reveals the pill so the admin can actively choose — doesn't
+          // guess or set a status on their behalf just by expanding it.
+          el.innerHTML = `
+            <div class="status-pill">
+              <button type="button" data-set="Pay Later">Pay later</button>
+              <button type="button" data-set="Paid">Paid</button>
+            </div>`;
+          wireButtons();
+        });
+      } else {
+        wireButtons();
+      }
+    }
+
     els.ordersTableBody.querySelectorAll('[data-kind="delete-order"]').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
-        if (!confirm(`Delete order ${btn.dataset.orderId} entirely? This can't be undone.`)) return;
+        if (!(await confirmDialog(`Delete order ${btn.dataset.orderId} entirely? This can't be undone.`, { okLabel: 'Delete order', danger: true }))) return;
         const params = new URLSearchParams({ action: 'adminDeleteOrder', token, rowNumbers: btn.dataset.rows });
         await fetch(`${API_URL}?${params.toString()}`);
         showToast('Order deleted');
@@ -807,36 +958,50 @@
       });
     });
 
-    els.ordersTableBody.querySelectorAll('.edit-jersey-btn').forEach(btn => {
+    // Item fields start clean; any edit marks the row's Save button "dirty"
+    // (lit up + clickable) so nothing gets re-saved by accident.
+    els.ordersTableBody.querySelectorAll('.item-edit-row').forEach(row => {
+      const saveBtn = row.querySelector('.item-save-btn');
+      row.querySelectorAll('.item-field').forEach(field => {
+        field.addEventListener('input', () => saveBtn.classList.add('dirty'));
+        field.addEventListener('change', () => saveBtn.classList.add('dirty'));
+      });
+    });
+
+    els.ordersTableBody.querySelectorAll('.item-save-btn').forEach(btn => {
       btn.addEventListener('click', async (e) => {
         e.stopPropagation();
+        if (!btn.classList.contains('dirty')) return; // nothing changed — no-op
         const rowNumber = btn.dataset.row;
-        const current = btn.dataset.current;
-        const isAdult = btn.dataset.kind !== 'Kid';
+        const tr = btn.closest('.item-edit-row');
+        const getField = (f) => tr.querySelector(`[data-field="${f}"]`).value.trim();
 
-        const input = prompt('New jersey number:', current);
-        if (input === null) return; // cancelled
-        const newNumber = input.trim();
-        if (!newNumber) { showToast('Jersey number can\'t be blank'); return; }
-        if (newNumber === current) return; // no change
+        const nameOnJersey = getField('nameOnJersey');
+        const jerseyNumber = getField('jerseyNumber');
+        const size = getField('size');
+        const adultKid = getField('adultKid');
+        const set = getField('set');
+
+        if (!jerseyNumber){ showToast('Jersey number can\'t be blank'); return; }
 
         // Duplicate check — only matters for Adult jerseys (Kid numbers are
         // exempt from uniqueness, same rule the storefront itself uses).
-        if (isAdult){
+        if (adultKid !== 'Kid'){
           const clash = allOrders.some(o => o.items.some(it =>
             it.rowNumber != rowNumber &&
             (it.adultKid || 'Adult') !== 'Kid' &&
-            String(it.jerseyNumber).trim() === newNumber
+            String(it.jerseyNumber).trim() === jerseyNumber
           ));
           if (clash){
-            const proceed = confirm(`Jersey #${newNumber} is already assigned to another adult order. Assign it here anyway?`);
+            const proceed = await confirmDialog(`Jersey #${jerseyNumber} is already assigned to another adult order. Assign it here anyway?`, { okLabel: 'Assign anyway', danger: true });
             if (!proceed) return;
           }
         }
 
-        const params = new URLSearchParams({ action: 'adminUpdateOrderItem', token, rowNumber, jerseyNumber: newNumber });
+        btn.textContent = 'Saving…';
+        const params = new URLSearchParams({ action: 'adminUpdateOrderItem', token, rowNumber, nameOnJersey, jerseyNumber, size, adultKid, set });
         await fetch(`${API_URL}?${params.toString()}`);
-        showToast(`Jersey number updated to #${newNumber}`);
+        showToast('Jersey details updated');
         loadOrders();
       });
     });
@@ -949,7 +1114,7 @@
       showReminderBanner('No orders are currently marked "Pay Later" — nothing to remind.', 'info');
       return;
     }
-    const confirmed = confirm(`This will email ${pendingCount} customer${pendingCount === 1 ? '' : 's'} still marked "Pay Later". Continue?`);
+    const confirmed = await confirmDialog(`This will email ${pendingCount} customer${pendingCount === 1 ? '' : 's'} still marked "Pay Later". Continue?`, { okLabel: 'Send reminders' });
     if (!confirmed) return;
 
     els.sendRemindersBtn.disabled = true;
@@ -1005,7 +1170,7 @@
     });
     els.membersTableBody.querySelectorAll('[data-kind="delete-member"]').forEach(btn => {
       btn.addEventListener('click', async () => {
-        if (!confirm(`Delete the account for ${btn.dataset.email}? This can't be undone.`)) return;
+        if (!(await confirmDialog(`Delete the account for ${btn.dataset.email}? This can't be undone.`, { okLabel: 'Delete account', danger: true }))) return;
         const params = new URLSearchParams({ action: 'adminDeleteMember', token, rowNumber: btn.dataset.row });
         await fetch(`${API_URL}?${params.toString()}`);
         showToast('Member deleted');
@@ -1085,7 +1250,7 @@
       btn.addEventListener('click', async () => {
         const tr = btn.closest('tr');
         const name = tr.querySelector('[data-field="name"]').value || 'this player';
-        if (!confirm(`Delete ${name} from the Players list? This can't be undone.`)) return;
+        if (!(await confirmDialog(`Delete ${name} from the Players list? This can't be undone.`, { okLabel: 'Delete player', danger: true }))) return;
         const params = new URLSearchParams({ action: 'adminDeletePlayer', token, rowNumber: tr.dataset.row });
         await fetch(`${API_URL}?${params.toString()}`);
         showToast('Player deleted');
@@ -1230,7 +1395,7 @@
       btn.addEventListener('click', async () => {
         const tr = btn.closest('tr');
         const name = tr.querySelector('[data-field="name"]').value || 'this item';
-        if (!confirm(`Remove "${name}" from the shop?`)) return;
+        if (!(await confirmDialog(`Remove "${name}" from the shop?`, { okLabel: 'Remove item', danger: true }))) return;
         const params = new URLSearchParams({ action: 'adminDeleteDrop', token, rowNumber: tr.dataset.row });
         await fetch(`${API_URL}?${params.toString()}`);
         showToast('Drop removed');
@@ -1365,7 +1530,7 @@
 
     els.mediaLogTableBody.querySelectorAll('[data-kind="delete-media"]').forEach(btn => {
       btn.addEventListener('click', async () => {
-        if (!confirm('Delete this upload? If it is the live image for its slot, the site will fall back to whatever was uploaded before it (or the default placeholder).')) return;
+        if (!(await confirmDialog('Delete this upload? If it is the live image for its slot, the site will fall back to whatever was uploaded before it (or the default placeholder).', { okLabel: 'Delete upload', danger: true }))) return;
         const params = new URLSearchParams({ action: 'adminDeleteSiteImage', token, rowNumber: btn.dataset.row });
         await fetch(`${API_URL}?${params.toString()}`);
         showToast('Upload deleted');
