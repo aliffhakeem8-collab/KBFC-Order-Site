@@ -748,7 +748,10 @@
                 ${o.items.map(it => `
                   <tr>
                     <td style="border:none; padding:6px 8px;">${it.nameOnJersey || '—'}</td>
-                    <td style="border:none; padding:6px 8px;" class="mono">#${it.jerseyNumber || '—'}</td>
+                    <td style="border:none; padding:6px 8px;" class="mono">
+                      <span class="jersey-num-display" data-row="${it.rowNumber}">#${it.jerseyNumber || '—'}</span>
+                      <button class="edit-jersey-btn" data-row="${it.rowNumber}" data-current="${it.jerseyNumber || ''}" data-kind="${it.adultKid || 'Adult'}" title="Change jersey number" style="border:none; background:none; color:var(--accent); cursor:pointer; font-size:12px; margin-left:6px; padding:2px 4px;">✎</button>
+                    </td>
                     <td style="border:none; padding:6px 8px;">${it.size || '—'}</td>
                     <td style="border:none; padding:6px 8px;">${it.adultKid || 'Adult'}</td>
                     <td style="border:none; padding:6px 8px;">${it.set || '—'}</td>
@@ -800,6 +803,40 @@
         const params = new URLSearchParams({ action: 'adminDeleteOrder', token, rowNumbers: btn.dataset.rows });
         await fetch(`${API_URL}?${params.toString()}`);
         showToast('Order deleted');
+        loadOrders();
+      });
+    });
+
+    els.ordersTableBody.querySelectorAll('.edit-jersey-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const rowNumber = btn.dataset.row;
+        const current = btn.dataset.current;
+        const isAdult = btn.dataset.kind !== 'Kid';
+
+        const input = prompt('New jersey number:', current);
+        if (input === null) return; // cancelled
+        const newNumber = input.trim();
+        if (!newNumber) { showToast('Jersey number can\'t be blank'); return; }
+        if (newNumber === current) return; // no change
+
+        // Duplicate check — only matters for Adult jerseys (Kid numbers are
+        // exempt from uniqueness, same rule the storefront itself uses).
+        if (isAdult){
+          const clash = allOrders.some(o => o.items.some(it =>
+            it.rowNumber != rowNumber &&
+            (it.adultKid || 'Adult') !== 'Kid' &&
+            String(it.jerseyNumber).trim() === newNumber
+          ));
+          if (clash){
+            const proceed = confirm(`Jersey #${newNumber} is already assigned to another adult order. Assign it here anyway?`);
+            if (!proceed) return;
+          }
+        }
+
+        const params = new URLSearchParams({ action: 'adminUpdateOrderItem', token, rowNumber, jerseyNumber: newNumber });
+        await fetch(`${API_URL}?${params.toString()}`);
+        showToast(`Jersey number updated to #${newNumber}`);
         loadOrders();
       });
     });
