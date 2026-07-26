@@ -825,7 +825,7 @@
 
       return `
       <tr class="order-summary-row" data-idx="${idx}" style="cursor:pointer;">
-        <td class="mono">${o.orderId} <span class="order-chevron" style="display:inline-block;transition:transform .2s ease;">›</span></td>
+        <td class="mono">${o.orderId} <span class="order-chevron" style="display:inline-block;transition:transform .2s ease;">›</span>${o.statusMismatch ? `<span title="This order's items don't all share the same Payment Status in the sheet (rows ${o.rowNumbers.join(', ')}) — open it and check each item, or fix it directly in the sheet." style="display:inline-block; margin-left:8px; padding:2px 7px; border-radius:6px; background:var(--accent-dim); color:var(--accent); font-size:10.5px; font-weight:700; font-family:'Inter',sans-serif; cursor:help; vertical-align:middle;">⚠ mismatch</span>` : ''}</td>
         <td>${o.email}</td>
         <td>${summary}</td>
         <td class="mono">RM ${o.total.toFixed(0)}</td>
@@ -1076,11 +1076,9 @@
   // visible from any device, not just wherever the button was clicked.
   function renderLastReminderPanel(){
     let latest = null;
-    let latestOrderId = null;
     allOrders.forEach(o => {
       if (o.lastReminderSent && (!latest || o.lastReminderSent > latest)){
         latest = o.lastReminderSent;
-        latestOrderId = o.orderId;
       }
     });
 
@@ -1091,7 +1089,7 @@
     }
 
     const stillPending = allOrders.filter(o => o.status === 'Pay Later').length;
-    els.lastReminderText.textContent = `Last reminder send: ${formatLastReminderDate(latest)} (order ${latestOrderId})${stillPending ? ` — ${stillPending} still marked Pay Later` : ''}`;
+    els.lastReminderText.textContent = `Last reminder send: ${formatLastReminderDate(latest)}${stillPending ? ` — ${stillPending} still marked Pay Later` : ''}`;
     els.lastReminderDot.style.background = 'var(--success, #2e9e5b)';
   }
 
@@ -1300,12 +1298,17 @@
     }
 
     const totalShown = scope === 'both' ? totalPaid + totalPending : (scope === 'Paid' ? totalPaid : totalPending);
+    const splitDenom = totalPaid + totalPending;
+    const pendingPct = splitDenom ? (totalPending / splitDenom * 100) : 50;
+    const paidPct = 100 - pendingPct;
 
     els.productionContent.innerHTML = `
-      <div class="stat-row" style="grid-template-columns:repeat(3,1fr);">
-        <div class="stat-tile"><b>${totalShown}</b><span>Total jerseys (this view)</span></div>
-        <div class="stat-tile"><b>${totalPaid}</b><span>Paid</span></div>
-        <div class="stat-tile"><b>${totalPending}</b><span>Pay later</span></div>
+      <div class="stat-summary-top" style="grid-template-columns:1fr; margin-bottom:14px;">
+        <div class="stat-summary-tile"><b>${totalShown}</b><span>Total jerseys (this view)</span></div>
+      </div>
+      <div class="stat-summary-split" style="--split:${pendingPct.toFixed(1)}%; margin-bottom:20px;">
+        <div class="stat-summary-half pending" style="flex-basis:${pendingPct.toFixed(1)}%;"><b>${totalPending}</b><span>Pay later — not yet paid</span></div>
+        <div class="stat-summary-half paid" style="flex-basis:${paidPct.toFixed(1)}%;"><b>${totalPaid}</b><span>Paid</span></div>
       </div>
       ${groups.map(adultKid => {
         const sizes = merged[adultKid];
