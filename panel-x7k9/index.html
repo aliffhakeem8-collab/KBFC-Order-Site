@@ -291,13 +291,50 @@
   }
   .item-edit-labels span{ font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; }
   .item-divider{ width:1px; height:26px; background:var(--line); justify-self:center; }
-  .item-save-btn{
-    background:none; border:1px solid var(--line); color:var(--muted); padding:6px 10px; border-radius:6px;
-    font-size:11px; font-weight:600; cursor:default; width:100%; transition:all .15s ease;
+  .item-queued-indicator{
+    font-size:11px; font-weight:600; color:var(--gold); display:flex; align-items:center; gap:5px;
   }
-  .item-save-btn.dirty{ cursor:pointer; background:var(--accent); border-color:var(--accent); color:#fff; }
-  .item-save-btn.dirty:hover{ filter:brightness(1.1); }
-  .item-save-btn.saved{ cursor:default; background:none; border-color:var(--success); color:var(--success); }
+  .item-queued-indicator.on::before{ content:''; width:6px; height:6px; border-radius:50%; background:var(--gold); }
+  .item-queued-indicator.on::after{ content:'Queued'; }
+
+  .pending-changes-wrap{
+    position:fixed; left:0; right:0; bottom:20px; z-index:70;
+    display:flex; justify-content:center; pointer-events:none;
+    padding:0 20px;
+  }
+  .pending-changes-bar{
+    pointer-events:auto;
+    margin-left:var(--sidebar-w);
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    background:var(--surface); border:1px solid var(--gold); border-radius:12px;
+    padding:12px 18px; box-shadow:var(--shadow);
+    max-width:520px; width:100%;
+    animation:pendingBarIn .18s ease;
+  }
+  @keyframes pendingBarIn{
+    from{ opacity:0; transform:translateY(10px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  .pending-changes-bar span{ font-size:13px; font-weight:600; color:var(--ink); }
+  .pending-changes-bar .pending-actions{ display:flex; gap:8px; flex-shrink:0; }
+  .pending-changes-bar button{
+    padding:8px 16px; border-radius:8px; font-size:12.5px; font-weight:600; cursor:pointer;
+    font-family:'Inter',sans-serif; border:1px solid var(--line); white-space:nowrap;
+  }
+  .pending-discard-btn{ background:none; color:var(--muted); }
+  .pending-discard-btn:hover{ color:var(--ink); }
+  .pending-review-btn{ background:var(--gold); border-color:var(--gold); color:#1a1500; }
+  .pending-review-btn:hover{ filter:brightness(1.08); }
+  @media (max-width:900px){
+    .pending-changes-wrap{ bottom:calc(14px + env(safe-area-inset-bottom, 0px)); padding:0 14px; }
+    .pending-changes-bar{
+      margin-left:0; max-width:none; flex-direction:column; align-items:stretch; gap:10px;
+      padding:14px 16px;
+    }
+    .pending-changes-bar span{ text-align:center; }
+    .pending-changes-bar .pending-actions{ width:100%; }
+    .pending-changes-bar .pending-actions button{ flex:1; }
+  }
 
   .confirm-overlay{
     display:flex; align-items:center; justify-content:center;
@@ -312,7 +349,7 @@
     transform:translateY(8px) scale(.98); transition:transform .18s ease;
   }
   .confirm-overlay.open .confirm-modal{ transform:translateY(0) scale(1); }
-  .confirm-message{ font-size:14px; color:var(--ink); line-height:1.55; }
+  .confirm-message{ font-size:14px; color:var(--ink); line-height:1.55; white-space:pre-line; }
   .confirm-actions{ display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
   .confirm-btn{
     padding:9px 18px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;
@@ -469,6 +506,7 @@
             <tbody id="ordersTableBody"></tbody>
           </table>
         </div>
+        <div id="pendingChangesBar"></div>
       </div>
     </section>
 
@@ -623,6 +661,7 @@
     adminContent: document.getElementById('adminContent'),
     orderStats: document.getElementById('orderStats'),
     ordersTableBody: document.getElementById('ordersTableBody'),
+    pendingChangesBar: document.getElementById('pendingChangesBar'),
     orderSearch: document.getElementById('orderSearch'),
     orderFilter: document.getElementById('orderFilter'),
     sendRemindersBtn: document.getElementById('sendRemindersBtn'),
@@ -656,6 +695,10 @@
 
   let token = null;
   let allOrders = [];
+  // Item edits queue here as the admin types, keyed by rowNumber, instead
+  // of saving one row at a time — reviewed and committed together in one
+  // batch confirmation (see queueItemChange / renderPendingChangesBar below).
+  let pendingItemChanges = {};
   let allMembers = [];
   let allPlayers = [];
   let allDrops = [];
@@ -852,7 +895,7 @@
               <span></span>
             </div>
             ${o.items.map(it => `
-              <div class="item-edit-row" data-item-row="${it.rowNumber}">
+              <div class="item-edit-row" data-item-row="${it.rowNumber}" data-order-id="${o.orderId}">
                 <input class="edit-input item-field" data-field="nameOnJersey" maxlength="8" value="${(it.nameOnJersey || '').replace(/"/g,'&quot;')}">
                 <input class="edit-input item-field mono" data-field="jerseyNumber" maxlength="3" value="${(it.jerseyNumber || '').replace(/"/g,'&quot;')}">
                 <input class="edit-input item-field" data-field="size" value="${(it.size || '').replace(/"/g,'&quot;')}">
@@ -867,7 +910,7 @@
                 </select>
                 <div class="item-divider"></div>
                 <span class="mono" style="color:var(--muted); font-size:12.5px;">RM ${it.total || '0'}</span>
-                <button class="item-save-btn" data-row="${it.rowNumber}">Save</button>
+                <span class="item-queued-indicator" data-row="${it.rowNumber}"></span>
               </div>
             `).join('')}
           </div>
@@ -958,53 +1001,154 @@
       });
     });
 
-    // Item fields start clean; any edit marks the row's Save button "dirty"
-    // (lit up + clickable) so nothing gets re-saved by accident.
+    // Item fields queue themselves the moment they change — no per-row
+    // Save click needed. queueItemChange() diffs against the original
+    // value and adds/updates/removes this row's entry in the shared
+    // pendingItemChanges batch, then refreshes the little "Queued" tag
+    // and the bottom summary bar.
     els.ordersTableBody.querySelectorAll('.item-edit-row').forEach(row => {
-      const saveBtn = row.querySelector('.item-save-btn');
       row.querySelectorAll('.item-field').forEach(field => {
-        field.addEventListener('input', () => saveBtn.classList.add('dirty'));
-        field.addEventListener('change', () => saveBtn.classList.add('dirty'));
+        field.addEventListener('input', () => queueItemChange(row));
+        field.addEventListener('change', () => queueItemChange(row));
       });
     });
 
-    els.ordersTableBody.querySelectorAll('.item-save-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        if (!btn.classList.contains('dirty')) return; // nothing changed — no-op
-        const rowNumber = btn.dataset.row;
-        const tr = btn.closest('.item-edit-row');
-        const getField = (f) => tr.querySelector(`[data-field="${f}"]`).value.trim();
+    applyPendingChangesToDom();
+    renderPendingChangesBar();
+  }
 
-        const nameOnJersey = getField('nameOnJersey');
-        const jerseyNumber = getField('jerseyNumber');
-        const size = getField('size');
-        const adultKid = getField('adultKid');
-        const set = getField('set');
+  function queueItemChange(row){
+    const rowNumber = row.dataset.itemRow;
+    const orderId = row.dataset.orderId;
+    const getField = (f) => row.querySelector(`[data-field="${f}"]`).value.trim();
 
-        if (!jerseyNumber){ showToast('Jersey number can\'t be blank'); return; }
+    const current = {
+      nameOnJersey: getField('nameOnJersey'),
+      jerseyNumber: getField('jerseyNumber'),
+      size: getField('size'),
+      adultKid: getField('adultKid'),
+      set: getField('set')
+    };
 
-        // Duplicate check — only matters for Adult jerseys (Kid numbers are
-        // exempt from uniqueness, same rule the storefront itself uses).
-        if (adultKid !== 'Kid'){
-          const clash = allOrders.some(o => o.items.some(it =>
-            it.rowNumber != rowNumber &&
-            (it.adultKid || 'Adult') !== 'Kid' &&
-            String(it.jerseyNumber).trim() === jerseyNumber
-          ));
-          if (clash){
-            const proceed = await confirmDialog(`Jersey #${jerseyNumber} is already assigned to another adult order. Assign it here anyway?`, { okLabel: 'Assign anyway', danger: true });
-            if (!proceed) return;
-          }
-        }
+    const original = allOrders.flatMap(o => o.items).find(it => String(it.rowNumber) === String(rowNumber)) || {};
+    const changed = current.nameOnJersey !== (original.nameOnJersey || '')
+      || current.jerseyNumber !== (original.jerseyNumber || '')
+      || current.size !== (original.size || '')
+      || current.adultKid !== (original.adultKid || 'Adult')
+      || current.set !== (original.set || '');
 
-        btn.textContent = 'Saving…';
-        const params = new URLSearchParams({ action: 'adminUpdateOrderItem', token, rowNumber, nameOnJersey, jerseyNumber, size, adultKid, set });
-        await fetch(`${API_URL}?${params.toString()}`);
-        showToast('Jersey details updated');
-        loadOrders();
-      });
+    if (changed){
+      pendingItemChanges[rowNumber] = { rowNumber, orderId, original, ...current };
+    } else {
+      delete pendingItemChanges[rowNumber]; // reverted back to original — drop it from the batch
+    }
+
+    const indicator = els.ordersTableBody.querySelector(`.item-queued-indicator[data-row="${rowNumber}"]`);
+    if (indicator) indicator.classList.toggle('on', changed);
+
+    renderPendingChangesBar();
+  }
+
+  // Reapplies any still-pending edits into freshly-rendered inputs — needed
+  // because renderOrdersTable() rebuilds the table's innerHTML from scratch
+  // (e.g. on search/sort), which would otherwise silently wipe unsaved work.
+  function applyPendingChangesToDom(){
+    Object.values(pendingItemChanges).forEach(change => {
+      const row = els.ordersTableBody.querySelector(`.item-edit-row[data-item-row="${change.rowNumber}"]`);
+      if (!row) return;
+      row.querySelector('[data-field="nameOnJersey"]').value = change.nameOnJersey;
+      row.querySelector('[data-field="jerseyNumber"]').value = change.jerseyNumber;
+      row.querySelector('[data-field="size"]').value = change.size;
+      row.querySelector('[data-field="adultKid"]').value = change.adultKid;
+      row.querySelector('[data-field="set"]').value = change.set;
+      const indicator = row.querySelector('.item-queued-indicator');
+      if (indicator) indicator.classList.add('on');
     });
+  }
+
+  function renderPendingChangesBar(){
+    const count = Object.keys(pendingItemChanges).length;
+    if (count === 0){ els.pendingChangesBar.innerHTML = ''; return; }
+    els.pendingChangesBar.innerHTML = `
+      <div class="pending-changes-wrap">
+        <div class="pending-changes-bar">
+          <span>${count} change${count === 1 ? '' : 's'} not yet saved</span>
+          <div class="pending-actions">
+            <button class="pending-discard-btn" id="pendingDiscardBtn">Discard all</button>
+            <button class="pending-review-btn" id="pendingReviewBtn">Review &amp; save all</button>
+          </div>
+        </div>
+      </div>`;
+
+    document.getElementById('pendingDiscardBtn').addEventListener('click', () => {
+      pendingItemChanges = {};
+      renderOrdersTable(); // redraws inputs back to their original values
+    });
+    document.getElementById('pendingReviewBtn').addEventListener('click', reviewAndSavePendingChanges);
+  }
+
+  async function reviewAndSavePendingChanges(){
+    const changes = Object.values(pendingItemChanges);
+    if (changes.length === 0) return;
+
+    const blank = changes.find(c => !c.jerseyNumber);
+    if (blank){ showToast(`Jersey number can't be blank (order ${blank.orderId})`); return; }
+
+    // Stack every duplicate number into ONE line each, instead of a
+    // separate popup per conflict — covers clashes both between pending
+    // edits themselves and against everything already saved.
+    const adultNumberOwners = {}; // number -> [{ label, orderId }]
+    allOrders.forEach(o => o.items.forEach(it => {
+      if ((it.adultKid || 'Adult') === 'Kid') return;
+      if (pendingItemChanges[it.rowNumber]) return; // superseded by the pending edit below
+      const num = String(it.jerseyNumber || '').trim();
+      if (!num) return;
+      (adultNumberOwners[num] = adultNumberOwners[num] || []).push({ label: it.nameOnJersey || o.orderId, orderId: o.orderId });
+    }));
+    changes.forEach(c => {
+      if (c.adultKid === 'Kid' || !c.jerseyNumber) return;
+      (adultNumberOwners[c.jerseyNumber] = adultNumberOwners[c.jerseyNumber] || []).push({ label: c.nameOnJersey || c.orderId, orderId: c.orderId });
+    });
+    const conflictLines = Object.keys(adultNumberOwners)
+      .filter(num => adultNumberOwners[num].length > 1)
+      .map(num => `⚠ #${num} — ${adultNumberOwners[num].map(o => `${o.label} (${o.orderId})`).join(', ')}`);
+
+    // One consolidated list of every field change, grouped by order.
+    const byOrder = {};
+    changes.forEach(c => { (byOrder[c.orderId] = byOrder[c.orderId] || []).push(c); });
+    const changeLines = Object.keys(byOrder).map(orderId => {
+      const lines = byOrder[orderId].map(c => {
+        const fieldDiffs = [];
+        if (c.nameOnJersey !== (c.original.nameOnJersey || '')) fieldDiffs.push(`Name "${c.original.nameOnJersey || '—'}" → "${c.nameOnJersey}"`);
+        if (c.jerseyNumber !== (c.original.jerseyNumber || '')) fieldDiffs.push(`#${c.original.jerseyNumber || '—'} → #${c.jerseyNumber}`);
+        if (c.size !== (c.original.size || '')) fieldDiffs.push(`Size ${c.original.size || '—'} → ${c.size}`);
+        if (c.adultKid !== (c.original.adultKid || 'Adult')) fieldDiffs.push(`${c.original.adultKid || 'Adult'} → ${c.adultKid}`);
+        if (c.set !== (c.original.set || '')) fieldDiffs.push(`${c.original.set || '—'} → ${c.set}`);
+        return `  • ${fieldDiffs.join(', ')}`;
+      }).join('\n');
+      return `Order ${orderId}\n${lines}`;
+    }).join('\n\n');
+
+    const summary = `Save ${changes.length} change${changes.length === 1 ? '' : 's'}?\n\n${changeLines}`
+      + (conflictLines.length ? `\n\nDuplicate adult jersey numbers:\n${conflictLines.join('\n')}` : '');
+
+    const proceed = await confirmDialog(summary, {
+      okLabel: conflictLines.length ? 'Save anyway' : 'Save all',
+      danger: conflictLines.length > 0
+    });
+    if (!proceed) return;
+
+    for (const c of changes){
+      const params = new URLSearchParams({
+        action: 'adminUpdateOrderItem', token, rowNumber: c.rowNumber,
+        nameOnJersey: c.nameOnJersey, jerseyNumber: c.jerseyNumber, size: c.size, adultKid: c.adultKid, set: c.set
+      });
+      await fetch(`${API_URL}?${params.toString()}`);
+    }
+
+    pendingItemChanges = {};
+    showToast(`Saved ${changes.length} change${changes.length === 1 ? '' : 's'}`);
+    loadOrders();
   }
 
   async function updateOrder(rowNumbers, fields){
