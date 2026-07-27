@@ -237,6 +237,7 @@
   .season-tag{
     display:inline-flex; align-items:center; gap:8px;
     font-size:12px; color:var(--muted); margin-bottom:18px;
+    text-transform:uppercase; letter-spacing:.06em;
   }
   .season-tag::before{content:"";width:18px;height:1px;background:var(--accent);}
   .hero-copy h1{
@@ -294,13 +295,17 @@
   .strip{
     display:grid; grid-template-columns:repeat(3,1fr);
     border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
   }
   .strip .cell{
     padding:36px 6vw;
     border-left:1px solid var(--line);
   }
   .strip .cell:first-child{border-left:none;}
-  .strip .cell .label{font-size:11px;color:var(--muted); margin-bottom:10px;}
+  .strip .cell .label{
+    font-size:11px; color:var(--muted); margin-bottom:10px;
+    text-transform:uppercase; letter-spacing:.06em;
+  }
   .strip .cell .value{font-size:17px; font-weight:500;}
 
   /* ---------- countdown badge, overlaid on the hero slide ---------- */
@@ -320,6 +325,7 @@
   .hero-countdown-label{
     display:block; font-size:13px; color:rgba(255,255,255,.75);
     letter-spacing:.14em; margin-bottom:16px; font-weight:600;
+    text-transform:uppercase;
   }
   .hero-countdown-tiles{ display:flex; gap:16px; }
   .hero-cd-tile{
@@ -337,7 +343,7 @@
   /* ---------- login feature promo: single compact panel ---------- */
   .login-promo-compact{
     position:relative; overflow:hidden;
-    margin:88px 6vw 36px; padding:26px 30px 26px 34px;
+    margin:36px 6vw; padding:26px 30px 26px 34px;
     background:linear-gradient(115deg, #14171C 0%, #1f1215 60%, #2a1215 100%);
     border:1px solid rgba(185,19,33,.25); border-radius:0;
     box-shadow:0 24px 60px rgba(185,19,33,.14), 0 20px 60px rgba(20,23,28,0.14);
@@ -406,7 +412,7 @@
   .login-promo-lock-pill svg{ width:14px; height:14px; stroke:#fff; fill:none; stroke-width:1.8; }
 
   @media (max-width:720px){
-    .login-promo-compact{ flex-direction:column; align-items:flex-start; text-align:left; margin:80px 5vw 30px; }
+    .login-promo-compact{ flex-direction:column; align-items:flex-start; text-align:left; margin:24px 5vw; }
     .login-promo-actions{ align-items:flex-start; width:100%; }
     .login-promo-actions .btn-primary{ width:100%; justify-content:center; }
   }
@@ -475,12 +481,12 @@
   .price-badge{
     position:absolute; top:-13px; left:28px;
     background:var(--accent); color:#fff;
-    font-size:10.5px; padding:5px 10px;
+    font-size:10.5px; padding:5px 10px; text-transform:uppercase; letter-spacing:.04em;
   }
-  .price-name{ font-size:12px; color:var(--muted); }
+  .price-name{ font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
   .price-category{
     font-size:10px; color:var(--accent); letter-spacing:.1em;
-    margin-bottom:-8px;
+    margin-bottom:-8px; text-transform:uppercase;
   }
   .price-category.kids{ color:var(--accent); }
   .kids-card{ border-color:var(--line); }
@@ -495,6 +501,7 @@
     padding:10px 22px; border-radius:999px;
     border:1px solid var(--line); background:transparent; color:var(--ink);
     font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.05em;
+    text-transform:uppercase;
     cursor:pointer; transition:background .2s ease, color .2s ease, border-color .2s ease;
   }
   .size-toggle-btn:hover{ border-color:var(--accent); }
@@ -525,6 +532,7 @@
   .size-table th{
     text-align:left; font-size:11px; color:var(--muted);
     padding:12px 16px; border-bottom:1px solid var(--line);
+    text-transform:uppercase; letter-spacing:.04em;
   }
   .size-table td{
     padding:16px; border-bottom:1px solid var(--line-soft);
@@ -619,6 +627,7 @@
   .field{margin-bottom:26px;}
   .field label{
     display:block; font-size:11px; color:var(--muted); margin-bottom:10px;
+    text-transform:uppercase; letter-spacing:.04em;
   }
   .field label .req{ color:var(--accent); }
   .field input{
@@ -676,6 +685,7 @@
   .jersey-entry-label{
     display:inline-flex; align-items:center; gap:8px;
     font-size:11px; color:var(--muted); margin-bottom:16px;
+    text-transform:uppercase; letter-spacing:.04em;
   }
   .jersey-entry-label::before{
     content:""; width:16px; height:1px; background:var(--accent);
@@ -822,10 +832,9 @@
       padding-bottom:20px;
     }
     .hero-top{
-      /* No 90px topbar-clearance needed here on mobile — the promo panel
-         above .hero already provides that clearance, so this only needs
-         a small gap of its own. */
-      order:1; padding-top:18px; gap:14px;
+      /* .hero is the first thing on the page again (login-promo-compact
+         moved below it), so this needs to clear the fixed topbar itself. */
+      order:1; padding-top:90px; gap:14px;
     }
     .slides{
       order:2; position:relative; inset:auto;
@@ -979,6 +988,51 @@
 <!-- ============ VIEW 1: LANDING ============ -->
 <section class="view active" id="view-landing">
 
+  <div class="hero">
+    <div class="slides" id="slides"></div>
+    <div class="hero-dark-overlay"></div>
+
+    <div class="hero-top">
+      <div class="kit-title">Official Away Kit</div>
+      <div class="top-nav" id="topNav">
+        <div class="slide-nav">
+          <button class="nav-btn" id="prevBtn" aria-label="Previous slide"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <button class="nav-btn" id="nextBtn" aria-label="Next slide"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+        </div>
+        <div class="count mono"><b id="curNum">01</b> / <span id="totalNum">04</span></div>
+      </div>
+    </div>
+
+    <div class="hero-countdown-badge">
+      <span class="hero-countdown-label mono">Order closes in</span>
+      <div class="hero-countdown-tiles">
+        <div class="hero-cd-tile"><span id="cdDays">00</span><small>D</small></div>
+        <div class="hero-cd-tile"><span id="cdHours">00</span><small>H</small></div>
+        <div class="hero-cd-tile"><span id="cdMins">00</span><small>M</small></div>
+        <div class="hero-cd-tile"><span id="cdSecs">00</span><small>S</small></div>
+      </div>
+    </div>
+
+    <div class="hero-scrim"></div>
+    <div class="hero-content">
+      <div class="hero-copy">
+        <div class="season-tag mono">Drop 01 · Pre-order window open</div>
+        <h1 id="slideTitle">FRONT<br>VIEW <em>26/27</em></h1>
+
+        <div class="hero-cta-row">
+          <button class="btn-primary" id="preorderBtn">
+            Pre-order yours now
+            <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+          <button class="btn-secondary" id="deepDiveBtn">
+            Deep dive into details
+            <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="login-promo-compact is-locked">
     <div class="login-promo-icon">
       <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
@@ -1009,75 +1063,31 @@
     </div>
   </div>
 
-  <div class="hero">
-    <div class="slides" id="slides"></div>
-    <div class="hero-dark-overlay"></div>
-
-    <div class="hero-top">
-      <div class="top-nav" id="topNav">
-        <div class="slide-nav">
-          <button class="nav-btn" id="prevBtn" aria-label="Previous slide"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
-          <button class="nav-btn" id="nextBtn" aria-label="Next slide"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
-        </div>
-        <div class="count mono"><b id="curNum">01</b> / <span id="totalNum">04</span></div>
-      </div>
-    </div>
-
-    <div class="hero-countdown-badge">
-      <span class="hero-countdown-label mono">ORDER CLOSES IN</span>
-      <div class="hero-countdown-tiles">
-        <div class="hero-cd-tile"><span id="cdDays">00</span><small>D</small></div>
-        <div class="hero-cd-tile"><span id="cdHours">00</span><small>H</small></div>
-        <div class="hero-cd-tile"><span id="cdMins">00</span><small>M</small></div>
-        <div class="hero-cd-tile"><span id="cdSecs">00</span><small>S</small></div>
-      </div>
-    </div>
-
-    <div class="hero-scrim"></div>
-    <div class="hero-content">
-      <div class="hero-copy">
-        <div class="season-tag mono">DROP 01 · PRE-ORDER WINDOW OPEN</div>
-        <h1 id="slideTitle">FRONT<br>VIEW <em>26/27</em></h1>
-
-        <div class="hero-cta-row">
-          <button class="btn-primary" id="preorderBtn">
-            Pre-order yours now
-            <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </button>
-          <button class="btn-secondary" id="deepDiveBtn">
-            Deep dive into details
-            <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <div class="strip">
     <div class="cell">
-      <div class="label mono">PAYMENT</div>
-      <div class="value">Full amount, Once you send your order, Scan the QR and Inform the admin </div>
+      <div class="label mono">Payment</div>
+      <div class="value">Full amount. Once you send your order, scan the QR and inform the admin.</div>
     </div>
     <div class="cell">
-      <div class="label mono">DELIVERY WINDOW</div>
+      <div class="label mono">Delivery window</div>
       <div class="value">1-3 weeks after close</div>
     </div>
     <div class="cell">
-      <div class="label mono">SIZING</div>
+      <div class="label mono">Sizing</div>
       <div class="value">XS — 4XL, true to size</div>
     </div>
   </div>
 
   <section class="pricing-sizing" id="pricing-sizing">
     <div class="ps-header">
-      <div class="season-tag mono">CHOOSE YOUR SET</div>
+      <div class="season-tag mono">Choose your set</div>
       <h2>Pricing</h2>
     </div>
 
     <div class="pricing-grid">
       <div class="price-card">
-        <div class="price-category mono">ADULT</div>
-        <div class="price-name mono">JERSEY ONLY</div>
+        <div class="price-category mono">Adult</div>
+        <div class="price-name mono">Jersey only</div>
         <div class="price-tag">RM 55</div>
         <ul class="price-list">
           <li>Match Jersey, Name + Number print</li>
@@ -1086,9 +1096,9 @@
       </div>
 
       <div class="price-card featured">
-        <div class="price-badge mono">RECOMMENDED</div>
-        <div class="price-category mono">ADULT</div>
-        <div class="price-name mono">JERSEY + SHORTS</div>
+        <div class="price-badge mono">Recommended</div>
+        <div class="price-category mono">Adult</div>
+        <div class="price-name mono">Jersey + shorts</div>
         <div class="price-tag">RM 85</div>
         <ul class="price-list">
           <li>Match Jersey, Name + Number print</li>
@@ -1098,8 +1108,8 @@
       </div>
 
       <div class="price-card kids-card">
-        <div class="price-category mono kids">KIDS</div>
-        <div class="price-name mono">JERSEY ONLY</div>
+        <div class="price-category mono kids">Kids</div>
+        <div class="price-name mono">Jersey only</div>
         <div class="price-tag">RM 35</div>
         <ul class="price-list">
           <li>Name + Number Print</li>
@@ -1109,19 +1119,19 @@
     </div>
 
     <div class="ps-header sizing-header">
-      <div class="season-tag mono">FIND YOUR FIT</div>
+      <div class="season-tag mono">Find your fit</div>
       <h2>Sizing</h2>
     </div>
 
     <div class="size-toggle" role="tablist">
-      <button type="button" class="size-toggle-btn active" id="sizeTabAdult" role="tab" aria-selected="true">ADULT</button>
-      <button type="button" class="size-toggle-btn" id="sizeTabKids" role="tab" aria-selected="false">KIDS</button>
+      <button type="button" class="size-toggle-btn active" id="sizeTabAdult" role="tab" aria-selected="true">Adult</button>
+      <button type="button" class="size-toggle-btn" id="sizeTabKids" role="tab" aria-selected="false">Kids</button>
     </div>
 
     <div class="size-table-wrap">
       <table class="size-table" id="sizeTableAdult">
         <thead>
-          <tr><th class="mono">SIZE</th><th class="mono">WIDTH (IN)</th><th class="mono">LENGTH (IN)</th></tr>
+          <tr><th class="mono">Size</th><th class="mono">Width (in)</th><th class="mono">Length (in)</th></tr>
         </thead>
         <tbody>
           <tr><td>XS</td><td class="mono">18</td><td class="mono">24</td></tr>
@@ -1137,7 +1147,7 @@
 
       <table class="size-table" id="sizeTableKids" style="display:none;">
         <thead>
-          <tr><th class="mono">SIZE</th><th class="mono">WIDTH (IN)</th><th class="mono">LENGTH (IN)</th></tr>
+          <tr><th class="mono">Size</th><th class="mono">Width (in)</th><th class="mono">Length (in)</th></tr>
         </thead>
         <tbody>
           <tr><td>XS (2-3 YO)</td><td class="mono">12</td><td class="mono">15.5</td></tr>
@@ -1154,7 +1164,7 @@
 
   <section class="jersey-story" id="jersey-story">
     <div class="ps-header">
-      <div class="season-tag mono">THE STORY</div>
+      <div class="season-tag mono">The story</div>
       <h2>Designed with purpose</h2>
     </div>
 
@@ -1197,7 +1207,7 @@
 
   <div class="cta-band">
     <div class="cta-band-copy">
-      <div class="season-tag mono">READY WHEN YOU ARE</div>
+      <div class="season-tag mono">Ready when you are</div>
       <h2>Don't miss this drop.</h2>
     </div>
     <button class="btn-primary" id="preorderBtn2">
@@ -1245,20 +1255,20 @@
         <form id="orderForm">
           <div class="main-info-box">
             <div class="field">
-              <label class="mono">NAME <span class="req">*</span></label>
+              <label class="mono">Name <span class="req">*</span></label>
               <input type="text" name="Name" placeholder="Full Name" required>
             </div>
             <div class="field">
-              <label class="mono">EMAIL <span class="req">*</span></label>
+              <label class="mono">Email <span class="req">*</span></label>
               <input type="email" name="Email" placeholder="you@email.com" required>
             </div>
             <div class="field">
-              <label class="mono">PHONE NUMBER <span class="req">*</span></label>
+              <label class="mono">Phone number <span class="req">*</span></label>
               <input type="tel" name="Phone Number" placeholder="e.g. 012-3456789" required>
             </div>
 
             <div class="field" style="margin-bottom:0;">
-              <label class="mono">QUANTITY</label>
+              <label class="mono">Quantity</label>
               <div class="qty-stepper">
                 <button type="button" class="qty-btn" id="qtyMinus" aria-label="Decrease quantity">−</button>
                 <span class="qty-value mono" id="qtyValue">1</span>
@@ -1270,7 +1280,7 @@
           <div id="jerseyEntries"></div>
 
           <div class="total-row">
-            <span class="mono">TOTAL AMOUNT NEED TO BE TRANSFERRED </span>
+            <span class="mono">Total amount to transfer</span>
             <span class="total-amount" id="totalAmount">RM 0</span>
           </div>
 
@@ -1292,7 +1302,7 @@
 <div class="modal-overlay" id="paymentModalOverlay">
   <div class="modal-box payment-modal">
     <div class="modal-icon mono">$</div>
-    <h3>Complete Your Payment</h3>
+    <h3>Complete your payment</h3>
     <p class="modal-msg">Scan the QR code below to pay via DuitNow, then send the receipt to confirm.</p>
     
     <div class="qr-container">
@@ -1359,7 +1369,7 @@
 
     if(remainingMs <= 0){
       daysEl.textContent = hoursEl.textContent = minsEl.textContent = secsEl.textContent = '00';
-      if(labelEl) labelEl.textContent = 'ORDER WINDOW CLOSED';
+      if(labelEl) labelEl.textContent = 'Order window closed';
       clearInterval(countdownTimer);
       return;
     }
@@ -1589,9 +1599,9 @@
       const wrap = document.createElement('div');
       wrap.className = 'jersey-entry';
       wrap.innerHTML = `
-        <div class="jersey-entry-label mono">JERSEY ${String(i+1).padStart(2,'0')}</div>
+        <div class="jersey-entry-label mono">Jersey ${String(i+1).padStart(2,'0')}</div>
         <div class="field">
-          <label class="mono">SET <span class="req">*</span></label>
+          <label class="mono">Set <span class="req">*</span></label>
           <select class="jersey-set-input" required>
             <option value="" disabled selected>Select set</option>
             <option value="Jersey Only">Jersey Only — RM 55</option>
@@ -1600,16 +1610,16 @@
         </div>
         <div class="field-row">
           <div class="field">
-            <label class="mono">JERSEY NUMBER <span class="req">*</span></label>
+            <label class="mono">Jersey number <span class="req">*</span></label>
             <input type="text" class="jersey-number-input" placeholder="e.g. 10" required>
           </div>
           <div class="field">
-            <label class="mono">NAME ON JERSEY <span class="req">*</span></label>
+            <label class="mono">Name on jersey <span class="req">*</span></label>
             <input type="text" class="jersey-name-input" placeholder="e.g. DANISH, 8 at max" required>
           </div>
         </div>
         <div class="field">
-          <label class="mono">SIZE <span class="req">*</span></label>
+          <label class="mono">Size <span class="req">*</span></label>
           <select class="jersey-size-input" required>
             <option value="" disabled selected>Select size</option>
             <option value="XS">XS</option>
