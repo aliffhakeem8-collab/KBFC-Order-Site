@@ -217,6 +217,27 @@
     display:none; margin-top:14px; font-size:13.5px; color:var(--accent);
     line-height:1.5;
   }
+  .error-contact{
+    display:none; margin-top:10px; font-size:13px; color:var(--muted); line-height:1.5;
+  }
+  .error-contact a{
+    color:var(--accent); text-decoration:none; font-weight:600;
+  }
+  .error-contact a:hover{ text-decoration:underline; }
+
+  .contact-note{
+    display:flex; align-items:flex-start; gap:10px;
+    margin-top:18px; padding-top:16px; border-top:1px solid var(--line);
+    font-size:12.5px; color:var(--muted); line-height:1.5;
+  }
+  .contact-note svg{
+    width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:1.8;
+    flex-shrink:0; margin-top:1px; opacity:.7;
+  }
+  .contact-note a{
+    color:var(--accent); text-decoration:none; font-weight:600;
+  }
+  .contact-note a:hover{ text-decoration:underline; }
 
   .result{
     min-width:0; overflow:hidden;
@@ -395,6 +416,9 @@
       </div>
 
       <p class="error-msg" id="errorMsg">We couldn't find an order with that ID. Double check and try again.</p>
+      <p class="error-contact" id="errorContact">
+        Still no luck, or think this is a mistake? <a href="#" id="errorContactLink" target="_blank" rel="noopener">Message our admin on WhatsApp</a> — sometimes a request you sent us hasn't been amended on our end yet.
+      </p>
 
       <button class="submit-btn" id="submitBtn">Check order</button>
     </div>
@@ -509,6 +533,17 @@
      or { found: false } when no match exists. */
   const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbybJZrAIPleUv6BqVbuwk8oiDcuhGKUW1t2wjDwh2J0ZB4oSuYa2l-dY3t9N3WrXz_V/exec";
 
+  // Same WhatsApp number the backend's receipt/reminder emails already use.
+  // Prefills a message with the Order ID so the admin has context right away,
+  // instead of a customer starting a blank chat.
+  const WHATSAPP_NUMBER = '601135594075';
+  function waContactLink(orderId, situation){
+    const msg = situation === 'not-found'
+      ? `Hi, I checked order ${orderId} on the website but it couldn't be found. Could you help me check it?`
+      : `Hi, I checked order ${orderId} on the website and the details don't look right / haven't been updated yet. Could you help me check it?`;
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`;
+  }
+
   function jsonpRequest(url, timeoutMs = 8000){
     return new Promise((resolve, reject) => {
       const cbName = 'jsonp_cb_' + Date.now() + '_' + Math.floor(Math.random()*100000);
@@ -525,6 +560,8 @@
   const orderIdInput = document.getElementById('orderIdInput');
   const submitBtn = document.getElementById('submitBtn');
   const errorMsg = document.getElementById('errorMsg');
+  const errorContact = document.getElementById('errorContact');
+  const errorContactLink = document.getElementById('errorContactLink');
   const resultContentEl = document.getElementById('resultContent');
   const clearBtn = document.getElementById('clearBtn');
 
@@ -560,6 +597,13 @@
         <span>RM ${total}</span>
       </div>
       <div class="jersey-list">${jerseyItems}</div>
+      <p class="contact-note">
+        <svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M12 8v4l3 3"/></svg>
+        <span>
+          Something not showing correctly, or already asked us to change this order? Status updates are done by hand, so it may take us a little while.
+          <a href="${waContactLink(order['Order ID'] || '', 'stale')}" target="_blank" rel="noopener">Message our admin on WhatsApp</a>.
+        </span>
+      </p>
     `;
   }
 
@@ -568,6 +612,7 @@
   async function submitCheck(){
     const id = orderIdInput.value.trim();
     errorMsg.style.display = 'none';
+    errorContact.style.display = 'none';
     if(!id) return;
 
     submitBtn.disabled = true;
@@ -582,12 +627,16 @@
         checkerCard.classList.remove('has-result');
         errorMsg.textContent = "We couldn't find an order with that ID. Double check and try again.";
         errorMsg.style.display = 'block';
+        errorContactLink.href = waContactLink(id, 'not-found');
+        errorContact.style.display = 'block';
       }
     }catch(err){
       console.warn('Order lookup failed.', err);
       checkerCard.classList.remove('has-result');
       errorMsg.textContent = 'Something went wrong checking your order. Please try again.';
       errorMsg.style.display = 'block';
+      errorContactLink.href = waContactLink(id, 'not-found');
+      errorContact.style.display = 'block';
     }finally{
       submitBtn.disabled = false;
       submitBtn.textContent = 'Check order';
@@ -601,6 +650,7 @@
     checkerCard.classList.remove('has-result');
     orderIdInput.value = '';
     errorMsg.style.display = 'none';
+    errorContact.style.display = 'none';
     orderIdInput.focus();
   });
 
