@@ -284,14 +284,27 @@
   .img-thumb{ width:32px; height:32px; border-radius:6px; object-fit:cover; background:var(--surface-2); }
   .player-photo-upload{
     display:flex; align-items:center; justify-content:center;
-    width:32px; height:32px; border-radius:6px; cursor:pointer;
-    border:1px dashed var(--line); overflow:hidden; position:relative;
-    transition:border-color .15s ease;
+    width:52px; height:52px; border-radius:8px; cursor:pointer;
+    border:1.5px dashed rgba(255,255,255,.3); overflow:hidden; position:relative;
+    transition:border-color .15s ease, transform .15s ease, background .15s ease;
+    background:var(--surface-2);
   }
-  .player-photo-upload:hover{ border-color:var(--accent); }
+  .player-photo-upload:hover{
+    border-color:var(--accent); border-style:solid; transform:scale(1.05);
+    background:var(--accent-dim);
+  }
   .player-photo-upload img{ width:100%; height:100%; object-fit:cover; display:block; }
   .player-photo-upload .img-thumb-empty{
-    font-size:16px; color:var(--muted); line-height:1;
+    font-size:22px; color:var(--muted); line-height:1;
+  }
+  .player-photo-upload .upload-badge{
+    position:absolute; bottom:-1px; right:-1px;
+    width:18px; height:18px; border-radius:50% 0 0 0;
+    background:var(--accent); display:flex; align-items:center; justify-content:center;
+  }
+  .player-photo-upload .upload-badge svg{
+    width:10px; height:10px; stroke:#fff; fill:none; stroke-width:2.5;
+    margin:2px 0 0 2px;
   }
   .player-photo-upload.uploading{ opacity:.5; pointer-events:none; }
   .edit-input{
@@ -572,6 +585,47 @@
             </select>
           </div>
           <button class="action" id="addPlayerBtn">Add player</button>
+        </div>
+      </div>
+
+      <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px;">
+        <h3>Upload player photo</h3>
+        <p class="card-sub" style="margin-bottom:16px;">Pick a player and a file — every upload is logged below, newest first.</p>
+        <div style="display:grid; grid-template-columns:2fr 1fr; gap:10px; margin-bottom:14px; max-width:520px;">
+          <div>
+            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Player</label>
+            <select id="playerPhotoSelect" class="edit-input"></select>
+          </div>
+          <div>
+            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Type</label>
+            <select id="playerPhotoTarget" class="edit-input">
+              <option value="photo">Photo</option>
+              <option value="gif">GIF</option>
+            </select>
+          </div>
+        </div>
+        <label class="media-upload-zone" id="playerPhotoUploadZone" style="max-width:520px;">
+          <input type="file" accept="image/*" id="playerPhotoFileInput">
+          <svg class="upload-icon" viewBox="0 0 24 24"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+          <div class="upload-main" id="playerPhotoZoneLabel">Click to choose an image, or drag one here</div>
+          <div class="upload-sub">JPG or PNG</div>
+        </label>
+        <div id="playerPhotoPreviewRow" style="display:none; align-items:center; gap:14px; margin-top:14px;">
+          <img id="playerPhotoPreviewThumb" class="img-thumb" style="width:56px; height:56px;">
+          <span id="playerPhotoPreviewName" style="font-size:12.5px;color:var(--muted);"></span>
+        </div>
+        <div id="playerPhotoUploadMsg"></div>
+        <button class="action" id="playerPhotoUploadBtn" style="margin-top:14px;" disabled>Upload</button>
+      </div>
+
+      <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px;">
+        <h3>Upload log</h3>
+        <p class="card-sub">Newest first. The top entry per player + type is the one currently live on the Players page.</p>
+        <div class="table-wrap" style="margin-top:12px;">
+          <table>
+            <thead><tr><th>Player</th><th>Type</th><th>Preview</th><th>Size</th><th>Uploaded</th></tr></thead>
+            <tbody id="playerPhotoLogBody"></tbody>
+          </table>
         </div>
       </div>
 
@@ -1490,6 +1544,16 @@
     if (!data.ok) { showToast(data.error || 'Failed to load players'); return; }
     allPlayers = data.players;
     renderPlayersTable();
+    renderPlayerPhotoSelect();
+  }
+
+  function renderPlayerPhotoSelect(){
+    const sel = document.getElementById('playerPhotoSelect');
+    const prevValue = sel.value;
+    sel.innerHTML = allPlayers.length
+      ? allPlayers.map(p => `<option value="${p.rowNumber}">#${p.number || '—'} — ${(p.name || 'Unnamed').replace(/"/g,'&quot;')}</option>`).join('')
+      : `<option value="">No players yet — add one below first</option>`;
+    if (prevValue && allPlayers.some(p => String(p.rowNumber) === prevValue)) sel.value = prevValue;
   }
   els.playerSearch.addEventListener('input', renderPlayersTable);
   document.getElementById('refreshPlayersBtn').addEventListener('click', loadPlayers);
@@ -1509,6 +1573,94 @@
     showToast('Player added');
     loadPlayers();
   });
+
+  // ---------------- DEDICATED PLAYER PHOTO/GIF UPLOAD (with log) ----------------
+  const playerPhotoEls = {
+    select: document.getElementById('playerPhotoSelect'),
+    target: document.getElementById('playerPhotoTarget'),
+    zone: document.getElementById('playerPhotoUploadZone'),
+    fileInput: document.getElementById('playerPhotoFileInput'),
+    previewRow: document.getElementById('playerPhotoPreviewRow'),
+    previewThumb: document.getElementById('playerPhotoPreviewThumb'),
+    previewName: document.getElementById('playerPhotoPreviewName'),
+    uploadBtn: document.getElementById('playerPhotoUploadBtn'),
+    msg: document.getElementById('playerPhotoUploadMsg'),
+    logBody: document.getElementById('playerPhotoLogBody')
+  };
+  let playerPhotoSelectedFile = null;
+
+  function showPlayerPhotoMsg(text, type){
+    const color = type === 'success' ? 'var(--success)' : (type === 'error' ? 'var(--accent)' : 'var(--muted)');
+    playerPhotoEls.msg.innerHTML = text ? `<p style="color:${color}; font-size:12.5px; margin-top:10px;">${text}</p>` : '';
+  }
+
+  function selectPlayerPhotoFile(file){
+    if (!file || !file.type.startsWith('image/')) return;
+    playerPhotoSelectedFile = file;
+    playerPhotoEls.previewThumb.src = URL.createObjectURL(file);
+    playerPhotoEls.previewName.textContent = file.name;
+    playerPhotoEls.previewRow.style.display = 'flex';
+    playerPhotoEls.uploadBtn.disabled = false;
+    showPlayerPhotoMsg('', '');
+  }
+
+  playerPhotoEls.fileInput.addEventListener('change', () => {
+    if (playerPhotoEls.fileInput.files[0]) selectPlayerPhotoFile(playerPhotoEls.fileInput.files[0]);
+  });
+  ['dragenter', 'dragover'].forEach(evt => playerPhotoEls.zone.addEventListener(evt, (e) => { e.preventDefault(); playerPhotoEls.zone.classList.add('drag-active'); }));
+  ['dragleave', 'drop'].forEach(evt => playerPhotoEls.zone.addEventListener(evt, (e) => { e.preventDefault(); playerPhotoEls.zone.classList.remove('drag-active'); }));
+  playerPhotoEls.zone.addEventListener('drop', (e) => { if (e.dataTransfer.files[0]) selectPlayerPhotoFile(e.dataTransfer.files[0]); });
+
+  playerPhotoEls.uploadBtn.addEventListener('click', async () => {
+    if (!playerPhotoSelectedFile) return;
+    const rowNumber = playerPhotoEls.select.value;
+    if (!rowNumber){ showPlayerPhotoMsg('Add a player first, then come back to upload their photo.', 'error'); return; }
+    const target = playerPhotoEls.target.value;
+    const playerLabel = playerPhotoEls.select.options[playerPhotoEls.select.selectedIndex].textContent;
+    playerPhotoEls.uploadBtn.disabled = true;
+    playerPhotoEls.uploadBtn.textContent = 'Uploading…';
+    showPlayerPhotoMsg('', '');
+    try {
+      const base64 = await fileToBase64(playerPhotoSelectedFile);
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'adminUploadPlayerPhoto', token, rowNumber, target, mimeType: playerPhotoSelectedFile.type, imageBase64: base64 })
+      });
+      const data = await res.json();
+      if (data.ok){
+        showPlayerPhotoMsg(`Uploaded for ${playerLabel} (${data.sizeKb} KB).`, 'success');
+        playerPhotoSelectedFile = null;
+        playerPhotoEls.fileInput.value = '';
+        playerPhotoEls.previewRow.style.display = 'none';
+        loadPlayers();
+        loadPlayerPhotoLog();
+      } else {
+        showPlayerPhotoMsg(data.error || 'Upload failed.', 'error');
+      }
+    } catch (err){
+      showPlayerPhotoMsg('Could not reach the server.', 'error');
+    }
+    playerPhotoEls.uploadBtn.disabled = false;
+    playerPhotoEls.uploadBtn.textContent = 'Upload';
+  });
+
+  async function loadPlayerPhotoLog(){
+    const data = await (await fetch(`${API_URL}?action=adminGetPlayerPhotoLog&token=${encodeURIComponent(token)}`)).json();
+    if (!data.ok) { playerPhotoEls.logBody.innerHTML = `<tr><td colspan="5" class="empty">Couldn't load the log.</td></tr>`; return; }
+    if (data.log.length === 0){
+      playerPhotoEls.logBody.innerHTML = `<tr><td colspan="5" class="empty">No uploads yet.</td></tr>`;
+      return;
+    }
+    playerPhotoEls.logBody.innerHTML = data.log.map(entry => `
+      <tr>
+        <td>#${entry.number || '—'} — ${entry.name || 'Unnamed'}</td>
+        <td style="text-transform:capitalize;">${entry.target}</td>
+        <td><img class="img-thumb" src="${entry.url}" onerror="this.style.display='none'"></td>
+        <td class="mono">${entry.sizeKb} KB</td>
+        <td class="mono">${entry.uploadedAt}</td>
+      </tr>
+    `).join('');
+  }
   document.getElementById('exportPlayersBtn').addEventListener('click', () => {
     downloadCsv('kbfc-players.csv', allPlayers.map(p => ({
       'Number': p.number, 'Name': p.name, 'Position': p.position,
@@ -1814,6 +1966,7 @@
     renderLastReminderPanel();
     loadMembers();
     loadPlayers();
+    loadPlayerPhotoLog();
     loadProduction();
     loadDrops();
     loadSiteAssets();
