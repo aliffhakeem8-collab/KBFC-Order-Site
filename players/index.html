@@ -609,6 +609,40 @@
 
   let currentFilter = 'all';
 
+  // The "Players Page Hero" upload in the admin dashboard's Site Media
+  // panel saves into a SiteAssets tab on this same spreadsheet (Slot |
+  // Image URL | Size (KB) | Uploaded At), append-only — the LAST row for
+  // slot "players-hero" is the current/live one. Nothing on this page
+  // read that back before now, which is why the hero always showed the
+  // plain diagonal placeholder pattern no matter what got uploaded.
+  async function applyHeroImage(){
+    try {
+      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=SiteAssets`;
+      const res = await fetch(url);
+      if(!res.ok) throw new Error('SiteAssets request failed: ' + res.status);
+      const text = await res.text();
+      const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
+      const rows = (json.table && json.table.rows) || [];
+
+      let heroUrl = '';
+      rows.forEach(r => {
+        const cells = r.c || [];
+        const slot = cells[0] ? String(cells[0].v || '').trim() : '';
+        const imageUrl = cells[1] ? String(cells[1].v || '').trim() : '';
+        if (slot === 'players-hero' && imageUrl) heroUrl = imageUrl; // last match wins — most recent upload
+      });
+
+      if (heroUrl){
+        document.querySelector('.squad-hero').style.backgroundImage =
+          `linear-gradient(180deg, rgba(10,10,10,.25), rgba(10,10,10,.92) 88%), url('${heroUrl}')`;
+      }
+      // If nothing's been uploaded yet, the CSS's diagonal pattern stays as-is — no error, just no photo yet.
+    } catch (err) {
+      console.warn('Could not load the Players page hero image — keeping the placeholder pattern.', err);
+    }
+  }
+  applyHeroImage();
+
   squadSections.innerHTML = `<div class="squad-section"><p class="squad-loading mono">Loading squad…</p></div>`;
 
   fetchSquadFromSheet()
