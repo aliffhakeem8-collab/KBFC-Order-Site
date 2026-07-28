@@ -496,8 +496,10 @@
      Sheet must have these exact column headers in row 1:
        Number | Name | Position | Photo | GIF
      - Position must be exactly: Goalkeeper, Defender, Midfielder, or Forward
-     - Photo / GIF are just filenames (e.g. "10-photo.jpg") that live in
-       your images/players/ folder — upload the actual files there. */
+     - Photo / GIF can be either a full URL (what the admin dashboard's
+       upload button and player self-upload both write automatically),
+       or a bare filename (e.g. "10-photo.jpg") that lives in your
+       images/players/ folder if you're placing files manually instead. */
   const SHEET_ID = '1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM';
   const SHEET_TAB = 'Players';
   const PLAYER_IMAGE_BASE = '/images/players/';
@@ -511,6 +513,19 @@
   ];
 
   let squad = [];
+
+  // Photo/GIF cells can hold either a bare filename meant to live in
+  // /images/players/ (the original manual-file convention this page
+  // shipped with), OR a full URL — which is what actually gets written
+  // there now that the admin dashboard and player self-upload both
+  // upload straight to Drive and store the resulting link. Handle both,
+  // so neither upload path silently breaks.
+  function resolveImagePath(raw){
+    const v = String(raw || '').trim();
+    if (!v) return '';
+    if (/^https?:\/\//i.test(v)) return v;
+    return PLAYER_IMAGE_BASE + v;
+  }
 
   async function fetchSquadFromSheet(){
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_TAB)}`;
@@ -529,8 +544,8 @@
           number: Number(val(0)),
           name: String(val(1) || '').trim(),
           position: String(val(2) || '').trim(),
-          photo: PLAYER_IMAGE_BASE + String(val(3) || '').trim(),
-          gif: PLAYER_IMAGE_BASE + String(val(4) || '').trim(),
+          photo: resolveImagePath(val(3)),
+          gif: resolveImagePath(val(4)),
         };
       })
       .filter(p => p.number && p.name && p.position);
