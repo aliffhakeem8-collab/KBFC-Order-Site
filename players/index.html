@@ -850,6 +850,7 @@
       ctx.font = '600 26px Inter, sans-serif';
       ctx.fillStyle = 'rgba(255,255,255,.9)';
       ctx.fillText(matchLine, canvas.width - MARGIN, 80);
+      ctx.textAlign = 'left'; // reset — everything drawn after this must not inherit 'right'
     }
 
     ctx.textBaseline = 'alphabetic';
