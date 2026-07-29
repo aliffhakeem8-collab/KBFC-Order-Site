@@ -459,6 +459,10 @@
     <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
     Players
   </button>
+  <button class="nav-item" data-view="nextmatch">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    Next Match
+  </button>
   <button class="nav-item" data-view="media">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
     Site Media
@@ -712,6 +716,45 @@
           <thead><tr><th>Name</th><th>Price</th><th>Image URL</th><th>Status</th><th></th></tr></thead>
           <tbody id="dropsTableBody"></tbody>
         </table>
+      </div>
+    </section>
+
+    <!-- NEXT MATCH -->
+    <section class="view-section" id="view-nextmatch">
+      <div class="page-title">Next Match</div>
+      <p style="font-size:12.5px;color:var(--muted);margin:-12px 0 20px;">Shown on the homepage and included on every player's generated share card. There's only ever one upcoming match — saving here replaces whatever was there before.</p>
+
+      <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; max-width:640px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+          <div>
+            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Opponent *</label>
+            <input type="text" id="nextMatchOpponent" class="edit-input" placeholder="e.g. Harimau FC">
+          </div>
+          <div>
+            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Competition</label>
+            <input type="text" id="nextMatchCompetition" class="edit-input" placeholder="e.g. League Cup, Friendly">
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+          <div>
+            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Date</label>
+            <input type="date" id="nextMatchDate" class="edit-input">
+          </div>
+          <div>
+            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Kickoff time</label>
+            <input type="time" id="nextMatchTime" class="edit-input">
+          </div>
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Venue</label>
+          <input type="text" id="nextMatchVenue" class="edit-input" placeholder="e.g. Padang Bali, Section 12">
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button class="action" id="saveNextMatchBtn">Save match</button>
+          <button class="ghost" id="clearNextMatchBtn">Clear (no upcoming match)</button>
+        </div>
+        <div id="nextMatchMsg" style="font-size:12px; color:var(--muted); margin-top:12px;"></div>
+        <div id="nextMatchLastUpdated" style="font-size:11px; color:var(--muted); margin-top:6px;"></div>
       </div>
     </section>
 
@@ -1979,6 +2022,63 @@
     renderMediaLog();
   }
 
+  // ---------------- NEXT MATCH ----------------
+  async function loadNextMatch(){
+    const data = await (await fetch(`${API_URL}?action=getNextMatch`)).json(); // public read, no token needed
+    const msgEl = document.getElementById('nextMatchLastUpdated');
+    if (!data.ok || !data.match){
+      msgEl.textContent = 'No upcoming match set yet.';
+      return;
+    }
+    const m = data.match;
+    document.getElementById('nextMatchOpponent').value = m.opponent || '';
+    document.getElementById('nextMatchCompetition').value = m.competition || '';
+    document.getElementById('nextMatchDate').value = m.date || '';
+    document.getElementById('nextMatchTime').value = m.time || '';
+    document.getElementById('nextMatchVenue').value = m.venue || '';
+    msgEl.textContent = m.updatedAt ? `Last updated ${m.updatedAt}` : '';
+  }
+
+  document.getElementById('saveNextMatchBtn').addEventListener('click', async () => {
+    const opponent = document.getElementById('nextMatchOpponent').value.trim();
+    const msgEl = document.getElementById('nextMatchMsg');
+    if (!opponent){ msgEl.textContent = 'Opponent is required.'; msgEl.style.color = 'var(--accent)'; return; }
+    const params = new URLSearchParams({
+      action: 'adminUpdateNextMatch', token,
+      opponent,
+      competition: document.getElementById('nextMatchCompetition').value.trim(),
+      date: document.getElementById('nextMatchDate').value,
+      time: document.getElementById('nextMatchTime').value,
+      venue: document.getElementById('nextMatchVenue').value.trim()
+    });
+    const res = await fetch(`${API_URL}?${params.toString()}`);
+    const data = await res.json();
+    if (data.ok){
+      msgEl.textContent = 'Saved.'; msgEl.style.color = 'var(--muted)';
+      loadNextMatch();
+    } else {
+      msgEl.textContent = data.error || 'Failed to save.'; msgEl.style.color = 'var(--accent)';
+    }
+  });
+
+  document.getElementById('clearNextMatchBtn').addEventListener('click', async () => {
+    if (!(await confirmDialog('Clear the upcoming match? The homepage and share cards will show nothing until a new one is set.', { okLabel: 'Clear match', danger: true }))) return;
+    const params = new URLSearchParams({ action: 'adminClearNextMatch', token });
+    const res = await fetch(`${API_URL}?${params.toString()}`);
+    const data = await res.json();
+    if (data.ok){
+      document.getElementById('nextMatchOpponent').value = '';
+      document.getElementById('nextMatchCompetition').value = '';
+      document.getElementById('nextMatchDate').value = '';
+      document.getElementById('nextMatchTime').value = '';
+      document.getElementById('nextMatchVenue').value = '';
+      document.getElementById('nextMatchMsg').textContent = 'Cleared.';
+      document.getElementById('nextMatchLastUpdated').textContent = 'No upcoming match set yet.';
+    } else {
+      showToast(data.error || 'Failed to clear.');
+    }
+  });
+
   // ---------------- INIT ----------------
   async function init(){
     token = localStorage.getItem(STORAGE_KEY);
@@ -2004,6 +2104,7 @@
     loadProduction();
     loadDrops();
     loadSiteAssets();
+    loadNextMatch();
   }
 
   init();
