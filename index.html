@@ -322,6 +322,22 @@
     backdrop-filter:blur(8px);
     border-radius:0; padding:22px 32px;
   }
+  .next-match-bar{
+    display:flex; align-items:center; justify-content:center; gap:14px;
+    background:var(--surface); border-bottom:1px solid var(--line);
+    padding:14px 6vw; flex-wrap:wrap;
+  }
+  .next-match-label{
+    font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em;
+    padding:3px 9px; border:1px solid var(--line);
+  }
+  .next-match-opponent{
+    font-family:'Oswald',sans-serif; font-size:16px; font-weight:600; color:var(--ink);
+  }
+  .next-match-meta{ font-size:13px; color:var(--muted); }
+  @media (max-width:640px){
+    .next-match-bar{ padding:12px 6vw; gap:8px; text-align:center; }
+  }
   .hero-countdown-label{
     display:block; font-size:13px; color:rgba(255,255,255,.75);
     letter-spacing:.14em; margin-bottom:16px; font-weight:600;
@@ -1033,6 +1049,12 @@
     </div>
   </div>
 
+  <div class="next-match-bar" id="nextMatchBar" style="display:none;">
+    <span class="next-match-label mono">Next match</span>
+    <span class="next-match-opponent" id="nextMatchOpponentDisplay"></span>
+    <span class="next-match-meta" id="nextMatchMetaDisplay"></span>
+  </div>
+
   <div class="login-promo-compact is-locked">
     <div class="login-promo-icon">
       <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
@@ -1388,6 +1410,48 @@
   }
   updateCountdown();
   countdownTimer = setInterval(updateCountdown, 1000);
+
+  /* ---------------- NEXT MATCH BAR ---------------- */
+  // Same central spreadsheet the Players page reads from — admin sets this
+  // in the dashboard's "Next Match" section. Reads directly via gviz JSON,
+  // same pattern used everywhere else public content gets pulled from a
+  // sheet, no backend round-trip needed.
+  (async function loadNextMatchBar(){
+    const PLAYERS_SHEET_ID = '1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM';
+    try {
+      const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=NextMatch`;
+      const res = await fetch(url);
+      if (!res.ok) return;
+      const text = await res.text();
+      const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
+      const row = (json.table && json.table.rows && json.table.rows[0]);
+      if (!row) return;
+      const cells = row.c || [];
+      const val = i => (cells[i] ? cells[i].v : '');
+      const opponent = String(val(0) || '').trim();
+      if (!opponent) return; // nothing set — bar stays hidden
+
+      const competition = String(val(1) || '').trim();
+      const dateStr = String(val(2) || '').trim();
+      const timeStr = String(val(3) || '').trim();
+      const venue = String(val(4) || '').trim();
+
+      const metaParts = [];
+      if (dateStr){
+        const d = new Date(dateStr + 'T00:00:00');
+        if (!isNaN(d)) metaParts.push(d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }));
+      }
+      if (timeStr) metaParts.push(timeStr);
+      if (venue) metaParts.push(venue);
+      if (competition) metaParts.push(competition);
+
+      document.getElementById('nextMatchOpponentDisplay').textContent = 'vs ' + opponent;
+      document.getElementById('nextMatchMetaDisplay').textContent = metaParts.join(' · ');
+      document.getElementById('nextMatchBar').style.display = 'flex';
+    } catch (err) {
+      console.warn('Could not load next match info — bar stays hidden.', err);
+    }
+  })();
 
   /* ---------------- SIZE CHART TOGGLE ---------------- */
   const sizeTabAdult = document.getElementById('sizeTabAdult');
