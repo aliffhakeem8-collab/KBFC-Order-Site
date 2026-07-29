@@ -261,32 +261,47 @@
   .player-modal-overlay.open{ opacity:1; pointer-events:auto; }
   .player-modal{
     background:var(--surface); border-radius:14px; overflow:hidden;
-    max-width:760px; width:100%; max-height:88vh; overflow-y:auto;
-    display:grid; grid-template-columns:1fr 1fr;
+    max-width:1140px; width:92vw; max-height:90vh; overflow-y:auto;
+    display:grid; grid-template-columns:1.1fr 1fr;
     box-shadow:var(--shadow);
     transform:translateY(12px) scale(.98); transition:transform .2s ease;
   }
   .player-modal-overlay.open .player-modal{ transform:translateY(0) scale(1); }
-  .player-modal-media{ position:relative; background:#111; min-height:340px; }
+  .player-modal-media{ position:relative; background:#111; min-height:560px; }
   .player-modal-media img{ width:100%; height:100%; object-fit:cover; display:block; }
   .player-modal-close{
-    position:absolute; top:14px; right:14px; z-index:2;
-    width:34px; height:34px; border-radius:50%; border:none;
+    position:absolute; top:18px; right:18px; z-index:2;
+    width:40px; height:40px; border-radius:50%; border:none;
     background:rgba(0,0,0,.5); color:#fff; cursor:pointer;
     display:flex; align-items:center; justify-content:center;
   }
-  .player-modal-close svg{ width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; }
-  .player-modal-info{ padding:28px; display:flex; flex-direction:column; }
-  .player-modal-number{ font-size:13px; color:var(--accent); font-weight:700; letter-spacing:.06em; margin-bottom:6px; }
-  .player-modal-info h2{ font-family:'Oswald',sans-serif; font-size:28px; font-weight:600; color:var(--ink); margin-bottom:4px; }
-  .player-modal-position{ font-size:13px; color:var(--muted); margin-bottom:24px; text-transform:uppercase; letter-spacing:.04em; }
-  .player-modal-stats{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:auto; }
-  .player-modal-stat{ background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:16px; }
-  .player-modal-stat b{ display:block; font-family:'Oswald',sans-serif; font-size:26px; font-weight:600; color:var(--ink); }
-  .player-modal-stat span{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+  .player-modal-close svg{ width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2; }
+  .player-modal-info{ padding:44px 40px; display:flex; flex-direction:column; }
+  .player-modal-number{ font-size:16px; color:var(--accent); font-weight:700; letter-spacing:.06em; margin-bottom:8px; }
+  .player-modal-info h2{ font-family:'Oswald',sans-serif; font-size:42px; font-weight:600; color:var(--ink); margin-bottom:6px; }
+  .player-modal-position{ font-size:16px; color:var(--muted); margin-bottom:36px; text-transform:uppercase; letter-spacing:.04em; }
+  .player-modal-stats{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:auto; }
+  .player-modal-stat{ background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:22px; }
+  .player-modal-stat b{ display:block; font-family:'Oswald',sans-serif; font-size:38px; font-weight:600; color:var(--ink); }
+  .player-modal-stat span{ font-size:13px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+  .player-modal-share{
+    margin-top:20px; width:100%; padding:13px; border-radius:8px; border:none;
+    background:var(--ink); color:var(--surface); font-size:13.5px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer;
+    font-family:'Inter',sans-serif; transition:background .2s ease;
+  }
+  .player-modal-share:hover{ background:var(--accent); }
+  .player-modal-share:disabled{ opacity:.6; cursor:default; }
+  .player-modal-share svg{ width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; }
+  #shareStatusMsg{ font-size:12px; color:var(--muted); text-align:center; margin-top:8px; min-height:16px; }
   @media (max-width:680px){
-    .player-modal{ grid-template-columns:1fr; max-height:92vh; }
+    .player-modal{ grid-template-columns:1fr; max-height:92vh; width:94vw; }
     .player-modal-media{ min-height:260px; }
+    .player-modal-info{ padding:24px 22px; }
+    .player-modal-info h2{ font-size:28px; }
+    .player-modal-position{ margin-bottom:22px; }
+    .player-modal-stat{ padding:14px; }
+    .player-modal-stat b{ font-size:26px; }
   }
 
   @media (max-width:780px){
@@ -457,6 +472,11 @@
         <div class="player-modal-stat"><b id="statAssists">0</b><span>Assists</span></div>
         <div class="player-modal-stat"><b id="statCleanSheets">0</b><span>Clean sheets</span></div>
       </div>
+      <button class="player-modal-share" id="playerModalShare">
+        <svg viewBox="0 0 24 24"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        Share card
+      </button>
+      <div id="shareStatusMsg"></div>
     </div>
   </div>
 </div>
@@ -638,8 +658,10 @@
   /* ---------------- PLAYER DETAIL POPUP ---------------- */
   const playerModalOverlay = document.getElementById('playerModalOverlay');
   const playerModalImg = document.getElementById('playerModalImg');
+  let currentModalPlayer = null;
 
   function openPlayerModal(p){
+    currentModalPlayer = p;
     playerModalImg.src = p.photo;
     playerModalImg.onerror = function(){ this.onerror = null; this.src = placeholderSrc(initials(p.name)); };
     document.getElementById('playerModalNumber').textContent = '#' + p.number;
@@ -649,6 +671,7 @@
     document.getElementById('statGoals').textContent = p.goals || 0;
     document.getElementById('statAssists').textContent = p.assists || 0;
     document.getElementById('statCleanSheets').textContent = p.cleanSheets || 0;
+    document.getElementById('shareStatusMsg').textContent = '';
     playerModalOverlay.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
@@ -656,6 +679,141 @@
     playerModalOverlay.classList.remove('open');
     document.body.style.overflow = '';
   }
+
+  /* ---------- share card: renders a Story-sized (1080x1920) PNG combining
+     photo + name + number + stats, then hands it to the phone's native
+     share sheet (navigator.share) — Instagram shows up there as a Story,
+     DM, or feed-post destination, same as any other app the OS offers.
+     There's no way for a website to post directly into Instagram Stories/
+     DMs itself; this is the real, working equivalent. Desktop browsers
+     (and any mobile browser without file-sharing support) fall back to
+     just downloading the image instead. ---------- */
+  function loadImageForCanvas(src){
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      img.src = src;
+    });
+  }
+  function drawImageCover(ctx, img, x, y, w, h){
+    const imgRatio = img.width / img.height, targetRatio = w / h;
+    let sx, sy, sw, sh;
+    if (imgRatio > targetRatio){ sh = img.height; sw = sh * targetRatio; sx = (img.width - sw) / 2; sy = 0; }
+    else { sw = img.width; sh = sw / targetRatio; sx = 0; sy = (img.height - sh) / 2; }
+    ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+  }
+
+  async function generateShareCard(p){
+    const canvas = document.createElement('canvas');
+    canvas.width = 1080;
+    canvas.height = 1920;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#0a0a0a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const photoHeight = canvas.height * 0.72;
+    try {
+      const img = await loadImageForCanvas(p.photo);
+      drawImageCover(ctx, img, 0, 0, canvas.width, photoHeight);
+    } catch (err) {
+      ctx.fillStyle = '#c8cdd4';
+      ctx.fillRect(0, 0, canvas.width, photoHeight);
+      ctx.fillStyle = '#fff';
+      ctx.font = '700 220px Oswald, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(initials(p.name), canvas.width / 2, photoHeight / 2);
+    }
+
+    const grad = ctx.createLinearGradient(0, photoHeight - 420, 0, photoHeight);
+    grad.addColorStop(0, 'rgba(10,10,10,0)');
+    grad.addColorStop(1, 'rgba(10,10,10,1)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, photoHeight - 420, canvas.width, 420);
+
+    try {
+      const crestImg = await loadImageForCanvas(document.querySelector('.brand-logo').src);
+      ctx.drawImage(crestImg, 48, 48, 64, 64);
+    } catch (err) { /* crest is a nice-to-have — skip silently if it fails to load */ }
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.font = '700 34px Inter, sans-serif';
+    ctx.fillText('KELAPA BALI FC', 128, 80);
+
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#c0392b';
+    ctx.font = '700 90px Oswald, sans-serif';
+    ctx.fillText('#' + p.number, 48, photoHeight + 40);
+
+    ctx.fillStyle = '#fff';
+    ctx.font = '700 74px Oswald, sans-serif';
+    ctx.fillText(p.name, 48, photoHeight + 130);
+
+    ctx.fillStyle = 'rgba(255,255,255,.65)';
+    ctx.font = '600 32px Inter, sans-serif';
+    ctx.fillText((p.position || '').toUpperCase(), 48, photoHeight + 175);
+
+    const stats = [
+      { label: 'APPEARANCES', value: p.appearances || 0 },
+      { label: 'GOALS', value: p.goals || 0 },
+      { label: 'ASSISTS', value: p.assists || 0 },
+      { label: 'CLEAN SHEETS', value: p.cleanSheets || 0 }
+    ];
+    const statY = photoHeight + 260, colWidth = canvas.width / 4;
+    stats.forEach((s, i) => {
+      const cx = colWidth * i + colWidth / 2;
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#fff';
+      ctx.font = '700 56px Oswald, sans-serif';
+      ctx.fillText(String(s.value), cx, statY);
+      ctx.fillStyle = 'rgba(255,255,255,.55)';
+      ctx.font = '600 20px Inter, sans-serif';
+      ctx.fillText(s.label, cx, statY + 40);
+    });
+
+    return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+  }
+
+  document.getElementById('playerModalShare').addEventListener('click', async () => {
+    if (!currentModalPlayer) return;
+    const btn = document.getElementById('playerModalShare');
+    const statusEl = document.getElementById('shareStatusMsg');
+    const originalLabel = btn.innerHTML;
+    btn.disabled = true;
+    btn.textContent = 'Preparing…';
+    statusEl.textContent = '';
+
+    try {
+      const blob = await generateShareCard(currentModalPlayer);
+      if (!blob) throw new Error('Could not render the card image.');
+      const fileName = currentModalPlayer.name.replace(/\s+/g, '-') + '-card.png';
+      const file = new File([blob], fileName, { type: 'image/png' });
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: currentModalPlayer.name + ' — Kelapa Bali FC',
+          text: 'Check out ' + currentModalPlayer.name + '\u2019s player card!'
+        });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = fileName;
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+        statusEl.textContent = 'Saved! Open Instagram and share it from your photos.';
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') { // user just closing the native share sheet isn't an error
+        statusEl.textContent = "Couldn't generate the card — please try again.";
+        console.warn('Share card failed:', err);
+      }
+    }
+    btn.disabled = false;
+    btn.innerHTML = originalLabel;
+  });
 
   // Delegated click — cards are re-rendered on every filter change, so this
   // is bound once on the container rather than re-bound per card.
