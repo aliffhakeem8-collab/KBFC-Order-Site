@@ -155,6 +155,11 @@
 
   .stat-row{ display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
   @media (max-width:900px){ .stat-row{ grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:900px){
+    #view-players > div[style*="grid-template-columns:1.4fr 1fr"]{
+      grid-template-columns:1fr !important;
+    }
+  }
   .stat-tile{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px 18px; }
   .stat-tile-highlight{
     grid-column:1 / -1;
@@ -305,6 +310,23 @@
   .player-photo-upload .upload-badge svg{
     width:10px; height:10px; stroke:#fff; fill:none; stroke-width:2.5;
     margin:2px 0 0 2px;
+  }
+  .player-log-entry{
+    display:flex; align-items:center; gap:10px;
+    padding:10px 0; border-bottom:1px solid var(--line);
+  }
+  .player-log-entry:last-child{ border-bottom:none; }
+  .player-log-entry img{
+    width:38px; height:38px; border-radius:6px; object-fit:cover;
+    background:var(--surface-2); flex-shrink:0;
+  }
+  .player-log-entry .log-info{ min-width:0; flex:1; }
+  .player-log-entry .log-name{ font-size:12.5px; font-weight:600; color:var(--ink); }
+  .player-log-entry .log-meta{ font-size:11px; color:var(--muted); margin-top:2px; }
+  .player-log-entry .log-type-badge{
+    font-size:9.5px; font-weight:700; text-transform:uppercase; letter-spacing:.04em;
+    padding:2px 7px; border-radius:4px; background:var(--surface-2); color:var(--muted);
+    flex-shrink:0;
   }
   .player-photo-upload.uploading{ opacity:.5; pointer-events:none; }
   .edit-input{
@@ -564,71 +586,72 @@
       <div class="page-title">Players</div>
       <p style="font-size:12.5px;color:var(--muted);margin:-12px 0 16px;">Edit number, name, position, season stats, or photo/GIF links shown on the public Players page.</p>
 
-      <div class="card-add-player" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px;">
-        <div style="display:grid; grid-template-columns:1fr 2fr 1.4fr auto; gap:10px; align-items:end;">
-          <div>
-            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Jersey number</label>
-            <input type="text" id="newPlayerNumber" class="edit-input" placeholder="10">
+      <div style="display:grid; grid-template-columns:1.4fr 1fr; gap:16px; align-items:start; margin-bottom:16px;">
+
+        <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px;">
+          <h3>Add or update a player</h3>
+          <p class="card-sub" style="margin-bottom:16px;">Add a new player below, or pick an existing one to upload their photo/GIF — every upload overwrites their previous one.</p>
+
+          <div style="display:grid; grid-template-columns:1fr 2fr 1.3fr auto; gap:10px; align-items:end; margin-bottom:18px;">
+            <div>
+              <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Jersey number</label>
+              <input type="text" id="newPlayerNumber" class="edit-input" placeholder="10">
+            </div>
+            <div>
+              <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Name</label>
+              <input type="text" id="newPlayerName" class="edit-input" placeholder="Hakeem Shaari">
+            </div>
+            <div>
+              <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Position</label>
+              <select id="newPlayerPosition" class="edit-input">
+                <option value="">—</option>
+                <option value="Goalkeeper">Goalkeeper</option>
+                <option value="Defender">Defender</option>
+                <option value="Midfielder">Midfielder</option>
+                <option value="Forward">Forward</option>
+              </select>
+            </div>
+            <button class="action" id="addPlayerBtn">Add player</button>
           </div>
-          <div>
-            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Name</label>
-            <input type="text" id="newPlayerName" class="edit-input" placeholder="Hakeem Shaari">
+
+          <div style="border-top:1px solid var(--line); margin:0 0 18px;"></div>
+
+          <div style="display:grid; grid-template-columns:2fr 1fr; gap:10px; margin-bottom:14px;">
+            <div>
+              <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Player</label>
+              <select id="playerPhotoSelect" class="edit-input"></select>
+            </div>
+            <div>
+              <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Type</label>
+              <select id="playerPhotoTarget" class="edit-input">
+                <option value="photo">Photo</option>
+                <option value="gif">GIF</option>
+              </select>
+            </div>
           </div>
-          <div>
-            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Position</label>
-            <select id="newPlayerPosition" class="edit-input">
-              <option value="">—</option>
-              <option value="Goalkeeper">Goalkeeper</option>
-              <option value="Defender">Defender</option>
-              <option value="Midfielder">Midfielder</option>
-              <option value="Forward">Forward</option>
-            </select>
+          <label class="media-upload-zone" id="playerPhotoUploadZone">
+            <input type="file" accept="image/*" id="playerPhotoFileInput">
+            <svg class="upload-icon" viewBox="0 0 24 24"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
+            <div class="upload-main" id="playerPhotoZoneLabel">Click to choose an image, or drag one here</div>
+            <div class="upload-sub">JPG or PNG</div>
+          </label>
+          <div id="playerPhotoPreviewRow" style="display:none; align-items:center; gap:14px; margin-top:14px;">
+            <img id="playerPhotoPreviewThumb" class="img-thumb" style="width:56px; height:56px;">
+            <span id="playerPhotoPreviewName" style="font-size:12.5px;color:var(--muted);"></span>
           </div>
-          <button class="action" id="addPlayerBtn">Add player</button>
+          <div id="playerPhotoUploadMsg"></div>
+          <button class="action" id="playerPhotoUploadBtn" style="margin-top:14px;" disabled>Upload</button>
         </div>
+
+        <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; max-height:640px; overflow-y:auto;">
+          <h3>Upload log</h3>
+          <p class="card-sub" style="margin-bottom:14px;">One row per player + type — re-uploading updates it in place, most recent first.</p>
+          <div id="playerPhotoLogBody"></div>
+        </div>
+
       </div>
 
-      <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px;">
-        <h3>Upload player photo</h3>
-        <p class="card-sub" style="margin-bottom:16px;">Pick a player and a file — every upload is logged below, newest first.</p>
-        <div style="display:grid; grid-template-columns:2fr 1fr; gap:10px; margin-bottom:14px; max-width:520px;">
-          <div>
-            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Player</label>
-            <select id="playerPhotoSelect" class="edit-input"></select>
-          </div>
-          <div>
-            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Type</label>
-            <select id="playerPhotoTarget" class="edit-input">
-              <option value="photo">Photo</option>
-              <option value="gif">GIF</option>
-            </select>
-          </div>
-        </div>
-        <label class="media-upload-zone" id="playerPhotoUploadZone" style="max-width:520px;">
-          <input type="file" accept="image/*" id="playerPhotoFileInput">
-          <svg class="upload-icon" viewBox="0 0 24 24"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
-          <div class="upload-main" id="playerPhotoZoneLabel">Click to choose an image, or drag one here</div>
-          <div class="upload-sub">JPG or PNG</div>
-        </label>
-        <div id="playerPhotoPreviewRow" style="display:none; align-items:center; gap:14px; margin-top:14px;">
-          <img id="playerPhotoPreviewThumb" class="img-thumb" style="width:56px; height:56px;">
-          <span id="playerPhotoPreviewName" style="font-size:12.5px;color:var(--muted);"></span>
-        </div>
-        <div id="playerPhotoUploadMsg"></div>
-        <button class="action" id="playerPhotoUploadBtn" style="margin-top:14px;" disabled>Upload</button>
-      </div>
-
-      <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:16px;">
-        <h3>Upload log</h3>
-        <p class="card-sub">Newest first. The top entry per player + type is the one currently live on the Players page.</p>
-        <div class="table-wrap" style="margin-top:12px;">
-          <table>
-            <thead><tr><th>Player</th><th>Type</th><th>Preview</th><th>Size</th><th>Uploaded</th></tr></thead>
-            <tbody id="playerPhotoLogBody"></tbody>
-          </table>
-        </div>
-      </div>
-
+      <div class="page-title" style="font-size:16px; margin-top:8px;">Active roster</div>
       <div class="toolbar">
         <input type="text" id="playerSearch" placeholder="Search by name or number…">
         <button class="ghost" id="exportPlayersBtn">Download CSV</button>
@@ -1646,19 +1669,20 @@
 
   async function loadPlayerPhotoLog(){
     const data = await (await fetch(`${API_URL}?action=adminGetPlayerPhotoLog&token=${encodeURIComponent(token)}`)).json();
-    if (!data.ok) { playerPhotoEls.logBody.innerHTML = `<tr><td colspan="5" class="empty">Couldn't load the log.</td></tr>`; return; }
+    if (!data.ok) { playerPhotoEls.logBody.innerHTML = `<p style="font-size:12.5px;color:var(--muted);">Couldn't load the log.</p>`; return; }
     if (data.log.length === 0){
-      playerPhotoEls.logBody.innerHTML = `<tr><td colspan="5" class="empty">No uploads yet.</td></tr>`;
+      playerPhotoEls.logBody.innerHTML = `<p style="font-size:12.5px;color:var(--muted);">No uploads yet.</p>`;
       return;
     }
     playerPhotoEls.logBody.innerHTML = data.log.map(entry => `
-      <tr>
-        <td>#${entry.number || '—'} — ${entry.name || 'Unnamed'}</td>
-        <td style="text-transform:capitalize;">${entry.target}</td>
-        <td><img class="img-thumb" src="${entry.url}" onerror="this.style.display='none'"></td>
-        <td class="mono">${entry.sizeKb} KB</td>
-        <td class="mono">${entry.uploadedAt}</td>
-      </tr>
+      <div class="player-log-entry">
+        <img src="${entry.url}" onerror="this.style.display='none'">
+        <div class="log-info">
+          <div class="log-name">#${entry.number || '—'} — ${entry.name || 'Unnamed'}</div>
+          <div class="log-meta">${entry.sizeKb} KB · ${entry.uploadedAt}</div>
+        </div>
+        <span class="log-type-badge">${entry.target}</span>
+      </div>
     `).join('');
   }
   document.getElementById('exportPlayersBtn').addEventListener('click', () => {
