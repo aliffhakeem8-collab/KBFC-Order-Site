@@ -626,6 +626,18 @@
             <button class="action" id="addPlayerBtn">Add player</button>
           </div>
 
+          <button type="button" id="bulkAddToggle" style="background:none;border:none;color:var(--accent);font-size:12px;font-weight:600;cursor:pointer;padding:0;margin-bottom:18px;">+ Bulk add multiple players</button>
+          <div id="bulkAddPanel" style="display:none; margin-bottom:18px;">
+            <p style="font-size:11px; color:var(--muted); margin-bottom:8px;">
+              One player per line: <code>number, name, position</code> — position is optional.
+            </p>
+            <textarea id="bulkAddTextarea" class="edit-input" rows="6" style="width:100%; resize:vertical; font-family:'JetBrains Mono',monospace; font-size:12px; box-sizing:border-box;" placeholder="10, Hakeem Shaari, Forward&#10;11, Danish, Midfielder&#10;22, Aliff, Forward"></textarea>
+            <div style="display:flex; align-items:center; gap:12px; margin-top:10px;">
+              <button class="action" id="bulkAddBtn">Add all players</button>
+              <span id="bulkAddMsg" style="font-size:12px; color:var(--muted);"></span>
+            </div>
+          </div>
+
           <div style="border-top:1px solid var(--line); margin:0 0 18px;"></div>
 
           <div style="display:grid; grid-template-columns:2fr 1fr; gap:10px; margin-bottom:14px;">
@@ -755,6 +767,12 @@
         </div>
         <div id="nextMatchMsg" style="font-size:12px; color:var(--muted); margin-top:12px;"></div>
         <div id="nextMatchLastUpdated" style="font-size:11px; color:var(--muted); margin-top:6px;"></div>
+      </div>
+
+      <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; max-width:640px; margin-top:16px;">
+        <h3>Match history</h3>
+        <p class="card-sub" style="margin-bottom:12px;">Every match that's been set, newest first — separate from the current one above.</p>
+        <div id="nextMatchLogBody"></div>
       </div>
     </section>
 
@@ -1650,6 +1668,68 @@
     loadPlayers();
   });
 
+  document.getElementById('bulkAddToggle').addEventListener('click', () => {
+    const panel = document.getElementById('bulkAddPanel');
+    const isOpen = panel.style.display !== 'none';
+    panel.style.display = isOpen ? 'none' : 'block';
+    document.getElementById('bulkAddToggle').textContent = isOpen ? '+ Bulk add multiple players' : '− Hide bulk add';
+  });
+
+  document.getElementById('bulkAddBtn').addEventListener('click', async () => {
+    const textarea = document.getElementById('bulkAddTextarea');
+    const msgEl = document.getElementById('bulkAddMsg');
+    const btn = document.getElementById('bulkAddBtn');
+    const lines = textarea.value.split('\n').map(l => l.trim()).filter(l => l);
+
+    if (lines.length === 0){ msgEl.textContent = 'Paste at least one player first.'; msgEl.style.color = 'var(--accent)'; return; }
+
+    // Parse "number, name, position" per line — position is optional.
+    const players = [];
+    const badLines = [];
+    lines.forEach((line, i) => {
+      const parts = line.split(',').map(p => p.trim());
+      const [number, name, position] = parts;
+      if (!number || !name){ badLines.push(i + 1); return; }
+      players.push({ number, name, position: position || '' });
+    });
+
+    if (players.length === 0){
+      msgEl.textContent = 'None of those lines had both a number and a name.';
+      msgEl.style.color = 'var(--accent)';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Adding…';
+    msgEl.textContent = '';
+
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'adminBulkAddPlayers', token, players })
+      });
+      const data = await res.json();
+      if (data.ok){
+        let summary = `Added ${data.added} player${data.added === 1 ? '' : 's'}.`;
+        if (badLines.length) summary += ` Skipped line(s) ${badLines.join(', ')} (missing number/name).`;
+        if (data.skipped && data.skipped.length) summary += ` Backend skipped: ${data.skipped.join('; ')}.`;
+        msgEl.textContent = summary;
+        msgEl.style.color = 'var(--muted)';
+        textarea.value = '';
+        showToast(`${data.added} player(s) added`);
+        loadPlayers();
+      } else {
+        msgEl.textContent = data.error || 'Failed to add players.';
+        msgEl.style.color = 'var(--accent)';
+      }
+    } catch (err) {
+      msgEl.textContent = 'Could not reach the server.';
+      msgEl.style.color = 'var(--accent)';
+    }
+    btn.disabled = false;
+    btn.textContent = 'Add all players';
+  });
+
   // ---------------- DEDICATED PLAYER PHOTO/GIF UPLOAD (with log) ----------------
   const playerPhotoEls = {
     select: document.getElementById('playerPhotoSelect'),
@@ -2039,6 +2119,21 @@
     msgEl.textContent = m.updatedAt ? `Last updated ${m.updatedAt}` : '';
   }
 
+  async function loadNextMatchLog(){
+    const logBody = document.getElementById('nextMatchLogBody');
+    const data = await (await fetch(`${API_URL}?action=adminGetNextMatchLog&token=${encodeURIComponent(token)}`)).json();
+    if (!data.ok || data.log.length === 0){
+      logBody.innerHTML = `<p style="font-size:12px;color:var(--muted);">No history yet.</p>`;
+      return;
+    }
+    logBody.innerHTML = data.log.map(m => `
+      <div style="padding:9px 0; border-bottom:1px solid var(--line); font-size:12.5px;">
+        <b>vs ${m.opponent}</b>
+        <span style="color:var(--muted);"> — ${[m.date, m.time, m.venue, m.competition].filter(Boolean).join(' · ')}</span>
+      </div>
+    `).join('');
+  }
+
   document.getElementById('saveNextMatchBtn').addEventListener('click', async () => {
     const opponent = document.getElementById('nextMatchOpponent').value.trim();
     const msgEl = document.getElementById('nextMatchMsg');
@@ -2055,7 +2150,7 @@
     const data = await res.json();
     if (data.ok){
       msgEl.textContent = 'Saved.'; msgEl.style.color = 'var(--muted)';
-      loadNextMatch();
+      loadNextMatch(); loadNextMatchLog();
     } else {
       msgEl.textContent = data.error || 'Failed to save.'; msgEl.style.color = 'var(--accent)';
     }
@@ -2104,7 +2199,7 @@
     loadProduction();
     loadDrops();
     loadSiteAssets();
-    loadNextMatch();
+    loadNextMatch(); loadNextMatchLog();
   }
 
   init();
