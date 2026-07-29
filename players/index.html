@@ -598,6 +598,21 @@
 
   // The "Next Match" admin sets in the dashboard — read the same way as
   // the squad/hero data (direct gviz JSON, no backend round-trip needed).
+  //
+  // parseGvizCell unwraps a Sheets/gviz quirk: if a cell ever gets
+  // auto-detected as a real Date value (which used to happen before the
+  // backend started forcing those columns to plain text), gviz serializes
+  // it as a literal string like "Date(2026,7,2,0,0,0)" instead of plain
+  // text — this handles that so the share card never shows garbled text
+  // for any older rows.
+  function parseGvizCell(raw){
+    const str = String(raw == null ? '' : raw).trim();
+    const m = str.match(/^Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)$/);
+    if (!m) return str;
+    const [, y, mo, d] = m.map(Number);
+    return { year: y, month: mo, day: d };
+  }
+
   async function fetchNextMatch(){
     try {
       const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=NextMatch`;
@@ -614,8 +629,8 @@
       nextMatch = {
         opponent,
         competition: String(val(1) || '').trim(),
-        date: String(val(2) || '').trim(),
-        time: String(val(3) || '').trim(),
+        date: parseGvizCell(val(2)),
+        time: parseGvizCell(val(3)),
         venue: String(val(4) || '').trim()
       };
     } catch (err) {
@@ -626,8 +641,10 @@
     if (!nextMatch) return '';
     let line = 'NEXT: vs ' + nextMatch.opponent.toUpperCase();
     if (nextMatch.date){
-      const d = new Date(nextMatch.date + 'T00:00:00');
-      if (!isNaN(d)) line += ' \u00b7 ' + d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }).toUpperCase();
+      let d = null;
+      if (typeof nextMatch.date === 'object') d = new Date(nextMatch.date.year, nextMatch.date.month, nextMatch.date.day);
+      else d = new Date(nextMatch.date + 'T00:00:00');
+      if (d && !isNaN(d)) line += ' \u00b7 ' + d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }).toUpperCase();
     }
     return line;
   }
