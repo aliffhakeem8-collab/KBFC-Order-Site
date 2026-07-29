@@ -250,6 +250,45 @@
     font-family:'Oswald',sans-serif; font-weight:600; font-size:clamp(13px,1.6vw,16px);
   }
 
+  /* ---------- player detail popup ---------- */
+  .player-modal-overlay{
+    position:fixed; inset:0; z-index:200;
+    background:rgba(0,0,0,.65);
+    display:flex; align-items:center; justify-content:center;
+    padding:24px;
+    opacity:0; pointer-events:none; transition:opacity .2s ease;
+  }
+  .player-modal-overlay.open{ opacity:1; pointer-events:auto; }
+  .player-modal{
+    background:var(--surface); border-radius:14px; overflow:hidden;
+    max-width:760px; width:100%; max-height:88vh; overflow-y:auto;
+    display:grid; grid-template-columns:1fr 1fr;
+    box-shadow:var(--shadow);
+    transform:translateY(12px) scale(.98); transition:transform .2s ease;
+  }
+  .player-modal-overlay.open .player-modal{ transform:translateY(0) scale(1); }
+  .player-modal-media{ position:relative; background:#111; min-height:340px; }
+  .player-modal-media img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .player-modal-close{
+    position:absolute; top:14px; right:14px; z-index:2;
+    width:34px; height:34px; border-radius:50%; border:none;
+    background:rgba(0,0,0,.5); color:#fff; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .player-modal-close svg{ width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; }
+  .player-modal-info{ padding:28px; display:flex; flex-direction:column; }
+  .player-modal-number{ font-size:13px; color:var(--accent); font-weight:700; letter-spacing:.06em; margin-bottom:6px; }
+  .player-modal-info h2{ font-family:'Oswald',sans-serif; font-size:28px; font-weight:600; color:var(--ink); margin-bottom:4px; }
+  .player-modal-position{ font-size:13px; color:var(--muted); margin-bottom:24px; text-transform:uppercase; letter-spacing:.04em; }
+  .player-modal-stats{ display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:auto; }
+  .player-modal-stat{ background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:16px; }
+  .player-modal-stat b{ display:block; font-family:'Oswald',sans-serif; font-size:26px; font-weight:600; color:var(--ink); }
+  .player-modal-stat span{ font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+  @media (max-width:680px){
+    .player-modal{ grid-template-columns:1fr; max-height:92vh; }
+    .player-modal-media{ min-height:260px; }
+  }
+
   @media (max-width:780px){
     .topbar{ padding:18px 20px; }
     .squad-hero{ padding:90px 6vw 28px; min-height:420px; }
@@ -400,6 +439,28 @@
 
 <div id="squadSections"></div>
 
+<div class="player-modal-overlay" id="playerModalOverlay">
+  <div class="player-modal">
+    <div class="player-modal-media">
+      <button class="player-modal-close" id="playerModalClose" aria-label="Close">
+        <svg viewBox="0 0 24 24"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+      </button>
+      <img id="playerModalImg" src="" alt="">
+    </div>
+    <div class="player-modal-info">
+      <div class="player-modal-number mono" id="playerModalNumber"></div>
+      <h2 id="playerModalName"></h2>
+      <div class="player-modal-position" id="playerModalPosition"></div>
+      <div class="player-modal-stats">
+        <div class="player-modal-stat"><b id="statApps">0</b><span>Appearances</span></div>
+        <div class="player-modal-stat"><b id="statGoals">0</b><span>Goals</span></div>
+        <div class="player-modal-stat"><b id="statAssists">0</b><span>Assists</span></div>
+        <div class="player-modal-stat"><b id="statCleanSheets">0</b><span>Clean sheets</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
   <footer>
     <div class="footer-brand">
       <span class="mono">KELAPA BALI FC</span>
@@ -534,18 +595,36 @@
     const text = await res.text();
     // Google wraps the JSON in `google.visualization.Query.setResponse(...)` — strip that off.
     const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
+    const cols = (json.table && json.table.cols) || [];
     const rows = (json.table && json.table.rows) || [];
+
+    // Resolve columns by header label rather than assuming fixed positions —
+    // the stat columns (Appearances/Goals/Assists/Clean Sheets) get appended
+    // wherever the sheet's last column happened to be when first created, so
+    // their index isn't guaranteed the same across sheets.
+    const colIndex = {};
+    cols.forEach((c, i) => { if (c.label) colIndex[c.label.trim()] = i; });
+    const idx = (label, fallback) => (colIndex[label] !== undefined ? colIndex[label] : fallback);
+
+    const iNumber = idx('Number', 0), iName = idx('Name', 1), iPosition = idx('Position', 2),
+          iPhoto = idx('Photo', 3), iGif = idx('GIF', 4),
+          iApps = idx('Appearances', -1), iGoals = idx('Goals', -1),
+          iAssists = idx('Assists', -1), iCleanSheets = idx('Clean Sheets', -1);
 
     return rows
       .map(r => {
         const cells = r.c || [];
-        const val = i => (cells[i] ? cells[i].v : '');
+        const val = i => (i >= 0 && cells[i]) ? cells[i].v : '';
         return {
-          number: Number(val(0)),
-          name: String(val(1) || '').trim(),
-          position: String(val(2) || '').trim(),
-          photo: resolveImagePath(val(3)),
-          gif: resolveImagePath(val(4)),
+          number: Number(val(iNumber)),
+          name: String(val(iName) || '').trim(),
+          position: String(val(iPosition) || '').trim(),
+          photo: resolveImagePath(val(iPhoto)),
+          gif: resolveImagePath(val(iGif)),
+          appearances: Number(val(iApps)) || 0,
+          goals: Number(val(iGoals)) || 0,
+          assists: Number(val(iAssists)) || 0,
+          cleanSheets: Number(val(iCleanSheets)) || 0,
         };
       })
       .filter(p => p.number && p.name && p.position);
@@ -555,6 +634,41 @@
   const GROUP_ORDER = ['Forward', 'Midfielder', 'Defender', 'Goalkeeper'];
 
   const squadSections = document.getElementById('squadSections');
+
+  /* ---------------- PLAYER DETAIL POPUP ---------------- */
+  const playerModalOverlay = document.getElementById('playerModalOverlay');
+  const playerModalImg = document.getElementById('playerModalImg');
+
+  function openPlayerModal(p){
+    playerModalImg.src = p.photo;
+    playerModalImg.onerror = function(){ this.onerror = null; this.src = placeholderSrc(initials(p.name)); };
+    document.getElementById('playerModalNumber').textContent = '#' + p.number;
+    document.getElementById('playerModalName').textContent = p.name;
+    document.getElementById('playerModalPosition').textContent = p.position;
+    document.getElementById('statApps').textContent = p.appearances || 0;
+    document.getElementById('statGoals').textContent = p.goals || 0;
+    document.getElementById('statAssists').textContent = p.assists || 0;
+    document.getElementById('statCleanSheets').textContent = p.cleanSheets || 0;
+    playerModalOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closePlayerModal(){
+    playerModalOverlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  // Delegated click — cards are re-rendered on every filter change, so this
+  // is bound once on the container rather than re-bound per card.
+  squadSections.addEventListener('click', (e) => {
+    const card = e.target.closest('.player-card');
+    if (!card) return;
+    const number = card.dataset.number;
+    const p = squad.find(pl => String(pl.number) === String(number));
+    if (p) openPlayerModal(p);
+  });
+  document.getElementById('playerModalClose').addEventListener('click', closePlayerModal);
+  playerModalOverlay.addEventListener('click', (e) => { if (e.target === playerModalOverlay) closePlayerModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePlayerModal(); });
 
   function initials(name){
     return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
@@ -575,7 +689,7 @@
 
   function cardHtml(p){
     return `
-      <div class="player-card">
+      <div class="player-card" data-number="${p.number}">
         <img class="player-photo" src="${p.photo}" alt="${p.name}"
              onerror="this.onerror=null; this.src='${placeholderSrc(initials(p.name))}';">
         <img class="player-gif" src="${p.gif}" alt="" loading="lazy"
