@@ -902,8 +902,8 @@
   squadSections.addEventListener('click', (e) => {
     const card = e.target.closest('.player-card');
     if (!card) return;
-    const number = card.dataset.number;
-    const p = squad.find(pl => String(pl.number) === String(number));
+    const uid = Number(card.dataset.uid);
+    const p = squad.find(pl => pl._uid === uid);
     if (p) openPlayerModal(p);
   });
   document.getElementById('playerModalClose').addEventListener('click', closePlayerModal);
@@ -929,7 +929,7 @@
 
   function cardHtml(p){
     return `
-      <div class="player-card" data-number="${p.number}">
+      <div class="player-card" data-uid="${p._uid}">
         <img class="player-photo" src="${p.photo}" alt="${p.name}"
              onerror="this.onerror=null; this.src='${placeholderSrc(initials(p.name))}';">
         <img class="player-gif" src="${p.gif}" alt="" loading="lazy"
@@ -949,7 +949,7 @@
     let html = '';
     GROUP_ORDER.forEach(position => {
       if(filter !== 'all' && filter !== position) return;
-      const players = groups[position] || [];
+      const players = (groups[position] || []).slice().sort((a, b) => a.number - b.number);
       if(!players.length) return;
       html += `
         <div class="squad-section">
@@ -1009,6 +1009,11 @@
       squad = FALLBACK_SQUAD;
     })
     .finally(() => {
+      // A stable ID per player, separate from jersey number — this club
+      // allows duplicate numbers (normal for a community club), so number
+      // alone can't safely identify which card was clicked. Assigned once
+      // here, before any grouping/sorting, so it never changes underneath.
+      squad.forEach((p, i) => { p._uid = i; });
       renderSquad(currentFilter);
     });
 
