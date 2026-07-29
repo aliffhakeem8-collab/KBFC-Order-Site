@@ -323,10 +323,12 @@
     border-radius:0; padding:22px 32px;
   }
   .next-match-bar{
-    display:flex; align-items:center; justify-content:center; gap:14px;
+    position:sticky; top:64px; z-index:40; margin-top:64px;
+    display:flex; align-items:center; justify-content:center; gap:12px;
     background:var(--surface); border-bottom:1px solid var(--line);
     padding:14px 6vw; flex-wrap:wrap;
   }
+  .next-match-logo{ width:20px; height:20px; object-fit:contain; flex-shrink:0; }
   .next-match-label{
     font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em;
     padding:3px 9px; border:1px solid var(--line);
@@ -336,7 +338,7 @@
   }
   .next-match-meta{ font-size:13px; color:var(--muted); }
   @media (max-width:640px){
-    .next-match-bar{ padding:12px 6vw; gap:8px; text-align:center; }
+    .next-match-bar{ padding:12px 6vw; gap:8px; text-align:center; top:58px; margin-top:58px; }
   }
   .hero-countdown-label{
     display:block; font-size:13px; color:rgba(255,255,255,.75);
@@ -1001,6 +1003,13 @@
   </a>
 </div>
 
+<div class="next-match-bar" id="nextMatchBar" style="display:none;">
+  <img class="next-match-logo" id="nextMatchLogo" alt="">
+  <span class="next-match-label mono">Next match</span>
+  <span class="next-match-opponent" id="nextMatchOpponentDisplay"></span>
+  <span class="next-match-meta" id="nextMatchMetaDisplay"></span>
+</div>
+
 <!-- ============ VIEW 1: LANDING ============ -->
 <section class="view active" id="view-landing">
 
@@ -1047,12 +1056,6 @@
         </div>
       </div>
     </div>
-  </div>
-
-  <div class="next-match-bar" id="nextMatchBar" style="display:none;">
-    <span class="next-match-label mono">Next match</span>
-    <span class="next-match-opponent" id="nextMatchOpponentDisplay"></span>
-    <span class="next-match-meta" id="nextMatchMetaDisplay"></span>
   </div>
 
   <div class="login-promo-compact is-locked">
@@ -1416,6 +1419,21 @@
   // in the dashboard's "Next Match" section. Reads directly via gviz JSON,
   // same pattern used everywhere else public content gets pulled from a
   // sheet, no backend round-trip needed.
+  //
+  // parseGvizCell handles a Sheets/gviz quirk: if a cell ever gets
+  // auto-detected as a real Date/Time value (which used to happen before
+  // the backend started forcing those columns to plain text), gviz
+  // serializes it as a literal string like "Date(2026,7,2,0,0,0)" instead
+  // of a normal date — this unwraps that format if it's ever encountered,
+  // so a bar doesn't show garbled text for any older rows.
+  function parseGvizCell(raw){
+    const str = String(raw == null ? '' : raw).trim();
+    const m = str.match(/^Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)$/);
+    if (!m) return str;
+    const [, y, mo, d, h, mi] = m.map(Number);
+    return { year: y, month: mo, day: d, hour: h || 0, minute: mi || 0 };
+  }
+
   (async function loadNextMatchBar(){
     const PLAYERS_SHEET_ID = '1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM';
     try {
@@ -1432,19 +1450,29 @@
       if (!opponent) return; // nothing set — bar stays hidden
 
       const competition = String(val(1) || '').trim();
-      const dateStr = String(val(2) || '').trim();
-      const timeStr = String(val(3) || '').trim();
+      const dateParsed = parseGvizCell(val(2));
+      const timeParsed = parseGvizCell(val(3));
       const venue = String(val(4) || '').trim();
 
       const metaParts = [];
-      if (dateStr){
-        const d = new Date(dateStr + 'T00:00:00');
-        if (!isNaN(d)) metaParts.push(d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }));
+      if (dateParsed){
+        let d = null;
+        if (typeof dateParsed === 'object') d = new Date(dateParsed.year, dateParsed.month, dateParsed.day);
+        else if (dateParsed) d = new Date(dateParsed + 'T00:00:00');
+        if (d && !isNaN(d)) metaParts.push(d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }));
       }
-      if (timeStr) metaParts.push(timeStr);
+      if (timeParsed){
+        if (typeof timeParsed === 'object') {
+          metaParts.push(String(timeParsed.hour).padStart(2, '0') + ':' + String(timeParsed.minute).padStart(2, '0'));
+        } else if (timeParsed) {
+          metaParts.push(timeParsed);
+        }
+      }
       if (venue) metaParts.push(venue);
       if (competition) metaParts.push(competition);
 
+      const logoSrc = document.querySelector('.brand-logo');
+      if (logoSrc) document.getElementById('nextMatchLogo').src = logoSrc.src;
       document.getElementById('nextMatchOpponentDisplay').textContent = 'vs ' + opponent;
       document.getElementById('nextMatchMetaDisplay').textContent = metaParts.join(' · ');
       document.getElementById('nextMatchBar').style.display = 'flex';
