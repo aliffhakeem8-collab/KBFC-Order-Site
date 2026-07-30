@@ -191,6 +191,7 @@
   .status.pending, .status.pay-later{ background:var(--pending-bg); color:var(--gold); }
   .empty{ font-size:13px; color:var(--muted); }
 
+  .profile-form-wrap{ max-width:440px; }
   .profile-block{ padding:6px 0; }
   .profile-block-title{
     font-family:'Inter',sans-serif; font-size:13px; font-weight:700; color:var(--ink);
@@ -356,15 +357,17 @@
     <span class="brand-tag">26/27</span>
   </div>
 
-  <div class="nav-section-label">Menu</div>
+  <div class="nav-section-label">Account</div>
   <button class="nav-item active" data-view="overview">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
     Overview
   </button>
-  <button class="nav-item" data-view="card">
-    <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-    Membership card
+  <button class="nav-item" data-view="profile">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+    My Profile
   </button>
+
+  <div class="nav-section-label">Club</div>
   <button class="nav-item" data-view="stats">
     <svg viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
     Season stats
@@ -425,118 +428,124 @@
       </div>
 
       <div class="card">
-        <h3>My profile</h3>
-        <p class="card-sub">Update your photo, or ask the admin to correct your name, number, or position.</p>
+        <h3>Membership card</h3>
+        <p class="card-sub">Your digital club card — tap it to flip.</p>
+        <div class="card-view-grid">
+          <div class="mcard-flip-outer" id="mcardFlip">
+            <div class="mcard-flip-inner">
 
-        <div class="profile-block">
-          <h4 class="profile-block-title">Photo / GIF</h4>
-          <div class="upload-target-row">
-            <button class="target-tab active" id="tabPhoto" type="button">Photo</button>
-            <button class="target-tab" id="tabGif" type="button">GIF</button>
-          </div>
+              <div class="mcard-face mcard-front">
+                <div class="mcard-top">
+                  <div class="mcard-club">Kelapa Bali FC<br>Season 26/27</div>
+                  <div class="mcard-top-right">
+                    <div class="mcard-premium" id="mcardPremium">Premium</div>
+                    <div class="mcard-num" id="mcardNumber">--</div>
+                  </div>
+                </div>
+                <div class="mcard-name" id="mcardName">—</div>
+                <div class="mcard-position" id="mcardPosition">—</div>
+                <div class="mcard-bottom">
+                  <div class="mcard-serial" id="mcardSerial">SERIAL —</div>
+                  <div class="mcard-season">26/27</div>
+                </div>
+                <div class="mcard-hint">Tap to flip</div>
+              </div>
 
-          <label class="upload-zone" id="dropZone">
-            <input type="file" id="fileInput" accept="image/*">
-            <div id="dropZoneLabel">Click to choose an image, or drag one here</div>
-            <p>JPG or PNG — you'll be able to crop it next</p>
-          </label>
+              <div class="mcard-face mcard-back">
+                <div class="mcard-back-logo"><img src="../images/Favicon.png" alt=""></div>
+                <img class="mcard-back-photo hidden" id="mcardBackPhoto" style="display:none;">
+                <div class="mcard-back-photo-fallback" id="mcardBackFallback">--</div>
+                <div class="mcard-back-name" id="mcardBackName">—</div>
+                <div class="mcard-back-sub" id="mcardBackSub">Kelapa Bali FC · 26/27</div>
+              </div>
 
-          <div class="crop-stage" id="cropStage" style="display:none;">
-            <div class="crop-frame">
-              <canvas id="cropCanvas" width="280" height="280"></canvas>
-            </div>
-            <div class="crop-controls">
-              <label class="req-label">Zoom</label>
-              <input type="range" id="zoomSlider" min="1" max="3" step="0.01" value="1">
-            </div>
-            <p class="crop-hint">Drag the photo to reposition · use the slider to zoom</p>
-            <button type="button" class="crop-cancel-btn" id="cropCancelBtn">Choose a different photo</button>
-          </div>
-
-          <div class="preview-row hidden" id="previewRow" style="display:none;">
-            <img id="previewThumb" class="preview-thumb">
-            <span id="previewName" style="font-size:12.5px;color:var(--muted);"></span>
-            <button class="remove-preview" id="removePreviewBtn" type="button" title="Remove">✕</button>
-          </div>
-
-          <div id="uploadMsg"></div>
-          <button class="primary" id="uploadBtn" disabled>Upload</button>
-          <p class="current-photo-note">This replaces your current photo on the Players page directly — no admin approval needed.</p>
-        </div>
-
-        <div class="profile-divider"></div>
-
-        <div class="profile-block">
-          <h4 class="profile-block-title">Request a change</h4>
-          <p class="card-sub" style="margin-bottom:12px;">Corrections to your name, number, or position need admin approval.</p>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
-            <div>
-              <label class="req-label">Field</label>
-              <select id="reqField" class="req-input">
-                <option value="Name">Name</option>
-                <option value="Number">Jersey number</option>
-                <option value="Position">Position</option>
-              </select>
-            </div>
-            <div>
-              <label class="req-label">New value</label>
-              <input type="text" id="reqValue" class="req-input" placeholder="e.g. Midfielder">
             </div>
           </div>
-          <label class="req-label">Note (optional)</label>
-          <textarea id="reqNote" class="req-input" rows="2" placeholder="Any context for the admin"></textarea>
-          <button class="primary" id="reqSubmitBtn">Submit request</button>
-          <div id="reqMsg" style="font-size:13px; color:var(--muted); margin-top:10px;"></div>
-        </div>
-
-        <div class="profile-divider"></div>
-
-        <div class="profile-block">
-          <h4 class="profile-block-title">My requests</h4>
-          <div id="reqHistoryBody"></div>
+          <div class="card-info-list">
+            <div class="card-info-row"><span>Player name</span><span id="infoName">—</span></div>
+            <div class="card-info-row"><span>Jersey number</span><span id="infoNumber">—</span></div>
+            <div class="card-info-row"><span>Position</span><span id="infoPosition">—</span></div>
+            <div class="card-info-row"><span>Serial number</span><span id="infoSerial">—</span></div>
+            <div class="card-info-row"><span>Season</span><span>26/27</span></div>
+            <div class="card-info-row"><span>Status</span><span id="infoStatus">—</span></div>
+          </div>
         </div>
       </div>
     </section>
 
-    <section class="view-section" id="view-card">
-      <div class="card-view-grid">
-        <div class="mcard-flip-outer" id="mcardFlip">
-          <div class="mcard-flip-inner">
+    <section class="view-section" id="view-profile">
+      <div class="card">
+        <h3>My profile</h3>
+        <p class="card-sub">Update your photo, or ask the admin to correct your name, number, or position.</p>
 
-            <div class="mcard-face mcard-front">
-              <div class="mcard-top">
-                <div class="mcard-club">Kelapa Bali FC<br>Season 26/27</div>
-                <div class="mcard-top-right">
-                  <div class="mcard-premium" id="mcardPremium">Premium</div>
-                  <div class="mcard-num" id="mcardNumber">--</div>
-                </div>
-              </div>
-              <div class="mcard-name" id="mcardName">—</div>
-              <div class="mcard-position" id="mcardPosition">—</div>
-              <div class="mcard-bottom">
-                <div class="mcard-serial" id="mcardSerial">SERIAL —</div>
-                <div class="mcard-season">26/27</div>
-              </div>
-              <div class="mcard-hint">Tap to flip</div>
+        <div class="profile-form-wrap">
+          <div class="profile-block">
+            <h4 class="profile-block-title">Photo / GIF</h4>
+            <div class="upload-target-row">
+              <button class="target-tab active" id="tabPhoto" type="button">Photo</button>
+              <button class="target-tab" id="tabGif" type="button">GIF</button>
             </div>
 
-            <div class="mcard-face mcard-back">
-              <div class="mcard-back-logo"><img src="../images/Favicon.png" alt=""></div>
-              <img class="mcard-back-photo hidden" id="mcardBackPhoto" style="display:none;">
-              <div class="mcard-back-photo-fallback" id="mcardBackFallback">--</div>
-              <div class="mcard-back-name" id="mcardBackName">—</div>
-              <div class="mcard-back-sub" id="mcardBackSub">Kelapa Bali FC · 26/27</div>
+            <label class="upload-zone" id="dropZone">
+              <input type="file" id="fileInput" accept="image/*">
+              <div id="dropZoneLabel">Click to choose an image, or drag one here</div>
+              <p>JPG or PNG — you'll be able to crop it next</p>
+            </label>
+
+            <div class="crop-stage" id="cropStage" style="display:none;">
+              <div class="crop-frame">
+                <canvas id="cropCanvas" width="280" height="280"></canvas>
+              </div>
+              <div class="crop-controls">
+                <label class="req-label">Zoom</label>
+                <input type="range" id="zoomSlider" min="1" max="3" step="0.01" value="1">
+              </div>
+              <p class="crop-hint">Drag the photo to reposition · use the slider to zoom</p>
+              <button type="button" class="crop-cancel-btn" id="cropCancelBtn">Choose a different photo</button>
             </div>
 
+            <div class="preview-row hidden" id="previewRow" style="display:none;">
+              <img id="previewThumb" class="preview-thumb">
+              <span id="previewName" style="font-size:12.5px;color:var(--muted);"></span>
+              <button class="remove-preview" id="removePreviewBtn" type="button" title="Remove">✕</button>
+            </div>
+
+            <div id="uploadMsg"></div>
+            <button class="primary" id="uploadBtn" disabled>Upload</button>
+            <p class="current-photo-note">This replaces your current photo on the Players page directly — no admin approval needed.</p>
           </div>
-        </div>
-        <div class="card-info-list">
-          <div class="card-info-row"><span>Player name</span><span id="infoName">—</span></div>
-          <div class="card-info-row"><span>Jersey number</span><span id="infoNumber">—</span></div>
-          <div class="card-info-row"><span>Position</span><span id="infoPosition">—</span></div>
-          <div class="card-info-row"><span>Serial number</span><span id="infoSerial">—</span></div>
-          <div class="card-info-row"><span>Season</span><span>26/27</span></div>
-          <div class="card-info-row"><span>Status</span><span id="infoStatus">—</span></div>
+
+          <div class="profile-divider"></div>
+
+          <div class="profile-block">
+            <h4 class="profile-block-title">Request a change</h4>
+            <p class="card-sub" style="margin-bottom:12px;">Corrections to your name, number, or position need admin approval.</p>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+              <div>
+                <label class="req-label">Field</label>
+                <select id="reqField" class="req-input">
+                  <option value="Name">Name</option>
+                  <option value="Number">Jersey number</option>
+                  <option value="Position">Position</option>
+                </select>
+              </div>
+              <div>
+                <label class="req-label">New value</label>
+                <input type="text" id="reqValue" class="req-input" placeholder="e.g. Midfielder">
+              </div>
+            </div>
+            <label class="req-label">Note (optional)</label>
+            <textarea id="reqNote" class="req-input" rows="2" placeholder="Any context for the admin"></textarea>
+            <button class="primary" id="reqSubmitBtn">Submit request</button>
+            <div id="reqMsg" style="font-size:13px; color:var(--muted); margin-top:10px;"></div>
+          </div>
+
+          <div class="profile-divider"></div>
+
+          <div class="profile-block">
+            <h4 class="profile-block-title">My requests</h4>
+            <div id="reqHistoryBody"></div>
+          </div>
         </div>
       </div>
     </section>
