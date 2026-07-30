@@ -283,49 +283,83 @@
     box-shadow:0 30px 60px rgba(0,0,0,.45); color:#fff; font-family:'Inter',sans-serif;
   }
   .mcard-front{
-    background:#000; padding:32px 36px;
+    background:#0a0a0a; padding:clamp(18px,6vw,32px) clamp(20px,7vw,36px);
     border:1px solid var(--line);
   }
-  .mcard-front::before{
-    content:''; position:absolute; inset:0;
-    background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.02) 0 22px, rgba(255,255,255,.04) 22px 44px);
+  .mcard-front::before, .mcard-back::before{
+    content:''; position:absolute; inset:0; opacity:.9;
+    background-image:
+      linear-gradient(27deg,#151515 5px,transparent 5px) 0 5px,
+      linear-gradient(207deg,#151515 5px,transparent 5px) 10px 0px,
+      linear-gradient(27deg,#1e1e1e 5px,transparent 5px) 0px 10px,
+      linear-gradient(207deg,#1e1e1e 5px,transparent 5px) 10px 5px,
+      linear-gradient(90deg,#161616 10px,transparent 10px),
+      linear-gradient(#181818 25%,transparent 25%,transparent 75%,#181818 75%,#181818);
+    background-size:20px 20px;
   }
-  .mcard-top{ display:flex; justify-content:space-between; align-items:flex-start; position:relative; }
-  .mcard-club{ font-family:'JetBrains Mono',monospace; font-size:13px; letter-spacing:.1em; opacity:.6; text-transform:uppercase; line-height:1.5; }
-  .mcard-top-right{ display:flex; flex-direction:column; align-items:flex-end; gap:10px; }
-  .mcard-num{ font-family:'Inter',sans-serif; font-size:56px; font-weight:800; line-height:1; color:var(--accent); }
-  .mcard-name{ font-family:'Inter',sans-serif; font-size:30px; font-weight:700; margin-top:30px; position:relative; }
-  .mcard-position{ font-size:14px; opacity:.6; margin-top:4px; position:relative; text-transform:uppercase; letter-spacing:.05em; }
-  .mcard-bottom{ position:absolute; left:36px; right:36px; bottom:26px; display:flex; justify-content:space-between; align-items:flex-end; }
-  .mcard-serial{ font-family:'JetBrains Mono',monospace; font-size:13px; opacity:.5; letter-spacing:.05em; }
-  .mcard-season{ font-family:'JetBrains Mono',monospace; font-size:13px; opacity:.5; }
+  .mcard-front::after, .mcard-back::after{
+    content:''; position:absolute; top:0; left:0; right:0; height:2px;
+    background:linear-gradient(90deg, transparent, var(--gold) 35%, var(--gold) 65%, transparent);
+    opacity:.55;
+  }
+  /* Signature element: a small foil "seal" tucked in one corner of each face —
+     a nod to the foil/hologram sticker on a real membership card, built from
+     the same diagonal stripe angle as the jersey texture above. Deliberately
+     tiny and quiet; it's decorative texture, not a functional security mark. */
+  .mcard-foil{
+    --foil-size: clamp(64px,18vw,120px);
+    position:absolute; width:var(--foil-size); height:var(--foil-size);
+    right:calc(var(--foil-size) / -2); bottom:calc(var(--foil-size) / -2);
+    background:repeating-linear-gradient(45deg, rgba(217,171,63,.55) 0 5px, rgba(217,171,63,.16) 5px 10px, transparent 10px 16px);
+    pointer-events:none;
+  }
+  .mcard-foil-back{ right:auto; left:calc(var(--foil-size) / -2); bottom:auto; top:calc(var(--foil-size) / -2); }
+  .mcard-top{ display:flex; justify-content:space-between; align-items:flex-start; position:relative; gap:10px; }
+  .mcard-club{ font-family:'JetBrains Mono',monospace; font-size:clamp(9.5px,2.6vw,13px); letter-spacing:.1em; line-height:1.6; }
+  .mcard-club-line1{ color:var(--gold); font-weight:600; display:block; }
+  .mcard-club-line2{ color:rgba(255,255,255,.4); display:block; }
+  .mcard-top-right{ display:flex; flex-direction:column; align-items:flex-end; gap:10px; flex-shrink:0; }
+  .mcard-num{ font-family:'Inter',sans-serif; font-size:clamp(32px,10vw,56px); font-weight:800; line-height:1; color:var(--accent); }
+  .mcard-name{ font-family:'Inter',sans-serif; font-size:clamp(18px,6vw,30px); font-weight:700; margin-top:clamp(14px,6vw,30px); position:relative; }
+  .mcard-position{ font-size:clamp(11px,3vw,14px); opacity:.6; margin-top:4px; position:relative; text-transform:uppercase; letter-spacing:.05em; }
+  .mcard-bottom{
+    position:absolute; left:clamp(18px,6vw,36px); right:clamp(18px,6vw,36px); bottom:clamp(14px,4.5vw,26px);
+    display:flex; justify-content:space-between; align-items:flex-end; gap:10px;
+    padding-top:10px; border-top:1px solid var(--line-soft);
+  }
+  .mcard-serial{ font-family:'JetBrains Mono',monospace; font-size:clamp(9px,2.4vw,13px); opacity:.5; letter-spacing:.05em; white-space:nowrap; }
+  .mcard-season{ font-family:'JetBrains Mono',monospace; font-size:clamp(9px,2.4vw,13px); color:var(--gold); opacity:.85; white-space:nowrap; }
   .mcard-premium{
     background:var(--gold-bg); border:1px solid var(--gold);
-    color:var(--gold); font-size:11.5px; font-weight:700; padding:6px 13px; border-radius:999px;
+    color:var(--gold); font-size:clamp(9px,2.4vw,11.5px); font-weight:700; padding:clamp(4px,1.2vw,6px) clamp(9px,2.6vw,13px); border-radius:999px;
     text-transform:uppercase; letter-spacing:.05em; display:none; white-space:nowrap;
   }
   .mcard-hint{
-    position:absolute; bottom:58px; left:58%; transform:translateX(-50%);
-    font-size:11px; color:rgba(255,255,255,.3); text-transform:uppercase; letter-spacing:.08em;
-    font-family:'JetBrains Mono',monospace;
+    position:absolute; bottom:clamp(38px,12vw,58px); left:50%; transform:translateX(-50%);
+    font-size:clamp(9px,2.2vw,11px); color:rgba(255,255,255,.3); text-transform:uppercase; letter-spacing:.08em;
+    font-family:'JetBrains Mono',monospace; white-space:nowrap;
   }
   .mcard-back{
-    background:#000; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:#0a0a0a; display:flex; flex-direction:column; align-items:center; justify-content:center;
     transform:rotateY(180deg); border:1px solid var(--line);
   }
   .mcard-back-logo{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:.06; }
   .mcard-back-logo img{ width:60%; filter:brightness(0) invert(1); }
   .mcard-back-photo{
-    width:130px; height:130px; border-radius:50%; object-fit:cover; border:3px solid var(--accent);
+    width:clamp(76px,22vw,130px); height:clamp(76px,22vw,130px); border-radius:50%; object-fit:cover;
+    border:3px solid var(--gold); box-shadow:0 0 0 5px rgba(217,171,63,.14);
     position:relative; margin-bottom:16px; background:var(--surface-2);
   }
   .mcard-back-photo-fallback{
-    width:130px; height:130px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-    background:var(--surface-2); border:3px solid var(--accent); position:relative;
-    font-family:'Inter',sans-serif; font-size:40px; font-weight:700; color:var(--accent); margin-bottom:16px;
+    width:clamp(76px,22vw,130px); height:clamp(76px,22vw,130px); border-radius:50%; display:flex; align-items:center; justify-content:center;
+    background:var(--surface-2); border:3px solid var(--gold); box-shadow:0 0 0 5px rgba(217,171,63,.14); position:relative;
+    font-family:'Inter',sans-serif; font-size:clamp(24px,7vw,40px); font-weight:700; color:var(--gold); margin-bottom:16px;
   }
-  .mcard-back-name{ font-family:'Inter',sans-serif; font-size:24px; font-weight:700; position:relative; }
-  .mcard-back-sub{ font-size:13px; opacity:.55; margin-top:4px; position:relative; text-transform:uppercase; letter-spacing:.05em; }
+  .mcard-back-name{ font-family:'Inter',sans-serif; font-size:clamp(17px,5vw,24px); font-weight:700; position:relative; }
+  .mcard-back-sub{
+    font-family:'JetBrains Mono',monospace; font-size:clamp(9px,2.4vw,11.5px); color:var(--gold); opacity:.7;
+    margin-top:6px; position:relative; text-transform:uppercase; letter-spacing:.1em;
+  }
 
   .card-info-list{ display:flex; flex-direction:column; gap:14px; }
   .card-info-row{
@@ -451,8 +485,9 @@
             <div class="mcard-flip-inner">
 
               <div class="mcard-face mcard-front">
+                <div class="mcard-foil" aria-hidden="true"></div>
                 <div class="mcard-top">
-                  <div class="mcard-club">Kelapa Bali FC<br>Season 26/27</div>
+                  <div class="mcard-club"><span class="mcard-club-line1">Kelapa Bali FC</span><span class="mcard-club-line2">Season 26/27</span></div>
                   <div class="mcard-top-right">
                     <div class="mcard-premium" id="mcardPremium">Premium</div>
                     <div class="mcard-num" id="mcardNumber">--</div>
@@ -468,6 +503,7 @@
               </div>
 
               <div class="mcard-face mcard-back">
+                <div class="mcard-foil mcard-foil-back" aria-hidden="true"></div>
                 <div class="mcard-back-logo"><img src="../images/Favicon.png" alt=""></div>
                 <img class="mcard-back-photo hidden" id="mcardBackPhoto" style="display:none;">
                 <div class="mcard-back-photo-fallback" id="mcardBackFallback">--</div>
