@@ -191,13 +191,22 @@
   .status.pending, .status.pay-later{ background:var(--pending-bg); color:var(--gold); }
   .empty{ font-size:13px; color:var(--muted); }
 
-  .profile-form-wrap{ max-width:440px; }
-  .profile-block{ padding:6px 0; }
+  .profile-form-wrap{
+    display:grid; grid-template-columns:1fr 1fr 1fr; gap:0; align-items:start;
+  }
+  .profile-block{ padding:4px 28px; min-width:0; }
+  .profile-block:first-child{ padding-left:0; }
+  .profile-block:last-child{ padding-right:0; }
   .profile-block-title{
     font-family:'Inter',sans-serif; font-size:13px; font-weight:700; color:var(--ink);
     margin-bottom:10px; text-transform:uppercase; letter-spacing:.04em;
   }
-  .profile-divider{ height:1px; background:var(--line); margin:22px 0; }
+  .profile-divider{ align-self:stretch; width:1px; background:var(--line); margin:0; }
+  @media (max-width:900px){
+    .profile-form-wrap{ grid-template-columns:1fr; }
+    .profile-block{ padding:6px 0; }
+    .profile-divider{ width:auto; height:1px; margin:22px 0; }
+  }
   .crop-stage{ margin:14px 0; display:flex; flex-direction:column; align-items:center; gap:10px; }
   .crop-frame{
     border-radius:50%; overflow:hidden; width:280px; height:280px;
@@ -215,13 +224,20 @@
   .upload-row{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
   @media (max-width:1100px){ .upload-row{ grid-template-columns:1fr; } }
   .upload-zone{
-    border:1.5px dashed var(--line); border-radius:14px; padding:22px; text-align:center;
-    cursor:pointer; transition:border-color .2s ease, background .2s ease, transform .15s ease;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+    border:1.5px dashed var(--line); border-radius:14px; padding:28px 20px; text-align:center;
+    cursor:pointer; background:var(--surface-2);
+    transition:border-color .2s ease, background .2s ease, transform .15s ease;
   }
   .upload-zone:hover{ border-color:var(--accent); }
   .upload-zone.drag-active{ border-color:var(--accent); background:var(--accent-dim); transform:scale(1.01); }
   .upload-zone input{ display:none; }
-  .upload-zone p{ font-size:12.5px; color:var(--muted); margin-top:8px; }
+  .upload-zone-icon{
+    width:38px; height:38px; border-radius:50%; background:var(--surface); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; color:var(--muted);
+  }
+  .upload-zone #dropZoneLabel{ font-size:13.5px; font-weight:600; color:var(--ink); }
+  .upload-zone p{ font-size:12.5px; color:var(--muted); margin:0; }
   .preview-row{ display:flex; align-items:center; gap:14px; margin-top:14px; }
   .preview-thumb{ width:56px; height:56px; border-radius:10px; object-fit:cover; border:1px solid var(--line); }
   .remove-preview{
@@ -488,6 +504,9 @@
 
             <label class="upload-zone" id="dropZone">
               <input type="file" id="fileInput" accept="image/*">
+              <div class="upload-zone-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
               <div id="dropZoneLabel">Click to choose an image, or drag one here</div>
               <p>JPG or PNG — you'll be able to crop it next</p>
             </label>
