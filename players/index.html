@@ -536,554 +536,538 @@
     </div>
   </footer>
 
-<script>
-  /* ---------------- THEME TOGGLE (matches index.html) ---------------- */
-  const root = document.documentElement;
-  const themeToggle = document.getElementById('themeToggle');
-  const savedTheme = localStorage.getItem('kit-theme');
-  if(savedTheme){ root.setAttribute('data-theme', savedTheme); }
-  themeToggle.addEventListener('click', () => {
-    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-    root.setAttribute('data-theme', next);
-    localStorage.setItem('kit-theme', next);
-  });
+<script>const root = document.documentElement;
 
-  document.getElementById('brandHome').addEventListener('click', () => { window.location.href = '/'; });
+const themeToggle = document.getElementById("themeToggle");
 
-  /* ---------------- MOBILE TOPBAR MENU (hamburger / slide-in drawer) ---------------- */
-  const menuToggleBtn = document.getElementById('menuToggleBtn');
-  const menuCloseBtn = document.getElementById('menuCloseBtn');
-  const topbarMenu = document.getElementById('topbarMenu');
-  const menuOverlay = document.getElementById('menuOverlay');
+const savedTheme = localStorage.getItem("kit-theme");
 
-  function lockBodyScroll(){
+if (savedTheme) {
+    root.setAttribute("data-theme", savedTheme);
+}
+
+themeToggle.addEventListener("click", () => {
+    const next = root.getAttribute("data-theme") === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+    localStorage.setItem("kit-theme", next);
+});
+
+document.getElementById("brandHome").addEventListener("click", () => {
+    window.location.href = "/";
+});
+
+const menuToggleBtn = document.getElementById("menuToggleBtn");
+
+const menuCloseBtn = document.getElementById("menuCloseBtn");
+
+const topbarMenu = document.getElementById("topbarMenu");
+
+const menuOverlay = document.getElementById("menuOverlay");
+
+function lockBodyScroll() {
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    document.body.style.overflow = 'hidden';
-    if(scrollbarWidth > 0) document.body.style.paddingRight = scrollbarWidth + 'px';
-  }
-  function unlockBodyScroll(){
-    document.body.style.overflow = '';
-    document.body.style.paddingRight = '';
-  }
-  function closeTopbarMenu(){
-    topbarMenu.classList.remove('active');
-    menuOverlay.classList.remove('active');
-    menuToggleBtn.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) document.body.style.paddingRight = scrollbarWidth + "px";
+}
+
+function unlockBodyScroll() {
+    document.body.style.overflow = "";
+    document.body.style.paddingRight = "";
+}
+
+function closeTopbarMenu() {
+    topbarMenu.classList.remove("active");
+    menuOverlay.classList.remove("active");
+    menuToggleBtn.setAttribute("aria-expanded", "false");
     unlockBodyScroll();
-  }
-  function toggleTopbarMenu(){
-    const nowOpen = topbarMenu.classList.toggle('active');
-    menuOverlay.classList.toggle('active', nowOpen);
-    menuToggleBtn.setAttribute('aria-expanded', String(nowOpen));
-    if(nowOpen) lockBodyScroll(); else unlockBodyScroll();
-  }
-  menuToggleBtn.addEventListener('click', (e)=>{
+}
+
+function toggleTopbarMenu() {
+    const nowOpen = topbarMenu.classList.toggle("active");
+    menuOverlay.classList.toggle("active", nowOpen);
+    menuToggleBtn.setAttribute("aria-expanded", String(nowOpen));
+    if (nowOpen) lockBodyScroll(); else unlockBodyScroll();
+}
+
+menuToggleBtn.addEventListener("click", e => {
     e.stopPropagation();
     toggleTopbarMenu();
-  });
-  menuCloseBtn.addEventListener('click', closeTopbarMenu);
-  menuOverlay.addEventListener('click', closeTopbarMenu);
-  topbarMenu.addEventListener('click', (e)=>{
-    if(e.target.closest('.btn-mini')) closeTopbarMenu();
-  });
-  document.addEventListener('keydown', (e)=>{
-    if(e.key === 'Escape') closeTopbarMenu();
-  });
-  // Already on the Players page, so this just closes the drawer and
-  // scrolls to the squad list instead of reloading the page on itself.
-  document.getElementById('playersBtnTop').addEventListener('click', ()=>{
+});
+
+menuCloseBtn.addEventListener("click", closeTopbarMenu);
+
+menuOverlay.addEventListener("click", closeTopbarMenu);
+
+topbarMenu.addEventListener("click", e => {
+    if (e.target.closest(".btn-mini")) closeTopbarMenu();
+});
+
+document.addEventListener("keydown", e => {
+    if (e.key === "Escape") closeTopbarMenu();
+});
+
+document.getElementById("playersBtnTop").addEventListener("click", () => {
     closeTopbarMenu();
-    document.querySelector('.filter-bar').scrollIntoView({behavior:'smooth', block:'start'});
-  });
+    document.querySelector(".filter-bar").scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+});
 
-  /* ---------------- SQUAD DATA ----------------
-     Pulled live from a Google Sheet — no code editing needed to update
-     the roster. See setup notes at the very bottom of this file for how
-     to create and connect the sheet.
+const SHEET_ID = "1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM";
 
-     SHEET_ID: the long ID in your sheet's URL, e.g.
-       https://docs.google.com/spreadsheets/d/COPY_THIS_PART/edit
-     SHEET_TAB: the exact name of the tab holding the roster (bottom of
-       the spreadsheet window — rename it to "Players" or change this
-       to match).
+const SHEET_TAB = "Players";
 
-     Sheet must have these exact column headers in row 1:
-       Number | Name | Position | Photo | GIF
-     - Position must be exactly: Goalkeeper, Defender, Midfielder, or Forward
-     - Photo / GIF can be either a full URL (what the admin dashboard's
-       upload button and player self-upload both write automatically),
-       or a bare filename (e.g. "10-photo.jpg") that lives in your
-       images/players/ folder if you're placing files manually instead. */
-  const SHEET_ID = '1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM';
-  const SHEET_TAB = 'Players';
-  const PLAYER_IMAGE_BASE = '/images/players/';
+const PLAYER_IMAGE_BASE = "/images/players/";
 
-  // Used only if the sheet can't be reached (not shared publicly yet,
-  // wrong ID still pasted in, offline, etc.) so the page never shows up
-  // empty or broken while you're setting things up.
-  const FALLBACK_SQUAD = [
-    { number: 1,  name: 'Player One',   position: 'Goalkeeper', photo: '01-photo.jpg', gif: '01-move.gif' },
-    { number: 10, name: 'Player Two',   position: 'Forward',    photo: '10-photo.jpg', gif: '10-move.gif' },
-  ];
+const FALLBACK_SQUAD = [ {
+    number: 1,
+    name: "Player One",
+    position: "Goalkeeper",
+    photo: "01-photo.jpg",
+    gif: "01-move.gif"
+}, {
+    number: 10,
+    name: "Player Two",
+    position: "Forward",
+    photo: "10-photo.jpg",
+    gif: "10-move.gif"
+} ];
 
-  let squad = [];
-  let nextMatch = null;
+let squad = [];
 
-  // The "Next Match" admin sets in the dashboard — read the same way as
-  // the squad/hero data (direct gviz JSON, no backend round-trip needed).
-  //
-  // parseGvizCell unwraps a Sheets/gviz quirk: if a cell ever gets
-  // auto-detected as a real Date value (which used to happen before the
-  // backend started forcing those columns to plain text), gviz serializes
-  // it as a literal string like "Date(2026,7,2,0,0,0)" instead of plain
-  // text — this handles that so the share card never shows garbled text
-  // for any older rows.
-  function parseGvizCell(raw){
-    const str = String(raw == null ? '' : raw).trim();
+let nextMatch = null;
+
+function parseGvizCell(raw) {
+    const str = String(raw == null ? "" : raw).trim();
     const m = str.match(/^Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)$/);
     if (!m) return str;
     const [, y, mo, d] = m.map(Number);
-    return { year: y, month: mo, day: d };
-  }
+    return {
+        year: y,
+        month: mo,
+        day: d
+    };
+}
 
-  async function fetchNextMatch(){
+async function fetchNextMatch() {
     try {
-      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=NextMatch`;
-      const res = await fetch(url);
-      if (!res.ok) return;
-      const text = await res.text();
-      const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
-      const row = (json.table && json.table.rows && json.table.rows[0]);
-      if (!row) return;
-      const cells = row.c || [];
-      const val = i => (cells[i] ? cells[i].v : '');
-      const opponent = String(val(0) || '').trim();
-      if (!opponent) return; // cleared / never set
-      nextMatch = {
-        opponent,
-        competition: String(val(1) || '').trim(),
-        date: parseGvizCell(val(2)),
-        time: parseGvizCell(val(3)),
-        venue: String(val(4) || '').trim()
-      };
+        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=NextMatch`;
+        const res = await fetch(url);
+        if (!res.ok) return;
+        const text = await res.text();
+        const json = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
+        const row = json.table && json.table.rows && json.table.rows[0];
+        if (!row) return;
+        const cells = row.c || [];
+        const val = i => cells[i] ? cells[i].v : "";
+        const opponent = String(val(0) || "").trim();
+        if (!opponent) return;
+        nextMatch = {
+            opponent: opponent,
+            competition: String(val(1) || "").trim(),
+            date: parseGvizCell(val(2)),
+            time: parseGvizCell(val(3)),
+            venue: String(val(4) || "").trim()
+        };
     } catch (err) {
-      console.warn('Could not load the next match info.', err);
+        console.warn("Could not load the next match info.", err);
     }
-  }
-  function formatNextMatchLine(){
-    if (!nextMatch) return '';
-    let line = 'NEXT: vs ' + nextMatch.opponent.toUpperCase();
-    if (nextMatch.date){
-      let d = null;
-      if (typeof nextMatch.date === 'object') d = new Date(nextMatch.date.year, nextMatch.date.month, nextMatch.date.day);
-      else d = new Date(nextMatch.date + 'T00:00:00');
-      if (d && !isNaN(d)) line += ' \u00b7 ' + d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }).toUpperCase();
+}
+
+function formatNextMatchLine() {
+    if (!nextMatch) return "";
+    let line = "NEXT: vs " + nextMatch.opponent.toUpperCase();
+    if (nextMatch.date) {
+        let d = null;
+        if (typeof nextMatch.date === "object") d = new Date(nextMatch.date.year, nextMatch.date.month, nextMatch.date.day); else d = new Date(nextMatch.date + "T00:00:00");
+        if (d && !isNaN(d)) line += " · " + d.toLocaleDateString("en-GB", {
+            day: "numeric",
+            month: "short"
+        }).toUpperCase();
     }
     return line;
-  }
-  fetchNextMatch();
+}
 
-  // Photo/GIF cells can hold either a bare filename meant to live in
-  // /images/players/ (the original manual-file convention this page
-  // shipped with), OR a full URL — which is what actually gets written
-  // there now that the admin dashboard and player self-upload both
-  // upload straight to Drive and store the resulting link. Handle both,
-  // so neither upload path silently breaks.
-  function resolveImagePath(raw){
-    const v = String(raw || '').trim();
-    if (!v) return '';
+fetchNextMatch();
+
+function resolveImagePath(raw) {
+    const v = String(raw || "").trim();
+    if (!v) return "";
     if (/^https?:\/\//i.test(v)) return v;
     return PLAYER_IMAGE_BASE + v;
-  }
+}
 
-  async function fetchSquadFromSheet(){
+async function fetchSquadFromSheet() {
     const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_TAB)}`;
     const res = await fetch(url);
-    if(!res.ok) throw new Error('Sheet request failed: ' + res.status);
+    if (!res.ok) throw new Error("Sheet request failed: " + res.status);
     const text = await res.text();
-    // Google wraps the JSON in `google.visualization.Query.setResponse(...)` — strip that off.
-    const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
-    const cols = (json.table && json.table.cols) || [];
-    const rows = (json.table && json.table.rows) || [];
-
-    // Resolve columns by header label rather than assuming fixed positions —
-    // the stat columns (Appearances/Goals/Assists/Clean Sheets) get appended
-    // wherever the sheet's last column happened to be when first created, so
-    // their index isn't guaranteed the same across sheets.
+    const json = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
+    const cols = json.table && json.table.cols || [];
+    const rows = json.table && json.table.rows || [];
     const colIndex = {};
-    cols.forEach((c, i) => { if (c.label) colIndex[c.label.trim()] = i; });
-    const idx = (label, fallback) => (colIndex[label] !== undefined ? colIndex[label] : fallback);
-
-    const iNumber = idx('Number', 0), iName = idx('Name', 1), iPosition = idx('Position', 2),
-          iPhoto = idx('Photo', 3), iGif = idx('GIF', 4),
-          iApps = idx('Appearances', -1), iGoals = idx('Goals', -1),
-          iAssists = idx('Assists', -1), iCleanSheets = idx('Clean Sheets', -1);
-
-    return rows
-      .map(r => {
-        const cells = r.c || [];
-        const val = i => (i >= 0 && cells[i]) ? cells[i].v : '';
-        return {
-          number: Number(val(iNumber)),
-          name: String(val(iName) || '').trim(),
-          position: String(val(iPosition) || '').trim(),
-          photo: resolveImagePath(val(iPhoto)),
-          gif: resolveImagePath(val(iGif)),
-          appearances: Number(val(iApps)) || 0,
-          goals: Number(val(iGoals)) || 0,
-          assists: Number(val(iAssists)) || 0,
-          cleanSheets: Number(val(iCleanSheets)) || 0,
-        };
-      })
-      .filter(p => p.number && p.name && p.position);
-  }
-
-  // Order sections appear in, top to bottom.
-  const GROUP_ORDER = ['Forward', 'Midfielder', 'Defender', 'Goalkeeper'];
-
-  const squadSections = document.getElementById('squadSections');
-
-  /* ---------------- PLAYER DETAIL POPUP ---------------- */
-  const playerModalOverlay = document.getElementById('playerModalOverlay');
-  const playerModalImg = document.getElementById('playerModalImg');
-  let currentModalPlayer = null;
-
-  function openPlayerModal(p){
-    currentModalPlayer = p;
-    playerModalImg.src = p.photo;
-    playerModalImg.onerror = function(){ this.onerror = null; this.src = placeholderSrc(initials(p.name)); };
-    document.getElementById('playerModalNumber').textContent = '#' + p.number;
-    document.getElementById('playerModalName').textContent = p.name;
-    document.getElementById('playerModalPosition').textContent = p.position;
-    document.getElementById('statApps').textContent = p.appearances || 0;
-    document.getElementById('statGoals').textContent = p.goals || 0;
-    document.getElementById('statAssists').textContent = p.assists || 0;
-    document.getElementById('statCleanSheets').textContent = p.cleanSheets || 0;
-    document.getElementById('shareStatusMsg').textContent = '';
-    playerModalOverlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-  function closePlayerModal(){
-    playerModalOverlay.classList.remove('open');
-    document.body.style.overflow = '';
-  }
-
-  /* ---------- share card: renders a Story-sized (1080x1920) PNG combining
-     photo + name + number + stats, then hands it to the phone's native
-     share sheet (navigator.share) — Instagram shows up there as a Story,
-     DM, or feed-post destination, same as any other app the OS offers.
-     There's no way for a website to post directly into Instagram Stories/
-     DMs itself; this is the real, working equivalent. Desktop browsers
-     (and any mobile browser without file-sharing support) fall back to
-     just downloading the image instead. ---------- */
-  function loadImageForCanvas(src){
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => resolve(img);
-      img.onerror = reject;
-      img.src = src;
+    cols.forEach((c, i) => {
+        if (c.label) colIndex[c.label.trim()] = i;
     });
-  }
-  function drawImageCover(ctx, img, x, y, w, h){
+    const idx = (label, fallback) => colIndex[label] !== undefined ? colIndex[label] : fallback;
+    const iNumber = idx("Number", 0), iName = idx("Name", 1), iPosition = idx("Position", 2), iPhoto = idx("Photo", 3), iGif = idx("GIF", 4), iApps = idx("Appearances", -1), iGoals = idx("Goals", -1), iAssists = idx("Assists", -1), iCleanSheets = idx("Clean Sheets", -1);
+    return rows.map(r => {
+        const cells = r.c || [];
+        const val = i => i >= 0 && cells[i] ? cells[i].v : "";
+        return {
+            number: Number(val(iNumber)),
+            name: String(val(iName) || "").trim(),
+            position: String(val(iPosition) || "").trim(),
+            photo: resolveImagePath(val(iPhoto)),
+            gif: resolveImagePath(val(iGif)),
+            appearances: Number(val(iApps)) || 0,
+            goals: Number(val(iGoals)) || 0,
+            assists: Number(val(iAssists)) || 0,
+            cleanSheets: Number(val(iCleanSheets)) || 0
+        };
+    }).filter(p => p.number && p.name && p.position);
+}
+
+const GROUP_ORDER = [ "Forward", "Midfielder", "Defender", "Goalkeeper" ];
+
+const squadSections = document.getElementById("squadSections");
+
+const playerModalOverlay = document.getElementById("playerModalOverlay");
+
+const playerModalImg = document.getElementById("playerModalImg");
+
+let currentModalPlayer = null;
+
+function openPlayerModal(p) {
+    currentModalPlayer = p;
+    playerModalImg.src = p.photo ? p.photo : placeholderSrc(p.number, initials(p.name));
+    playerModalImg.onerror = function() {
+        this.onerror = null;
+        this.src = placeholderSrc(p.number, initials(p.name));
+    };
+    document.getElementById("playerModalNumber").textContent = "#" + p.number;
+    document.getElementById("playerModalName").textContent = p.name;
+    document.getElementById("playerModalPosition").textContent = p.position;
+    document.getElementById("statApps").textContent = p.appearances || 0;
+    document.getElementById("statGoals").textContent = p.goals || 0;
+    document.getElementById("statAssists").textContent = p.assists || 0;
+    document.getElementById("statCleanSheets").textContent = p.cleanSheets || 0;
+    document.getElementById("shareStatusMsg").textContent = "";
+    playerModalOverlay.classList.add("open");
+    document.body.style.overflow = "hidden";
+}
+
+function closePlayerModal() {
+    playerModalOverlay.classList.remove("open");
+    document.body.style.overflow = "";
+}
+
+function loadImageForCanvas(src) {
+    return new Promise((resolve, reject) => {
+        const img = new Image;
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = src;
+    });
+}
+
+function drawImageCover(ctx, img, x, y, w, h) {
     const imgRatio = img.width / img.height, targetRatio = w / h;
     let sx, sy, sw, sh;
-    if (imgRatio > targetRatio){ sh = img.height; sw = sh * targetRatio; sx = (img.width - sw) / 2; sy = 0; }
-    else { sw = img.width; sh = sw / targetRatio; sx = 0; sy = (img.height - sh) / 2; }
+    if (imgRatio > targetRatio) {
+        sh = img.height;
+        sw = sh * targetRatio;
+        sx = (img.width - sw) / 2;
+        sy = 0;
+    } else {
+        sw = img.width;
+        sh = sw / targetRatio;
+        sx = 0;
+        sy = (img.height - sh) / 2;
+    }
     ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
-  }
-  // Contain-fit (no cropping, no stretching) — for the crest, where
-  // squashing a non-square logo into a fixed square box is exactly what
-  // was causing the distortion.
-  function drawImageContain(ctx, img, x, y, w, h){
+}
+
+function drawImageContain(ctx, img, x, y, w, h) {
     const imgRatio = img.width / img.height, boxRatio = w / h;
     let dw, dh;
-    if (imgRatio > boxRatio){ dw = w; dh = w / imgRatio; }
-    else { dh = h; dw = h * imgRatio; }
+    if (imgRatio > boxRatio) {
+        dw = w;
+        dh = w / imgRatio;
+    } else {
+        dh = h;
+        dw = h * imgRatio;
+    }
     ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
-  }
+}
 
-  async function generateShareCard(p, options){
+async function generateShareCard(p, options) {
     const includeMatchday = options && options.includeMatchday;
     const includeStats = options && options.includeStats;
-
-    const canvas = document.createElement('canvas');
+    const canvas = document.createElement("canvas");
     canvas.width = 1080;
     canvas.height = 1920;
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     const MARGIN = 56;
-
-    ctx.fillStyle = '#0a0a0a';
+    ctx.fillStyle = "#0a0a0a";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    const photoHeight = canvas.height * 0.75;
+    const photoHeight = canvas.height * .75;
     try {
-      const img = await loadImageForCanvas(p.photo);
-      drawImageCover(ctx, img, 0, 0, canvas.width, photoHeight);
+        if (!p.photo) throw new Error("No photo uploaded");
+        const img = await loadImageForCanvas(p.photo);
+        drawImageCover(ctx, img, 0, 0, canvas.width, photoHeight);
     } catch (err) {
-      ctx.fillStyle = '#c8cdd4';
-      ctx.fillRect(0, 0, canvas.width, photoHeight);
-      ctx.fillStyle = '#fff';
-      ctx.font = '700 220px Oswald, sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(initials(p.name), canvas.width / 2, photoHeight / 2);
+        ctx.fillStyle = "#14171C";
+        ctx.fillRect(0, 0, canvas.width, photoHeight);
+        ctx.fillStyle = "#b91321";
+        ctx.font = "700 220px Oswald, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(initials(p.name), canvas.width / 2, photoHeight / 2);
     }
-
     const grad = ctx.createLinearGradient(0, photoHeight - 480, 0, photoHeight);
-    grad.addColorStop(0, 'rgba(10,10,10,0)');
-    grad.addColorStop(1, 'rgba(10,10,10,1)');
+    grad.addColorStop(0, "rgba(10,10,10,0)");
+    grad.addColorStop(1, "rgba(10,10,10,1)");
     ctx.fillStyle = grad;
     ctx.fillRect(0, photoHeight - 480, canvas.width, 480);
-
     try {
-      const crestImg = await loadImageForCanvas('/images/Favicon.png');
-      drawImageContain(ctx, crestImg, MARGIN, 48, 64, 64);
-    } catch (err) { /* crest is a nice-to-have — skip silently if it fails to load */ }
-    ctx.fillStyle = '#fff';
-    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-    ctx.font = '700 34px Inter, sans-serif';
-    ctx.fillText('KELAPA BALI FC', MARGIN + 76, 80);
-
-    const matchLine = includeMatchday ? formatNextMatchLine() : '';
-    if (matchLine){
-      ctx.textAlign = 'right';
-      ctx.font = '600 26px Inter, sans-serif';
-      ctx.fillStyle = 'rgba(255,255,255,.9)';
-      ctx.fillText(matchLine, canvas.width - MARGIN, 80);
-      ctx.textAlign = 'left'; // reset — everything drawn after this must not inherit 'right'
+        const crestImg = await loadImageForCanvas("/images/Favicon.png");
+        drawImageContain(ctx, crestImg, MARGIN, 48, 64, 64);
+    } catch (err) {}
+    ctx.fillStyle = "#fff";
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.font = "700 34px Inter, sans-serif";
+    ctx.fillText("KELAPA BALI FC", MARGIN + 76, 80);
+    const matchLine = includeMatchday ? formatNextMatchLine() : "";
+    if (matchLine) {
+        ctx.textAlign = "right";
+        ctx.font = "600 26px Inter, sans-serif";
+        ctx.fillStyle = "rgba(255,255,255,.9)";
+        ctx.fillText(matchLine, canvas.width - MARGIN, 80);
+        ctx.textAlign = "left";
     }
-
-    ctx.textBaseline = 'alphabetic';
-    ctx.fillStyle = '#c0392b';
-    ctx.font = '700 90px Oswald, sans-serif';
-    ctx.fillText('#' + p.number, MARGIN, photoHeight + 60);
-
-    ctx.fillStyle = '#fff';
-    ctx.font = '700 74px Oswald, sans-serif';
+    ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = "#c0392b";
+    ctx.font = "700 90px Oswald, sans-serif";
+    ctx.fillText("#" + p.number, MARGIN, photoHeight + 60);
+    ctx.fillStyle = "#fff";
+    ctx.font = "700 74px Oswald, sans-serif";
     ctx.fillText(p.name, MARGIN, photoHeight + 155);
-
-    ctx.fillStyle = 'rgba(255,255,255,.65)';
-    ctx.font = '600 32px Inter, sans-serif';
-    ctx.fillText((p.position || '').toUpperCase(), MARGIN, photoHeight + 200);
-
-    if (includeStats){
-      // Thin divider ties the name block and stats row together as one
-      // footer instead of leaving them floating with a big gap between.
-      ctx.strokeStyle = 'rgba(255,255,255,.15)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(MARGIN, photoHeight + 235);
-      ctx.lineTo(canvas.width - MARGIN, photoHeight + 235);
-      ctx.stroke();
-
-      const stats = [
-        { label: 'APPEARANCES', value: p.appearances || 0 },
-        { label: 'GOALS', value: p.goals || 0 },
-        { label: 'ASSISTS', value: p.assists || 0 },
-        { label: 'CLEAN SHEETS', value: p.cleanSheets || 0 }
-      ];
-      const statY = photoHeight + 320, colWidth = canvas.width / 4;
-      stats.forEach((s, i) => {
-        const cx = colWidth * i + colWidth / 2;
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#fff';
-        ctx.font = '700 56px Oswald, sans-serif';
-        ctx.fillText(String(s.value), cx, statY);
-        ctx.fillStyle = 'rgba(255,255,255,.55)';
-        ctx.font = '600 20px Inter, sans-serif';
-        ctx.fillText(s.label, cx, statY + 40);
-      });
+    ctx.fillStyle = "rgba(255,255,255,.65)";
+    ctx.font = "600 32px Inter, sans-serif";
+    ctx.fillText((p.position || "").toUpperCase(), MARGIN, photoHeight + 200);
+    if (includeStats) {
+        ctx.strokeStyle = "rgba(255,255,255,.15)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(MARGIN, photoHeight + 235);
+        ctx.lineTo(canvas.width - MARGIN, photoHeight + 235);
+        ctx.stroke();
+        const stats = [ {
+            label: "APPEARANCES",
+            value: p.appearances || 0
+        }, {
+            label: "GOALS",
+            value: p.goals || 0
+        }, {
+            label: "ASSISTS",
+            value: p.assists || 0
+        }, {
+            label: "CLEAN SHEETS",
+            value: p.cleanSheets || 0
+        } ];
+        const statY = photoHeight + 320, colWidth = canvas.width / 4;
+        stats.forEach((s, i) => {
+            const cx = colWidth * i + colWidth / 2;
+            ctx.textAlign = "center";
+            ctx.fillStyle = "#fff";
+            ctx.font = "700 56px Oswald, sans-serif";
+            ctx.fillText(String(s.value), cx, statY);
+            ctx.fillStyle = "rgba(255,255,255,.55)";
+            ctx.font = "600 20px Inter, sans-serif";
+            ctx.fillText(s.label, cx, statY + 40);
+        });
     }
+    return new Promise(resolve => canvas.toBlob(resolve, "image/png"));
+}
 
-    return new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
-  }
-
-  document.getElementById('playerModalShare').addEventListener('click', async () => {
+document.getElementById("playerModalShare").addEventListener("click", async () => {
     if (!currentModalPlayer) return;
-    const btn = document.getElementById('playerModalShare');
-    const statusEl = document.getElementById('shareStatusMsg');
+    const btn = document.getElementById("playerModalShare");
+    const statusEl = document.getElementById("shareStatusMsg");
     const originalLabel = btn.innerHTML;
     btn.disabled = true;
-    btn.textContent = 'Preparing…';
-    statusEl.textContent = '';
-
+    btn.textContent = "Preparing…";
+    statusEl.textContent = "";
     try {
-      const options = {
-        includeMatchday: document.getElementById('shareIncludeMatchday').checked,
-        includeStats: document.getElementById('shareIncludeStats').checked
-      };
-      const blob = await generateShareCard(currentModalPlayer, options);
-      if (!blob) throw new Error('Could not render the card image.');
-      const fileName = currentModalPlayer.name.replace(/\s+/g, '-') + '-card.png';
-      const file = new File([blob], fileName, { type: 'image/png' });
-
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: currentModalPlayer.name + ' — Kelapa Bali FC',
-          text: 'Check out ' + currentModalPlayer.name + '\u2019s player card!'
+        const options = {
+            includeMatchday: document.getElementById("shareIncludeMatchday").checked,
+            includeStats: document.getElementById("shareIncludeStats").checked
+        };
+        const blob = await generateShareCard(currentModalPlayer, options);
+        if (!blob) throw new Error("Could not render the card image.");
+        const fileName = currentModalPlayer.name.replace(/\s+/g, "-") + "-card.png";
+        const file = new File([ blob ], fileName, {
+            type: "image/png"
         });
-      } else {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = fileName;
-        document.body.appendChild(a); a.click(); a.remove();
-        URL.revokeObjectURL(url);
-        statusEl.textContent = 'Saved! Open Instagram and share it from your photos.';
-      }
+        if (navigator.canShare && navigator.canShare({
+            files: [ file ]
+        })) {
+            await navigator.share({
+                files: [ file ],
+                title: currentModalPlayer.name + " — Kelapa Bali FC",
+                text: "Check out " + currentModalPlayer.name + "’s player card!"
+            });
+        } else {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+            statusEl.textContent = "Saved! Open Instagram and share it from your photos.";
+        }
     } catch (err) {
-      if (err.name !== 'AbortError') { // user just closing the native share sheet isn't an error
-        statusEl.textContent = "Couldn't generate the card — please try again.";
-        console.warn('Share card failed:', err);
-      }
+        if (err.name !== "AbortError") {
+            statusEl.textContent = "Couldn't generate the card — please try again.";
+            console.warn("Share card failed:", err);
+        }
     }
     btn.disabled = false;
     btn.innerHTML = originalLabel;
-  });
+});
 
-  // Delegated click — cards are re-rendered on every filter change, so this
-  // is bound once on the container rather than re-bound per card.
-  squadSections.addEventListener('click', (e) => {
-    const card = e.target.closest('.player-card');
+squadSections.addEventListener("click", e => {
+    const card = e.target.closest(".player-card");
     if (!card) return;
     const uid = Number(card.dataset.uid);
     const p = squad.find(pl => pl._uid === uid);
     if (p) openPlayerModal(p);
-  });
-  document.getElementById('playerModalClose').addEventListener('click', closePlayerModal);
-  playerModalOverlay.addEventListener('click', (e) => { if (e.target === playerModalOverlay) closePlayerModal(); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePlayerModal(); });
+});
 
-  function initials(name){
-    return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
-  }
+document.getElementById("playerModalClose").addEventListener("click", closePlayerModal);
 
-  // Builds a simple placeholder SVG data-URI (initials on a flat panel) so
-  // cards look complete before real photos/gifs are added. Swap the
-  // `photo` / `gif` fields above with real file paths and this fallback
-  // is never used once those files exist.
-  function placeholderSrc(label){
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="520">
-      <rect width="100%" height="100%" fill="#c8cdd4"/>
-      <text x="50%" y="52%" font-family="Oswald, sans-serif" font-size="72" font-weight="600"
-        fill="#ffffff" text-anchor="middle" dominant-baseline="middle">${label}</text>
-    </svg>`;
-    return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
-  }
+playerModalOverlay.addEventListener("click", e => {
+    if (e.target === playerModalOverlay) closePlayerModal();
+});
 
-  function cardHtml(p){
-    return `
-      <div class="player-card" data-uid="${p._uid}">
-        <img class="player-photo" src="${p.photo}" alt="${p.name}"
-             onerror="this.onerror=null; this.src='${placeholderSrc(initials(p.name))}';">
-        <img class="player-gif" src="${p.gif}" alt="" loading="lazy"
-             onerror="this.onerror=null; this.src='${placeholderSrc('&#9654;')}';">
-        <div class="card-overlay">
-          <div class="card-number mono">${p.number}</div>
-          <div class="card-name">${p.name}</div>
-        </div>
-      </div>
-    `;
-  }
+document.addEventListener("keydown", e => {
+    if (e.key === "Escape") closePlayerModal();
+});
 
-  function renderSquad(filter){
+function initials(name) {
+    return name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+}
+
+function placeholderSrc(number, initialsText) {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="520">\n      <rect width="100%" height="100%" fill="#14171C"/>\n      <rect width="6" height="100%" fill="#b91321"/>\n      <text x="50%" y="42%" font-family="Oswald, sans-serif" font-size="120" font-weight="700"\n        fill="#b91321" text-anchor="middle" dominant-baseline="middle">${number}</text>\n      <text x="50%" y="60%" font-family="Oswald, sans-serif" font-size="56" font-weight="600"\n        fill="#ffffff" text-anchor="middle" dominant-baseline="middle">${initialsText}</text>\n    </svg>`;
+    return "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svg)));
+}
+
+function gifPlaceholderSrc() {
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="520">\n      <rect width="100%" height="100%" fill="#14171C"/>\n      <text x="50%" y="52%" font-size="64" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">&#9654;</text>\n    </svg>`;
+    return "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svg)));
+}
+
+function cardHtml(p) {
+    const photoSrc = p.photo ? p.photo : placeholderSrc(p.number, initials(p.name));
+    const gifSrc = p.gif ? p.gif : gifPlaceholderSrc();
+    return `\n      <div class="player-card" data-uid="${p._uid}">\n        <img class="player-photo" src="${photoSrc}" alt="${p.name}" loading="lazy"\n             onerror="this.onerror=null; this.src='${placeholderSrc(p.number, initials(p.name))}';">\n        <img class="player-gif" src="${gifSrc}" alt="" loading="lazy"\n             onerror="this.onerror=null; this.src='${gifPlaceholderSrc()}';">\n        <div class="card-overlay">\n          <div class="card-number mono">${p.number}</div>\n          <div class="card-name">${p.name}</div>\n        </div>\n      </div>\n    `;
+}
+
+function renderSquad(filter) {
     const groups = {};
-    squad.forEach(p => { (groups[p.position] = groups[p.position] || []).push(p); });
-
-    let html = '';
+    squad.forEach(p => {
+        (groups[p.position] = groups[p.position] || []).push(p);
+    });
+    let html = "";
     GROUP_ORDER.forEach(position => {
-      if(filter !== 'all' && filter !== position) return;
-      const players = (groups[position] || []).slice().sort((a, b) => a.number - b.number);
-      if(!players.length) return;
-      html += `
-        <div class="squad-section">
-          <h2 class="squad-section-title">${position}s</h2>
-          <div class="player-grid">${players.map(cardHtml).join('')}</div>
-        </div>
-      `;
+        if (filter !== "all" && filter !== position) return;
+        const players = (groups[position] || []).slice().sort((a, b) => {
+            const aHasPhoto = a.photo ? 0 : 1;
+            const bHasPhoto = b.photo ? 0 : 1;
+            if (aHasPhoto !== bHasPhoto) return aHasPhoto - bHasPhoto;
+            return a.number - b.number;
+        });
+        if (!players.length) return;
+        html += `\n        <div class="squad-section">\n          <h2 class="squad-section-title">${position}s</h2>\n          <div class="player-grid">${players.map(cardHtml).join("")}</div>\n        </div>\n      `;
     });
     squadSections.innerHTML = html;
-  }
+}
 
-  let currentFilter = 'all';
+let currentFilter = "all";
 
-  // The "Players Page Hero" upload in the admin dashboard's Site Media
-  // panel saves into a SiteAssets tab on this same spreadsheet (Slot |
-  // Image URL | Size (KB) | Uploaded At), append-only — the LAST row for
-  // slot "players-hero" is the current/live one. Nothing on this page
-  // read that back before now, which is why the hero always showed the
-  // plain diagonal placeholder pattern no matter what got uploaded.
-  async function applyHeroImage(){
+async function applyHeroImage() {
     try {
-      const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=SiteAssets`;
-      const res = await fetch(url);
-      if(!res.ok) throw new Error('SiteAssets request failed: ' + res.status);
-      const text = await res.text();
-      const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
-      const rows = (json.table && json.table.rows) || [];
-
-      let heroUrl = '';
-      rows.forEach(r => {
-        const cells = r.c || [];
-        const slot = cells[0] ? String(cells[0].v || '').trim() : '';
-        const imageUrl = cells[1] ? String(cells[1].v || '').trim() : '';
-        if (slot === 'players-hero' && imageUrl) heroUrl = imageUrl; // last match wins — most recent upload
-      });
-
-      if (heroUrl){
-        document.querySelector('.squad-hero').style.backgroundImage =
-          `linear-gradient(180deg, rgba(10,10,10,.25), rgba(10,10,10,.92) 88%), url('${heroUrl}')`;
-      }
-      // If nothing's been uploaded yet, the CSS's diagonal pattern stays as-is — no error, just no photo yet.
+        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=SiteAssets`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("SiteAssets request failed: " + res.status);
+        const text = await res.text();
+        const json = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
+        const rows = json.table && json.table.rows || [];
+        let heroUrl = "";
+        rows.forEach(r => {
+            const cells = r.c || [];
+            const slot = cells[0] ? String(cells[0].v || "").trim() : "";
+            const imageUrl = cells[1] ? String(cells[1].v || "").trim() : "";
+            if (slot === "players-hero" && imageUrl) heroUrl = imageUrl;
+        });
+        if (heroUrl) {
+            document.querySelector(".squad-hero").style.backgroundImage = `linear-gradient(180deg, rgba(10,10,10,.25), rgba(10,10,10,.92) 88%), url('${heroUrl}')`;
+        }
     } catch (err) {
-      console.warn('Could not load the Players page hero image — keeping the placeholder pattern.', err);
+        console.warn("Could not load the Players page hero image — keeping the placeholder pattern.", err);
     }
-  }
-  applyHeroImage();
+}
 
-  squadSections.innerHTML = `<div class="squad-section"><p class="squad-loading mono">Loading squad…</p></div>`;
+applyHeroImage();
 
-  fetchSquadFromSheet()
-    .then(rows => {
-      if(!rows.length) throw new Error('Sheet returned no rows');
-      squad = rows;
-    })
-    .catch(err => {
-      console.warn('Could not load squad from the sheet — showing placeholder roster instead.', err);
-      squad = FALLBACK_SQUAD;
-    })
-    .finally(() => {
-      // A stable ID per player, separate from jersey number — this club
-      // allows duplicate numbers (normal for a community club), so number
-      // alone can't safely identify which card was clicked. Assigned once
-      // here, before any grouping/sorting, so it never changes underneath.
-      squad.forEach((p, i) => { p._uid = i; });
-      renderSquad(currentFilter);
+squadSections.innerHTML = `<div class="squad-section"><p class="squad-loading mono">Loading squad…</p></div>`;
+
+fetchSquadFromSheet().then(rows => {
+    if (!rows.length) throw new Error("Sheet returned no rows");
+    squad = rows;
+}).catch(err => {
+    console.warn("Could not load squad from the sheet — showing placeholder roster instead.", err);
+    squad = FALLBACK_SQUAD;
+}).finally(() => {
+    squad.forEach((p, i) => {
+        p._uid = i;
     });
+    renderSquad(currentFilter);
+});
 
-  /* ---------------- FILTER DROPDOWN ---------------- */
-  const filterDropdown = document.getElementById('filterDropdown');
-  const filterToggle = document.getElementById('filterToggle');
-  const filterMenu = document.getElementById('filterMenu');
-  const filterLabel = document.getElementById('filterLabel');
+const filterDropdown = document.getElementById("filterDropdown");
 
-  filterToggle.addEventListener('click', (e)=>{
+const filterToggle = document.getElementById("filterToggle");
+
+const filterMenu = document.getElementById("filterMenu");
+
+const filterLabel = document.getElementById("filterLabel");
+
+filterToggle.addEventListener("click", e => {
     e.stopPropagation();
-    filterDropdown.classList.toggle('open');
-  });
-  filterMenu.addEventListener('click', (e)=>{
-    const opt = e.target.closest('.filter-option');
-    if(!opt) return;
-    document.querySelectorAll('.filter-option').forEach(o => o.classList.remove('active'));
-    opt.classList.add('active');
+    filterDropdown.classList.toggle("open");
+});
+
+filterMenu.addEventListener("click", e => {
+    const opt = e.target.closest(".filter-option");
+    if (!opt) return;
+    document.querySelectorAll(".filter-option").forEach(o => o.classList.remove("active"));
+    opt.classList.add("active");
     filterLabel.textContent = opt.textContent;
-    filterDropdown.classList.remove('open');
+    filterDropdown.classList.remove("open");
     currentFilter = opt.dataset.filter;
     renderSquad(currentFilter);
-  });
-  document.addEventListener('click', (e)=>{
-    if(!filterDropdown.contains(e.target)) filterDropdown.classList.remove('open');
-  });
-</script>
+});
+
+document.addEventListener("click", e => {
+    if (!filterDropdown.contains(e.target)) filterDropdown.classList.remove("open");
+});</script>
 </body>
 </html>
