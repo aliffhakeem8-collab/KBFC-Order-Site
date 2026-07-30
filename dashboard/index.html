@@ -53,10 +53,10 @@
     padding:14px 10px 8px; font-family:'JetBrains Mono',monospace;
   }
   .nav-item{
-    display:flex; align-items:center; gap:12px; padding:11px 12px; border-radius:9px;
+    display:flex; align-items:center; gap:12px; padding:12px 14px; border-radius:10px;
     background:none; border:none; color:var(--muted); font-family:'Inter',sans-serif;
     font-size:13.5px; font-weight:500; cursor:pointer; text-align:left; width:100%;
-    transition:background .15s ease, color .15s ease; margin-bottom:2px;
+    transition:background .15s ease, color .15s ease; margin-bottom:4px;
   }
   .nav-item:hover{ background:var(--surface-2); color:var(--ink); }
   .nav-item.active{ background:var(--accent-dim); color:var(--accent); font-weight:600; }
@@ -191,6 +191,26 @@
   .status.pending, .status.pay-later{ background:var(--pending-bg); color:var(--gold); }
   .empty{ font-size:13px; color:var(--muted); }
 
+  .profile-block{ padding:6px 0; }
+  .profile-block-title{
+    font-family:'Inter',sans-serif; font-size:13px; font-weight:700; color:var(--ink);
+    margin-bottom:10px; text-transform:uppercase; letter-spacing:.04em;
+  }
+  .profile-divider{ height:1px; background:var(--line); margin:22px 0; }
+  .crop-stage{ margin:14px 0; display:flex; flex-direction:column; align-items:center; gap:10px; }
+  .crop-frame{
+    border-radius:50%; overflow:hidden; width:280px; height:280px;
+    border:2px solid var(--line); touch-action:none; cursor:grab;
+  }
+  .crop-frame:active{ cursor:grabbing; }
+  .crop-frame canvas{ display:block; }
+  .crop-controls{ display:flex; align-items:center; gap:10px; width:100%; max-width:280px; }
+  .crop-controls input[type="range"]{ flex:1; }
+  .crop-hint{ font-size:11.5px; color:var(--muted); text-align:center; margin:0; }
+  .crop-cancel-btn{
+    background:none; border:none; color:var(--accent); font-size:12px; font-weight:600;
+    cursor:pointer; padding:0; text-decoration:underline;
+  }
   .upload-row{ display:grid; grid-template-columns:1fr 1fr; gap:18px; }
   @media (max-width:1100px){ .upload-row{ grid-template-columns:1fr; } }
   .upload-zone{
@@ -268,7 +288,7 @@
     text-transform:uppercase; letter-spacing:.05em; display:none; white-space:nowrap;
   }
   .mcard-hint{
-    position:absolute; bottom:26px; left:50%; transform:translateX(-50%);
+    position:absolute; bottom:58px; left:58%; transform:translateX(-50%);
     font-size:11px; color:rgba(255,255,255,.3); text-transform:uppercase; letter-spacing:.08em;
     font-family:'JetBrains Mono',monospace;
   }
@@ -405,30 +425,75 @@
       </div>
 
       <div class="card">
-        <h3>Players gallery photo</h3>
-        <p class="card-sub">Upload your own photo or GIF for your entry on the Players page.</p>
-        <div class="upload-row">
-          <div>
-            <div class="upload-target-row">
-              <button class="target-tab active" id="tabPhoto" type="button">Photo</button>
-              <button class="target-tab" id="tabGif" type="button">GIF</button>
-            </div>
-            <label class="upload-zone" id="dropZone">
-              <input type="file" id="fileInput" accept="image/*">
-              <div id="dropZoneLabel">Click to choose an image</div>
-              <p>JPG, PNG, or GIF — a square image works best</p>
-            </label>
+        <h3>My profile</h3>
+        <p class="card-sub">Update your photo, or ask the admin to correct your name, number, or position.</p>
+
+        <div class="profile-block">
+          <h4 class="profile-block-title">Photo / GIF</h4>
+          <div class="upload-target-row">
+            <button class="target-tab active" id="tabPhoto" type="button">Photo</button>
+            <button class="target-tab" id="tabGif" type="button">GIF</button>
           </div>
-          <div>
-            <div class="preview-row hidden" id="previewRow" style="display:none;">
-              <img id="previewThumb" class="preview-thumb">
-              <span id="previewName" style="font-size:12.5px;color:var(--muted);"></span>
-              <button class="remove-preview" id="removePreviewBtn" type="button" title="Remove">✕</button>
+
+          <label class="upload-zone" id="dropZone">
+            <input type="file" id="fileInput" accept="image/*">
+            <div id="dropZoneLabel">Click to choose an image, or drag one here</div>
+            <p>JPG or PNG — you'll be able to crop it next</p>
+          </label>
+
+          <div class="crop-stage" id="cropStage" style="display:none;">
+            <div class="crop-frame">
+              <canvas id="cropCanvas" width="280" height="280"></canvas>
             </div>
-            <div id="uploadMsg"></div>
-            <button class="primary" id="uploadBtn" disabled>Upload</button>
-            <p class="current-photo-note">This replaces your current photo on the Players page directly — no admin approval needed.</p>
+            <div class="crop-controls">
+              <label class="req-label">Zoom</label>
+              <input type="range" id="zoomSlider" min="1" max="3" step="0.01" value="1">
+            </div>
+            <p class="crop-hint">Drag the photo to reposition · use the slider to zoom</p>
+            <button type="button" class="crop-cancel-btn" id="cropCancelBtn">Choose a different photo</button>
           </div>
+
+          <div class="preview-row hidden" id="previewRow" style="display:none;">
+            <img id="previewThumb" class="preview-thumb">
+            <span id="previewName" style="font-size:12.5px;color:var(--muted);"></span>
+            <button class="remove-preview" id="removePreviewBtn" type="button" title="Remove">✕</button>
+          </div>
+
+          <div id="uploadMsg"></div>
+          <button class="primary" id="uploadBtn" disabled>Upload</button>
+          <p class="current-photo-note">This replaces your current photo on the Players page directly — no admin approval needed.</p>
+        </div>
+
+        <div class="profile-divider"></div>
+
+        <div class="profile-block">
+          <h4 class="profile-block-title">Request a change</h4>
+          <p class="card-sub" style="margin-bottom:12px;">Corrections to your name, number, or position need admin approval.</p>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+            <div>
+              <label class="req-label">Field</label>
+              <select id="reqField" class="req-input">
+                <option value="Name">Name</option>
+                <option value="Number">Jersey number</option>
+                <option value="Position">Position</option>
+              </select>
+            </div>
+            <div>
+              <label class="req-label">New value</label>
+              <input type="text" id="reqValue" class="req-input" placeholder="e.g. Midfielder">
+            </div>
+          </div>
+          <label class="req-label">Note (optional)</label>
+          <textarea id="reqNote" class="req-input" rows="2" placeholder="Any context for the admin"></textarea>
+          <button class="primary" id="reqSubmitBtn">Submit request</button>
+          <div id="reqMsg" style="font-size:13px; color:var(--muted); margin-top:10px;"></div>
+        </div>
+
+        <div class="profile-divider"></div>
+
+        <div class="profile-block">
+          <h4 class="profile-block-title">My requests</h4>
+          <div id="reqHistoryBody"></div>
         </div>
       </div>
     </section>
@@ -473,35 +538,6 @@
           <div class="card-info-row"><span>Season</span><span>26/27</span></div>
           <div class="card-info-row"><span>Status</span><span id="infoStatus">—</span></div>
         </div>
-      </div>
-
-      <div class="card" style="margin-top:16px;">
-        <h3>Request a change</h3>
-        <p class="card-sub">Ask the admin to correct your name, number, or position. Nothing changes until it's approved.</p>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
-          <div>
-            <label class="req-label">Field</label>
-            <select id="reqField" class="req-input">
-              <option value="Name">Name</option>
-              <option value="Number">Jersey number</option>
-              <option value="Position">Position</option>
-            </select>
-          </div>
-          <div>
-            <label class="req-label">New value</label>
-            <input type="text" id="reqValue" class="req-input" placeholder="e.g. Midfielder">
-          </div>
-        </div>
-        <label class="req-label">Note (optional)</label>
-        <textarea id="reqNote" class="req-input" rows="2" placeholder="Any context for the admin"></textarea>
-        <button class="primary" id="reqSubmitBtn">Submit request</button>
-        <div id="reqMsg" style="font-size:13px; color:var(--muted); margin-top:10px;"></div>
-      </div>
-
-      <div class="card" style="margin-top:16px;">
-        <h3>My requests</h3>
-        <p class="card-sub">Your submitted requests and their status.</p>
-        <div id="reqHistoryBody"></div>
       </div>
     </section>
 
@@ -701,12 +737,150 @@
     els.tabPhoto.classList.remove('active');
   });
 
+  /**
+   * Resizes and re-compresses an image before upload — same approach used
+   * in the admin dashboard. A typical phone photo is several MB at
+   * 3000-4000px, way bigger than needed for a photo shown at a few
+   * hundred pixels wide, and every extra MB is extra load time for
+   * everyone viewing the Players page. Falls back to the original file
+   * if compression fails for any reason, rather than blocking the upload.
+   */
+  function compressImage(file, maxDimension = 1000, quality = 0.8){
+    return new Promise((resolve) => {
+      if (!file.type.startsWith('image/')) { resolve(file); return; }
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let { width, height } = img;
+        if (width <= maxDimension && height <= maxDimension) { resolve(file); return; }
+        if (width > height) { height = Math.round(height * (maxDimension / width)); width = maxDimension; }
+        else { width = Math.round(width * (maxDimension / height)); height = maxDimension; }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(blob => {
+          if (!blob) { resolve(file); return; }
+          resolve(new File([blob], file.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' }));
+        }, 'image/jpeg', quality);
+      };
+      img.onerror = () => resolve(file);
+      img.src = url;
+    });
+  }
+
+  /* ---------------- CROP TOOL ----------------
+     Static photos get a simple drag-to-reposition, slide-to-zoom crop
+     before upload. GIFs skip this entirely — running an animated GIF
+     through a canvas would flatten it to a single still frame, killing
+     the animation, so GIFs go straight through unmodified instead. */
+  const cropCanvas = document.getElementById('cropCanvas');
+  const cropStage = document.getElementById('cropStage');
+  const zoomSlider = document.getElementById('zoomSlider');
+  const CROP_SIZE = 280;
+  let cropImg = null;
+  let cropScale = 1, cropOffsetX = 0, cropOffsetY = 0, cropBaseScale = 1;
+
+  function renderCrop(){
+    const ctx = cropCanvas.getContext('2d');
+    ctx.clearRect(0, 0, CROP_SIZE, CROP_SIZE);
+    if (!cropImg) return;
+    const scale = cropBaseScale * cropScale;
+    const w = cropImg.width * scale, h = cropImg.height * scale;
+    const x = (CROP_SIZE - w) / 2 + cropOffsetX;
+    const y = (CROP_SIZE - h) / 2 + cropOffsetY;
+    ctx.drawImage(cropImg, x, y, w, h);
+  }
+
+  function clampCropOffsets(){
+    const scale = cropBaseScale * cropScale;
+    const w = cropImg.width * scale, h = cropImg.height * scale;
+    const maxX = Math.max(0, (w - CROP_SIZE) / 2);
+    const maxY = Math.max(0, (h - CROP_SIZE) / 2);
+    cropOffsetX = Math.max(-maxX, Math.min(maxX, cropOffsetX));
+    cropOffsetY = Math.max(-maxY, Math.min(maxY, cropOffsetY));
+  }
+
+  function loadCropImage(file){
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      cropImg = img;
+      cropBaseScale = Math.max(CROP_SIZE / img.width, CROP_SIZE / img.height);
+      cropScale = 1; cropOffsetX = 0; cropOffsetY = 0;
+      zoomSlider.value = 1;
+      renderCrop();
+      cropStage.style.display = 'flex';
+    };
+    img.src = url;
+  }
+
+  function getCroppedFile(){
+    return new Promise(resolve => {
+      const OUT_SIZE = 1000;
+      const outCanvas = document.createElement('canvas');
+      outCanvas.width = OUT_SIZE; outCanvas.height = OUT_SIZE;
+      const outCtx = outCanvas.getContext('2d');
+      const ratio = OUT_SIZE / CROP_SIZE;
+      const scale = cropBaseScale * cropScale * ratio;
+      const w = cropImg.width * scale, h = cropImg.height * scale;
+      const x = (OUT_SIZE - w) / 2 + cropOffsetX * ratio;
+      const y = (OUT_SIZE - h) / 2 + cropOffsetY * ratio;
+      outCtx.drawImage(cropImg, x, y, w, h);
+      outCanvas.toBlob(blob => {
+        resolve(new File([blob], 'cropped.jpg', { type: 'image/jpeg' }));
+      }, 'image/jpeg', 0.9);
+    });
+  }
+
+  let cropDragging = false, cropDragStartX = 0, cropDragStartY = 0, cropStartOffsetX = 0, cropStartOffsetY = 0;
+  function cropDragStart(clientX, clientY){
+    cropDragging = true;
+    cropDragStartX = clientX; cropDragStartY = clientY;
+    cropStartOffsetX = cropOffsetX; cropStartOffsetY = cropOffsetY;
+  }
+  function cropDragMove(clientX, clientY){
+    if (!cropDragging) return;
+    cropOffsetX = cropStartOffsetX + (clientX - cropDragStartX);
+    cropOffsetY = cropStartOffsetY + (clientY - cropDragStartY);
+    clampCropOffsets();
+    renderCrop();
+  }
+  cropCanvas.addEventListener('mousedown', (e) => cropDragStart(e.clientX, e.clientY));
+  window.addEventListener('mousemove', (e) => cropDragMove(e.clientX, e.clientY));
+  window.addEventListener('mouseup', () => { cropDragging = false; });
+  cropCanvas.addEventListener('touchstart', (e) => {
+    const t = e.touches[0]; cropDragStart(t.clientX, t.clientY);
+  }, { passive: true });
+  cropCanvas.addEventListener('touchmove', (e) => {
+    const t = e.touches[0]; cropDragMove(t.clientX, t.clientY);
+  }, { passive: true });
+  cropCanvas.addEventListener('touchend', () => { cropDragging = false; });
+  zoomSlider.addEventListener('input', () => {
+    cropScale = parseFloat(zoomSlider.value);
+    clampCropOffsets();
+    renderCrop();
+  });
+
   function selectFile(file){
     if (!file || !file.type.startsWith('image/')) return;
     selectedFile = file;
-    els.previewThumb.src = URL.createObjectURL(file);
-    els.previewName.textContent = file.name;
-    els.previewRow.style.display = 'flex';
+    const isGif = file.type === 'image/gif';
+    if (uploadTarget === 'photo' && !isGif){
+      // Static photo — show the crop tool, hide the plain preview.
+      loadCropImage(file);
+      els.previewRow.style.display = 'none';
+    } else {
+      // GIF (or already-animated) — skip cropping entirely, since running
+      // it through a canvas would flatten it to a single still frame.
+      cropStage.style.display = 'none';
+      cropImg = null;
+      els.previewThumb.src = URL.createObjectURL(file);
+      els.previewName.textContent = file.name;
+      els.previewRow.style.display = 'flex';
+    }
     els.uploadBtn.disabled = false;
     showMsg('', '');
   }
@@ -716,8 +890,17 @@
   document.getElementById('removePreviewBtn').addEventListener('click', (e) => {
     e.preventDefault();
     selectedFile = null;
+    cropImg = null;
+    cropStage.style.display = 'none';
     els.fileInput.value = '';
     els.previewRow.style.display = 'none';
+    els.uploadBtn.disabled = true;
+  });
+  document.getElementById('cropCancelBtn').addEventListener('click', () => {
+    selectedFile = null;
+    cropImg = null;
+    cropStage.style.display = 'none';
+    els.fileInput.value = '';
     els.uploadBtn.disabled = true;
   });
   ['dragenter', 'dragover'].forEach(evt => {
@@ -750,15 +933,26 @@
     showMsg('', '');
 
     try {
-      const base64 = await fileToBase64(selectedFile);
+      // If the crop tool was used (static photo), bake in the crop first.
+      // GIFs never go through this — cropImg stays null for them, so they
+      // upload as originally selected (compression is skipped too, for
+      // the same reason: canvas would kill the animation).
+      let fileToSend = selectedFile;
+      if (cropImg) fileToSend = await getCroppedFile();
+      const isGif = selectedFile.type === 'image/gif';
+      if (!isGif) fileToSend = await compressImage(fileToSend);
+
+      const base64 = await fileToBase64(fileToSend);
       const res = await fetch(API_URL, {
         method: 'POST',
-        body: JSON.stringify({ action: 'uploadPhoto', token: token, target: uploadTarget, mimeType: selectedFile.type, imageBase64: base64 })
+        body: JSON.stringify({ action: 'uploadPhoto', token: token, target: uploadTarget, mimeType: fileToSend.type, imageBase64: base64 })
       });
       const data = await res.json();
       if (data.ok){
         showMsg('Uploaded! It may take a minute to appear on the Players page.', 'success');
         selectedFile = null;
+        cropImg = null;
+        cropStage.style.display = 'none';
         els.fileInput.value = '';
         els.previewRow.style.display = 'none';
       } else {
