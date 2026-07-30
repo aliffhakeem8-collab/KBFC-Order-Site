@@ -463,6 +463,10 @@
     <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     Next Match
   </button>
+  <button class="nav-item" data-view="changerequests">
+    <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+    Change Requests
+  </button>
   <button class="nav-item" data-view="media">
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
     Site Media
@@ -773,6 +777,21 @@
         <h3>Match history</h3>
         <p class="card-sub" style="margin-bottom:12px;">Every match that's been set, newest first — separate from the current one above.</p>
         <div id="nextMatchLogBody"></div>
+      </div>
+    </section>
+
+    <!-- CHANGE REQUESTS -->
+    <section class="view-section" id="view-changerequests">
+      <div class="page-title">Change Requests</div>
+      <p style="font-size:12.5px;color:var(--muted);margin:-12px 0 20px;">Players can request a correction to their Name, Number, or Position from their own dashboard. Nothing changes on the roster until you approve it here.</p>
+      <div class="toolbar">
+        <button class="ghost" id="refreshChangeRequestsBtn">Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Player</th><th>Field</th><th>Current</th><th>Requested</th><th>Note</th><th>Status</th><th>Requested</th><th></th></tr></thead>
+          <tbody id="changeRequestsTableBody"></tbody>
+        </table>
       </div>
     </section>
 
@@ -2215,6 +2234,56 @@
     }
   });
 
+  // ---------------- CHANGE REQUESTS ----------------
+  async function loadChangeRequests(){
+    const tbody = document.getElementById('changeRequestsTableBody');
+    const data = await (await fetch(`${API_URL}?action=adminGetChangeRequests&token=${encodeURIComponent(token)}`)).json();
+    if (!data.ok){ tbody.innerHTML = `<tr><td colspan="8" class="empty">Couldn't load change requests.</td></tr>`; return; }
+    if (data.requests.length === 0){
+      tbody.innerHTML = `<tr><td colspan="8" class="empty">No requests yet.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = data.requests.map(r => `
+      <tr>
+        <td>#${r.number} — ${r.name}</td>
+        <td>${r.field}</td>
+        <td>${r.currentValue || '—'}</td>
+        <td><b>${r.requestedValue}</b></td>
+        <td style="max-width:180px;">${r.note || '—'}</td>
+        <td>${r.status}</td>
+        <td class="mono">${r.requestedAt}</td>
+        <td>
+          ${r.status === 'Pending' ? `
+            <button class="ghost" data-kind="approve-request" data-row="${r.rowNumber}">Approve</button>
+            <button class="ghost" data-kind="reject-request" data-row="${r.rowNumber}">Reject</button>
+          ` : ''}
+        </td>
+      </tr>
+    `).join('');
+
+    tbody.querySelectorAll('[data-kind="approve-request"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!(await confirmDialog('Approve this change? It will update the player\'s roster entry immediately.', { okLabel: 'Approve' }))) return;
+        const params = new URLSearchParams({ action: 'adminApproveChangeRequest', token, rowNumber: btn.dataset.row });
+        const res = await fetch(`${API_URL}?${params.toString()}`);
+        const data = await res.json();
+        if (data.ok){ showToast('Approved'); loadChangeRequests(); loadPlayers(); }
+        else showToast(data.error || 'Failed to approve');
+      });
+    });
+    tbody.querySelectorAll('[data-kind="reject-request"]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!(await confirmDialog('Reject this request? The roster stays unchanged.', { okLabel: 'Reject', danger: true }))) return;
+        const params = new URLSearchParams({ action: 'adminRejectChangeRequest', token, rowNumber: btn.dataset.row });
+        const res = await fetch(`${API_URL}?${params.toString()}`);
+        const data = await res.json();
+        if (data.ok){ showToast('Rejected'); loadChangeRequests(); }
+        else showToast(data.error || 'Failed to reject');
+      });
+    });
+  }
+  document.getElementById('refreshChangeRequestsBtn').addEventListener('click', loadChangeRequests);
+
   // ---------------- INIT ----------------
   async function init(){
     token = localStorage.getItem(STORAGE_KEY);
@@ -2240,7 +2309,7 @@
     loadProduction();
     loadDrops();
     loadSiteAssets();
-    loadNextMatch(); loadNextMatchLog();
+    loadNextMatch(); loadNextMatchLog(); loadChangeRequests();
   }
 
   init();
