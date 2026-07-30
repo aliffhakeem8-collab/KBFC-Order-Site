@@ -272,7 +272,7 @@
   /* ---------- membership card ---------- */
   .card-view-grid{ display:grid; grid-template-columns:560px 1fr; gap:32px; align-items:start; }
   @media (max-width:1200px){ .card-view-grid{ grid-template-columns:1fr; } }
-  .mcard-flip-outer{ aspect-ratio:1.6/1; perspective:1600px; cursor:pointer; }
+  .mcard-flip-outer{ aspect-ratio:1.6/1; perspective:1600px; cursor:pointer; container-type:inline-size; container-name:mcard; }
   .mcard-flip-inner{
     position:relative; width:100%; height:100%; transition:transform .6s cubic-bezier(.4,.2,.2,1);
     transform-style:preserve-3d;
@@ -283,7 +283,7 @@
     box-shadow:0 30px 60px rgba(0,0,0,.45); color:#fff; font-family:'Inter',sans-serif;
   }
   .mcard-front{
-    background:#0a0a0a; padding:clamp(18px,6vw,32px) clamp(20px,7vw,36px);
+    background:#0a0a0a; padding:clamp(18px,6cqi,32px) clamp(20px,7cqi,36px);
     border:1px solid var(--line);
   }
   .mcard-front::before, .mcard-back::before{
@@ -307,7 +307,7 @@
      the same diagonal stripe angle as the jersey texture above. Deliberately
      tiny and quiet; it's decorative texture, not a functional security mark. */
   .mcard-foil{
-    --foil-size: clamp(64px,18vw,120px);
+    --foil-size: clamp(64px,18cqi,120px);
     position:absolute; width:var(--foil-size); height:var(--foil-size);
     right:calc(var(--foil-size) / -2); bottom:calc(var(--foil-size) / -2);
     background:repeating-linear-gradient(45deg, rgba(217,171,63,.55) 0 5px, rgba(217,171,63,.16) 5px 10px, transparent 10px 16px);
@@ -315,28 +315,28 @@
   }
   .mcard-foil-back{ right:auto; left:calc(var(--foil-size) / -2); bottom:auto; top:calc(var(--foil-size) / -2); }
   .mcard-top{ display:flex; justify-content:space-between; align-items:flex-start; position:relative; gap:10px; }
-  .mcard-club{ font-family:'JetBrains Mono',monospace; font-size:clamp(9.5px,2.6vw,13px); letter-spacing:.1em; line-height:1.6; }
+  .mcard-club{ font-family:'JetBrains Mono',monospace; font-size:clamp(9.5px,2.6cqi,13px); letter-spacing:.1em; line-height:1.6; }
   .mcard-club-line1{ color:var(--gold); font-weight:600; display:block; }
   .mcard-club-line2{ color:rgba(255,255,255,.4); display:block; }
   .mcard-top-right{ display:flex; flex-direction:column; align-items:flex-end; gap:10px; flex-shrink:0; }
-  .mcard-num{ font-family:'Inter',sans-serif; font-size:clamp(32px,10vw,56px); font-weight:800; line-height:1; color:var(--accent); }
-  .mcard-name{ font-family:'Inter',sans-serif; font-size:clamp(18px,6vw,30px); font-weight:700; margin-top:clamp(14px,6vw,30px); position:relative; }
-  .mcard-position{ font-size:clamp(11px,3vw,14px); opacity:.6; margin-top:4px; position:relative; text-transform:uppercase; letter-spacing:.05em; }
+  .mcard-num{ font-family:'Inter',sans-serif; font-size:clamp(32px,10cqi,56px); font-weight:800; line-height:1; color:var(--accent); }
+  .mcard-name{ font-family:'Inter',sans-serif; font-size:clamp(18px,6cqi,30px); font-weight:700; margin-top:clamp(14px,6cqi,30px); position:relative; }
+  .mcard-position{ font-size:clamp(11px,3cqi,14px); opacity:.6; margin-top:4px; position:relative; text-transform:uppercase; letter-spacing:.05em; }
   .mcard-bottom{
-    position:absolute; left:clamp(18px,6vw,36px); right:clamp(18px,6vw,36px); bottom:clamp(14px,4.5vw,26px);
+    position:absolute; left:clamp(18px,6cqi,36px); right:clamp(18px,6cqi,36px); bottom:clamp(14px,4.5cqi,26px);
     display:flex; justify-content:space-between; align-items:flex-end; gap:10px;
     padding-top:10px; border-top:1px solid var(--line-soft);
   }
-  .mcard-serial{ font-family:'JetBrains Mono',monospace; font-size:clamp(9px,2.4vw,13px); opacity:.5; letter-spacing:.05em; white-space:nowrap; }
-  .mcard-season{ font-family:'JetBrains Mono',monospace; font-size:clamp(9px,2.4vw,13px); color:var(--gold); opacity:.85; white-space:nowrap; }
+  .mcard-serial{ font-family:'JetBrains Mono',monospace; font-size:clamp(9px,2.4cqi,13px); opacity:.5; letter-spacing:.05em; white-space:nowrap; }
+  .mcard-season{ font-family:'JetBrains Mono',monospace; font-size:clamp(9px,2.4cqi,13px); color:var(--gold); opacity:.85; white-space:nowrap; }
   .mcard-premium{
     background:var(--gold-bg); border:1px solid var(--gold);
-    color:var(--gold); font-size:clamp(9px,2.4vw,11.5px); font-weight:700; padding:clamp(4px,1.2vw,6px) clamp(9px,2.6vw,13px); border-radius:999px;
+    color:var(--gold); font-size:clamp(9px,2.4cqi,11.5px); font-weight:700; padding:clamp(4px,1.2cqi,6px) clamp(9px,2.6cqi,13px); border-radius:999px;
     text-transform:uppercase; letter-spacing:.05em; display:none; white-space:nowrap;
   }
   .mcard-hint{
-    position:absolute; bottom:clamp(38px,12vw,58px); left:50%; transform:translateX(-50%);
-    font-size:clamp(9px,2.2vw,11px); color:rgba(255,255,255,.3); text-transform:uppercase; letter-spacing:.08em;
+    position:absolute; bottom:clamp(38px,12cqi,58px); left:50%; transform:translateX(-50%);
+    font-size:clamp(9px,2.2cqi,11px); color:rgba(255,255,255,.3); text-transform:uppercase; letter-spacing:.08em;
     font-family:'JetBrains Mono',monospace; white-space:nowrap;
   }
   .mcard-back{
@@ -346,18 +346,18 @@
   .mcard-back-logo{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; opacity:.06; }
   .mcard-back-logo img{ width:60%; filter:brightness(0) invert(1); }
   .mcard-back-photo{
-    width:clamp(76px,22vw,130px); height:clamp(76px,22vw,130px); border-radius:50%; object-fit:cover;
+    width:clamp(76px,22cqi,130px); height:clamp(76px,22cqi,130px); border-radius:50%; object-fit:cover;
     border:3px solid var(--gold); box-shadow:0 0 0 5px rgba(217,171,63,.14);
     position:relative; margin-bottom:16px; background:var(--surface-2);
   }
   .mcard-back-photo-fallback{
-    width:clamp(76px,22vw,130px); height:clamp(76px,22vw,130px); border-radius:50%; display:flex; align-items:center; justify-content:center;
+    width:clamp(76px,22cqi,130px); height:clamp(76px,22cqi,130px); border-radius:50%; display:flex; align-items:center; justify-content:center;
     background:var(--surface-2); border:3px solid var(--gold); box-shadow:0 0 0 5px rgba(217,171,63,.14); position:relative;
-    font-family:'Inter',sans-serif; font-size:clamp(24px,7vw,40px); font-weight:700; color:var(--gold); margin-bottom:16px;
+    font-family:'Inter',sans-serif; font-size:clamp(24px,7cqi,40px); font-weight:700; color:var(--gold); margin-bottom:16px;
   }
-  .mcard-back-name{ font-family:'Inter',sans-serif; font-size:clamp(17px,5vw,24px); font-weight:700; position:relative; }
+  .mcard-back-name{ font-family:'Inter',sans-serif; font-size:clamp(17px,5cqi,24px); font-weight:700; position:relative; }
   .mcard-back-sub{
-    font-family:'JetBrains Mono',monospace; font-size:clamp(9px,2.4vw,11.5px); color:var(--gold); opacity:.7;
+    font-family:'JetBrains Mono',monospace; font-size:clamp(9px,2.4cqi,11.5px); color:var(--gold); opacity:.7;
     margin-top:6px; position:relative; text-transform:uppercase; letter-spacing:.1em;
   }
 
