@@ -1612,10 +1612,11 @@
         const target = label.dataset.target;
         label.classList.add('uploading');
         try {
-          const base64 = await fileToBase64(file);
+          const compressed = await compressImage(file);
+          const base64 = await fileToBase64(compressed);
           const res = await fetch(API_URL, {
             method: 'POST',
-            body: JSON.stringify({ action: 'adminUploadPlayerPhoto', token, rowNumber, target, mimeType: file.type, imageBase64: base64 })
+            body: JSON.stringify({ action: 'adminUploadPlayerPhoto', token, rowNumber, target, mimeType: compressed.type, imageBase64: base64 })
           });
           const data = await res.json();
           if (data.ok){
@@ -1777,10 +1778,11 @@
     playerPhotoEls.uploadBtn.textContent = 'Uploading…';
     showPlayerPhotoMsg('', '');
     try {
-      const base64 = await fileToBase64(playerPhotoSelectedFile);
+      const compressed = await compressImage(playerPhotoSelectedFile);
+      const base64 = await fileToBase64(compressed);
       const res = await fetch(API_URL, {
         method: 'POST',
-        body: JSON.stringify({ action: 'adminUploadPlayerPhoto', token, rowNumber, target, mimeType: playerPhotoSelectedFile.type, imageBase64: base64 })
+        body: JSON.stringify({ action: 'adminUploadPlayerPhoto', token, rowNumber, target, mimeType: compressed.type, imageBase64: base64 })
       });
       const data = await res.json();
       if (data.ok){
@@ -1996,6 +1998,44 @@
   let mediaSelectedFile = null;
   let mediaLog = [];
 
+  /**
+   * Resizes and re-compresses an image before upload. Phone photos are
+   * routinely 3000x4000px and several MB — way bigger than needed for a
+   * photo shown at a few hundred pixels wide on a webpage, and every
+   * extra MB is extra load time for every visitor viewing that page.
+   * Caps the longer side at maxDimension and re-encodes as JPEG at the
+   * given quality. Defaults (1000px, 0.75 quality) are tuned for page
+   * speed over maximum fidelity — still looks good at normal web display
+   * sizes, and cuts a typical 4-5MB phone photo down to well under
+   * 150KB. Falls back to the original file if compression fails for any
+   * reason (e.g. an already-tiny image, or a format quirk) — never
+   * blocks the upload over this.
+   */
+  function compressImage(file, maxDimension = 1000, quality = 0.75){
+    return new Promise((resolve) => {
+      if (!file.type.startsWith('image/')) { resolve(file); return; }
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        let { width, height } = img;
+        if (width <= maxDimension && height <= maxDimension) { resolve(file); return; } // already small enough
+        if (width > height) { height = Math.round(height * (maxDimension / width)); width = maxDimension; }
+        else { width = Math.round(width * (maxDimension / height)); height = maxDimension; }
+        const canvas = document.createElement('canvas');
+        canvas.width = width; canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(blob => {
+          if (!blob) { resolve(file); return; } // compression failed — fall back to the original rather than block
+          resolve(new File([blob], file.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' }));
+        }, 'image/jpeg', quality);
+      };
+      img.onerror = () => resolve(file); // couldn't even load it — fall back rather than block the upload
+      img.src = url;
+    });
+  }
+
   function fileToBase64(file){
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -2034,10 +2074,11 @@
     els.mediaUploadBtn.textContent = 'Uploading…';
     showMediaMsg('', '');
     try {
-      const base64 = await fileToBase64(mediaSelectedFile);
+      const compressed = await compressImage(mediaSelectedFile, 1600, 0.78);
+      const base64 = await fileToBase64(compressed);
       const res = await fetch(API_URL, {
         method: 'POST',
-        body: JSON.stringify({ action: 'adminUploadSiteImage', token, slot, mimeType: mediaSelectedFile.type, imageBase64: base64 })
+        body: JSON.stringify({ action: 'adminUploadSiteImage', token, slot, mimeType: compressed.type, imageBase64: base64 })
       });
       const data = await res.json();
       if (data.ok){
