@@ -134,6 +134,22 @@
     padding:22px 24px;
   }
   .card h3{ font-family:'Inter',sans-serif; font-size:14.5px; font-weight:700; margin-bottom:3px; }
+  .req-label{ font-size:12px; color:var(--muted); display:block; margin-bottom:6px; }
+  .req-input{
+    width:100%; box-sizing:border-box; padding:11px 13px; border-radius:10px;
+    border:1px solid var(--line); background:var(--surface); color:var(--ink);
+    font-family:'Inter',sans-serif; font-size:13.5px;
+  }
+  textarea.req-input{ resize:vertical; font-family:'Inter',sans-serif; }
+  .req-history-row{
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    padding:12px 0; border-bottom:1px solid var(--line); font-size:13px;
+  }
+  .req-history-row:last-child{ border-bottom:none; }
+  .req-status{ font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; }
+  .req-status.pending{ background:rgba(240,168,48,.15); color:#c7860b; }
+  .req-status.approved{ background:rgba(93,202,165,.15); color:#1f9d76; }
+  .req-status.rejected{ background:var(--accent-dim); color:var(--accent); }
   .card .card-sub{ font-size:12px; color:var(--muted); margin-bottom:18px; }
 
   .grid3{ display:grid; grid-template-columns:1.1fr 1.4fr; gap:18px; margin-bottom:18px; align-items:start; }
@@ -458,6 +474,35 @@
           <div class="card-info-row"><span>Status</span><span id="infoStatus">—</span></div>
         </div>
       </div>
+
+      <div class="card" style="margin-top:16px;">
+        <h3>Request a change</h3>
+        <p class="card-sub">Ask the admin to correct your name, number, or position. Nothing changes until it's approved.</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+          <div>
+            <label class="req-label">Field</label>
+            <select id="reqField" class="req-input">
+              <option value="Name">Name</option>
+              <option value="Number">Jersey number</option>
+              <option value="Position">Position</option>
+            </select>
+          </div>
+          <div>
+            <label class="req-label">New value</label>
+            <input type="text" id="reqValue" class="req-input" placeholder="e.g. Midfielder">
+          </div>
+        </div>
+        <label class="req-label">Note (optional)</label>
+        <textarea id="reqNote" class="req-input" rows="2" placeholder="Any context for the admin"></textarea>
+        <button class="primary" id="reqSubmitBtn">Submit request</button>
+        <div id="reqMsg" style="font-size:13px; color:var(--muted); margin-top:10px;"></div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <h3>My requests</h3>
+        <p class="card-sub">Your submitted requests and their status.</p>
+        <div id="reqHistoryBody"></div>
+      </div>
     </section>
 
     <section class="view-section" id="view-stats">
@@ -581,6 +626,64 @@
   function showMsg(text, type){
     const icon = type === 'success' ? '<span class="success-check">✓</span>' : '';
     els.uploadMsg.innerHTML = text ? `<p class="msg ${type}">${icon}${text}</p>` : '';
+  }
+
+  // ---------------- REQUEST A CHANGE ----------------
+  document.getElementById('reqSubmitBtn').addEventListener('click', async () => {
+    const token = localStorage.getItem(STORAGE_KEY);
+    const msgEl = document.getElementById('reqMsg');
+    const btn = document.getElementById('reqSubmitBtn');
+    if (!token) { msgEl.textContent = 'Your session expired. Please log in again.'; return; }
+
+    const field = document.getElementById('reqField').value;
+    const requestedValue = document.getElementById('reqValue').value.trim();
+    const note = document.getElementById('reqNote').value.trim();
+    if (!requestedValue) { msgEl.textContent = 'Enter the value you want changed.'; return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+    msgEl.textContent = '';
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'submitChangeRequest', token, field, requestedValue, note })
+      });
+      const data = await res.json();
+      if (data.ok){
+        msgEl.textContent = 'Request submitted — the admin will review it.';
+        document.getElementById('reqValue').value = '';
+        document.getElementById('reqNote').value = '';
+        loadMyRequests();
+      } else {
+        msgEl.textContent = data.error || 'Could not submit your request.';
+      }
+    } catch (err) {
+      msgEl.textContent = 'Could not reach the server. Please try again.';
+    }
+    btn.disabled = false;
+    btn.textContent = 'Submit request';
+  });
+
+  async function loadMyRequests(){
+    const token = localStorage.getItem(STORAGE_KEY);
+    const body = document.getElementById('reqHistoryBody');
+    if (!token || !body) return;
+    try {
+      const res = await fetch(`${API_URL}?action=getMyChangeRequests&token=${encodeURIComponent(token)}`);
+      const data = await res.json();
+      if (!data.ok || !data.requests || data.requests.length === 0){
+        body.innerHTML = `<p style="font-size:13px;color:var(--muted);">No requests yet.</p>`;
+        return;
+      }
+      body.innerHTML = data.requests.map(r => `
+        <div class="req-history-row">
+          <span>${r.field}: ${r.currentValue || '—'} → <b>${r.requestedValue}</b></span>
+          <span class="req-status ${r.status.toLowerCase()}">${r.status}</span>
+        </div>
+      `).join('');
+    } catch (err) {
+      body.innerHTML = `<p style="font-size:13px;color:var(--muted);">Couldn't load your requests.</p>`;
+    }
   }
 
   els.mcardFlip.addEventListener('click', () => {
@@ -800,6 +903,7 @@
       animateCount(els.statGoals, stats.goals || 0);
       animateCount(els.statAssists, stats.assists || 0);
       animateCount(els.statCleanSheets, stats.cleanSheets || 0);
+      loadMyRequests();
     }
 
     if (premium){
