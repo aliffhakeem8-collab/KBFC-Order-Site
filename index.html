@@ -31,13 +31,12 @@
     --shadow: 0 20px 60px rgba(0,0,0,0.45);
   }
   *{margin:0;padding:0;box-sizing:border-box;}
-  html,body{height:100%;}
+  html,body{height:100%; overflow-x:hidden;}
   body{
     background:var(--bg);
     color:var(--ink);
     font-family:'Inter',sans-serif;
     -webkit-font-smoothing:antialiased;
-    overflow-x:hidden;
     transition:background .35s ease, color .35s ease;
   }
   .mono{font-family:'JetBrains Mono',monospace; letter-spacing:0.06em;}
@@ -364,7 +363,10 @@
   .login-promo-compact{
     position:relative; overflow:hidden;
     margin:36px 6vw; padding:26px 30px 26px 34px;
-    background:linear-gradient(115deg, #14171C 0%, #1f1215 60%, #2a1215 100%);
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E") repeat,
+      linear-gradient(115deg, #14171C 0%, #1f1215 60%, #2a1215 100%);
+    background-blend-mode:overlay;
     border:1px solid rgba(185,19,33,.25); border-radius:0;
     box-shadow:0 24px 60px rgba(185,19,33,.14), 0 20px 60px rgba(20,23,28,0.14);
     display:flex; align-items:center; gap:22px;
@@ -410,31 +412,155 @@
     font-size:11px; color:rgba(255,255,255,.55);
   }
 
-  /* ---------- "coming soon" lock overlay — sits on top, keeps the panel underneath intact ---------- */
-  .login-promo-compact.is-locked .login-promo-actions,
-  .login-promo-compact.is-locked .login-promo-google{
-    pointer-events:none;
-  }
-  .login-promo-lock{
-    position:absolute; inset:0; z-index:8; border-radius:0;
-    background:rgba(15,16,18,.62);
-    backdrop-filter:grayscale(1) blur(1px);
-    -webkit-backdrop-filter:grayscale(1) blur(1px);
-    display:flex; align-items:center; justify-content:center;
-  }
-  .login-promo-lock-pill{
-    display:inline-flex; align-items:center; gap:8px;
-    font-family:'Oswald',sans-serif; font-size:13px; font-weight:600;
-    letter-spacing:.14em; text-transform:uppercase; color:#fff;
-    background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.3);
-    padding:10px 20px; border-radius:0;
-  }
-  .login-promo-lock-pill svg{ width:14px; height:14px; stroke:#fff; fill:none; stroke-width:1.8; }
-
   @media (max-width:720px){
     .login-promo-compact{ flex-direction:column; align-items:flex-start; text-align:left; margin:24px 5vw; }
     .login-promo-actions{ align-items:flex-start; width:100%; }
     .login-promo-actions .btn-primary{ width:100%; justify-content:center; }
+  }
+
+  /* ---------- signup promo popup: shown to first-time visitors ---------- */
+  .signup-promo-box{
+    position:relative; overflow:hidden;
+    max-width:440px; width:100%;
+    padding:38px 34px 30px;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E") repeat,
+      linear-gradient(115deg, #14171C 0%, #1f1215 60%, #2a1215 100%);
+    background-blend-mode:overlay;
+    border:1px solid rgba(185,19,33,.25);
+    box-shadow:0 30px 80px rgba(0,0,0,.5);
+    text-align:left;
+  }
+  .signup-promo-box::before{
+    content:''; position:absolute; left:0; top:0; bottom:0; width:5px;
+    background:linear-gradient(180deg, var(--accent), #ff5a5a);
+  }
+  .signup-promo-box::after{
+    content:''; position:absolute; top:-40%; right:-15%;
+    width:260px; height:260px; border-radius:50%;
+    background:radial-gradient(circle, rgba(185,19,33,.28) 0%, rgba(185,19,33,0) 70%);
+    pointer-events:none;
+  }
+  .signup-promo-close{
+    position:absolute; top:16px; right:16px; z-index:2;
+    width:30px; height:30px; border-radius:50%; border:1px solid rgba(255,255,255,.18);
+    background:rgba(255,255,255,.05); color:rgba(255,255,255,.6);
+    display:flex; align-items:center; justify-content:center; cursor:pointer;
+    transition:border-color .2s ease, color .2s ease;
+  }
+  .signup-promo-close:hover{ border-color:rgba(255,255,255,.4); color:#fff; }
+  .signup-promo-close svg{ width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2; }
+  .signup-promo-tag{
+    position:relative; font-size:10px; font-weight:700; color:#ff8a8a; letter-spacing:.1em;
+    display:inline-block; margin-bottom:12px;
+    background:rgba(255,255,255,.06); padding:3px 9px; border-radius:999px;
+  }
+  .signup-promo-box h2{
+    position:relative; font-family:'Oswald',sans-serif; font-size:24px; font-weight:600;
+    color:#fff; margin-bottom:8px; line-height:1.2;
+  }
+  .signup-promo-box > p{
+    position:relative; font-size:13px; color:rgba(255,255,255,.6); line-height:1.5; margin-bottom:20px;
+  }
+
+  /* ---------- auto-playing feature slideshow inside the popup ---------- */
+  .signup-promo-slideshow{ position:relative; margin-bottom:22px; }
+  .promo-slide-frame{ position:relative; min-height:150px; }
+  .promo-slide{
+    position:absolute; inset:0; opacity:0; pointer-events:none;
+    transition:opacity .45s ease;
+    display:flex; flex-direction:column; align-items:center; gap:14px;
+  }
+  .promo-slide.active{ opacity:1; pointer-events:auto; }
+  .promo-slide p{
+    margin:0; font-size:12.5px; color:rgba(255,255,255,.75); line-height:1.4; text-align:center; max-width:320px;
+  }
+  .promo-slide b{ color:#fff; font-weight:600; }
+  .promo-mock{ font-family:'Inter',sans-serif; }
+
+  .promo-mock-card{
+    position:relative; overflow:hidden; width:180px; padding:12px 14px; border-radius:8px;
+    background:#000; box-shadow:0 10px 26px rgba(0,0,0,.4);
+  }
+  .promo-mock-card-rule{
+    position:absolute; top:0; left:0; right:0; height:2px;
+    background:linear-gradient(90deg, transparent, #d9ab3f 35%, #d9ab3f 65%, transparent); opacity:.6;
+  }
+  .promo-mock-card-top{ display:flex; justify-content:space-between; align-items:flex-start; }
+  .promo-mock-card-club{ font-family:'JetBrains Mono',monospace; font-size:7px; letter-spacing:.08em; color:#d9ab3f; font-weight:600; line-height:1.6; }
+  .promo-mock-card-club span{ display:block; color:rgba(255,255,255,.4); font-weight:400; }
+  .promo-mock-card-num{ font-size:20px; font-weight:800; line-height:1; color:#b91321; }
+  .promo-mock-card-name{ margin-top:16px; font-size:13px; font-weight:700; color:#fff; }
+  .promo-mock-card-pos{ font-size:7.5px; color:rgba(255,255,255,.5); text-transform:uppercase; letter-spacing:.05em; margin-top:2px; }
+
+  .promo-mock-order{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    width:220px; padding:12px 14px; border-radius:6px;
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+  }
+  .promo-mock-order-id{ font-family:'JetBrains Mono',monospace; font-size:11px; color:#fff; }
+  .promo-mock-order-sub{ font-size:9px; color:rgba(255,255,255,.45); margin-top:3px; }
+  .promo-mock-pill{
+    background:rgba(217,171,63,.15); border:1px solid #d9ab3f; color:#d9ab3f;
+    font-size:9px; font-weight:700; padding:4px 9px; border-radius:999px; text-transform:uppercase; letter-spacing:.03em; white-space:nowrap;
+  }
+
+  .promo-mock-stats{ display:grid; grid-template-columns:repeat(4, 1fr); gap:7px; width:240px; }
+  .promo-mock-stat{
+    display:flex; flex-direction:column; align-items:center; gap:3px;
+    padding:10px 4px; border-radius:6px;
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+    font-size:7px; color:rgba(255,255,255,.45); text-transform:uppercase; letter-spacing:.04em; text-align:center;
+  }
+  .promo-mock-stat span{ font-size:16px; font-weight:700; color:#fff; line-height:1; }
+
+  .promo-mock-shop{
+    display:flex; align-items:center; gap:12px;
+    width:210px; padding:10px 14px; border-radius:6px;
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+  }
+  .promo-mock-shop-thumb{
+    flex-shrink:0; width:40px; height:40px; border-radius:6px;
+    background:linear-gradient(135deg,#1a1a1a,#2a1215);
+    display:flex; align-items:center; justify-content:center; color:#d9ab3f;
+  }
+  .promo-mock-shop-thumb svg{ stroke:currentColor; fill:none; stroke-width:1.8; }
+  .promo-mock-shop-name{ font-size:11px; color:#fff; font-weight:600; }
+  .promo-mock-shop-tag{ font-size:9px; color:#d9ab3f; margin-top:3px; }
+
+  .promo-mock-match{
+    width:220px; padding:12px 14px; border-radius:6px;
+    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+  }
+  .promo-mock-match-label{ font-family:'JetBrains Mono',monospace; font-size:8px; color:#d9ab3f; text-transform:uppercase; letter-spacing:.08em; margin-bottom:5px; }
+  .promo-mock-match-opp{ font-size:12.5px; color:#fff; font-weight:600; }
+  .promo-mock-match-time{ font-size:9.5px; color:rgba(255,255,255,.5); margin-top:3px; }
+
+  .promo-slide-dots{ position:relative; display:flex; justify-content:center; gap:7px; margin-top:14px; }
+  .promo-slide-dot{
+    width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.22); cursor:pointer;
+    transition:background .2s ease, transform .2s ease; border:none; padding:0;
+  }
+  .promo-slide-dot.active{ background:#d9ab3f; transform:scale(1.25); }
+
+  .signup-promo-actions{ position:relative; display:flex; flex-direction:column; gap:10px; }
+  .signup-promo-actions .btn-primary{
+    width:100%; justify-content:center; background:#fff; color:#14171C; border-color:#fff; font-weight:700;
+  }
+  .signup-promo-actions .btn-primary:hover{ background:#f2f2f2; }
+  .signup-promo-later{
+    background:none; border:none; color:rgba(255,255,255,.45); font-size:12.5px;
+    cursor:pointer; text-align:center; padding:4px; transition:color .2s ease;
+  }
+  .signup-promo-later:hover{ color:rgba(255,255,255,.75); }
+  .signup-promo-google{
+    position:relative; display:flex; align-items:center; justify-content:center; gap:6px;
+    font-size:11px; color:rgba(255,255,255,.5); margin-top:2px;
+  }
+
+  @media (max-width:480px){
+    .signup-promo-box{ padding:32px 24px 26px; }
+    .signup-promo-box h2{ font-size:21px; }
   }
 
   footer{
@@ -1000,8 +1126,8 @@
   </button>
 
   <div class="menu-group-label mono">Account</div>
-  <a class="btn-mini is-locked" href="login/" aria-disabled="true" tabindex="-1" title="Coming soon">
-    Log in <span class="menu-item-soon">· coming soon</span>
+  <a class="btn-mini" href="login/">
+    Log in / Sign up
     <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
   </a>
 </div>
@@ -1060,7 +1186,7 @@
     </div>
   </div>
 
-  <div class="login-promo-compact is-locked">
+  <div class="login-promo-compact">
     <div class="login-promo-icon">
       <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
     </div>
@@ -1070,22 +1196,13 @@
       <p>Track your order, view your digital membership card, and get early access to drops.</p>
     </div>
     <div class="login-promo-actions">
-      <a class="btn-primary" href="login/" tabindex="-1" aria-disabled="true">
+      <a class="btn-primary" href="login/">
         Log in / Sign up
         <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
       </a>
       <span class="login-promo-google">
         <svg width="13" height="13" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
         or sign up instantly with Google
-      </span>
-    </div>
-    <!-- Coming-soon lock: purely visual, sits above everything above.
-         Remove the "is-locked" class on .login-promo-compact (and delete
-         this .login-promo-lock div) to relaunch — nothing else changes. -->
-    <div class="login-promo-lock">
-      <span class="login-promo-lock-pill">
-        <svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
-        Coming soon
       </span>
     </div>
   </div>
@@ -1326,6 +1443,90 @@
 </section>
 
 <!-- ============ PAYMENT CONFIRMATION POPUP ============ -->
+<div class="modal-overlay" id="signupPromoOverlay">
+  <div class="signup-promo-box" id="signupPromoBox">
+    <button class="signup-promo-close" id="signupPromoClose" aria-label="Close">
+      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+    <span class="mono signup-promo-tag">NEW</span>
+    <h2>Your club, your account.</h2>
+    <p>Create a free KBFC account and unlock a bunch of perks — more are landing every season.</p>
+    <div class="signup-promo-slideshow" id="signupPromoSlideshow">
+      <div class="promo-slide-frame">
+
+        <div class="promo-slide active" data-slide="0">
+          <div class="promo-mock promo-mock-card">
+            <div class="promo-mock-card-rule"></div>
+            <div class="promo-mock-card-top">
+              <div class="promo-mock-card-club">KBFC<span>SEASON 26/27</span></div>
+              <div class="promo-mock-card-num">#22</div>
+            </div>
+            <div class="promo-mock-card-name">ALIFF</div>
+            <div class="promo-mock-card-pos">Forward</div>
+          </div>
+          <p><b>Digital membership card</b> — your name, number, and photo, ready to share.</p>
+        </div>
+
+        <div class="promo-slide" data-slide="1">
+          <div class="promo-mock promo-mock-order">
+            <div>
+              <div class="promo-mock-order-id">MAH-1968-B2P</div>
+              <div class="promo-mock-order-sub">#22 &middot; Size M</div>
+            </div>
+            <span class="promo-mock-pill">Pay later</span>
+          </div>
+          <p><b>Track your order</b> — see your payment status in real time, no need to ask.</p>
+        </div>
+
+        <div class="promo-slide" data-slide="2">
+          <div class="promo-mock promo-mock-stats">
+            <div class="promo-mock-stat"><span>12</span>Apps</div>
+            <div class="promo-mock-stat"><span>4</span>Goals</div>
+            <div class="promo-mock-stat"><span>2</span>Assists</div>
+            <div class="promo-mock-stat"><span>3</span>Clean sheets</div>
+          </div>
+          <p><b>Player stats on your profile</b> — appearances, goals, assists, and clean sheets.</p>
+        </div>
+
+        <div class="promo-slide" data-slide="3">
+          <div class="promo-mock promo-mock-shop">
+            <div class="promo-mock-shop-thumb">
+              <svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            </div>
+            <div>
+              <div class="promo-mock-shop-name">Anniversary tee</div>
+              <div class="promo-mock-shop-tag">Members only</div>
+            </div>
+          </div>
+          <p><b>Early access to Premium Shop drops</b> — limited merch before it goes public.</p>
+        </div>
+
+        <div class="promo-slide" data-slide="4">
+          <div class="promo-mock promo-mock-match">
+            <div class="promo-mock-match-label">Next match</div>
+            <div class="promo-mock-match-opp">vs Bukit Raja FC</div>
+            <div class="promo-mock-match-time">Sat, 12 Aug &middot; 8:00 PM</div>
+          </div>
+          <p><b>Never miss a match</b> — the next fixture, date, and venue right on your dashboard.</p>
+        </div>
+
+      </div>
+      <div class="promo-slide-dots" id="promoSlideDots"></div>
+    </div>
+    <div class="signup-promo-actions">
+      <a class="btn-primary" href="login/">
+        Log in / Sign up
+        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <span class="signup-promo-google">
+        <svg width="13" height="13" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
+        or sign up instantly with Google
+      </span>
+      <button class="signup-promo-later" id="signupPromoLater">Maybe later</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="paymentModalOverlay">
   <div class="modal-box payment-modal">
     <div class="modal-icon mono">$</div>
@@ -1360,8 +1561,7 @@
 <!-- ============ DUPLICATE NUMBER POPUP ============ -->
 <div class="modal-overlay" id="dupModalOverlay">
   <div class="modal-box">
-    <div class="modal-icon mono">!</div>
-    <h3>That number's taken</h3>
+    <div class="modal-icon mono">!</div>    <h3>That number's taken</h3>
     <p class="modal-msg" id="dupModalMsg"></p>
     <p class="modal-sub">Pick a different number, or reach out to sort out a clash:</p>
     <div class="modal-contacts">
@@ -1383,7 +1583,7 @@
   // +08:00 is Malaysia time — writing the offset explicitly means this
   // fires at the correct real-world moment for every visitor, regardless
   // of their own device's timezone.
-  const PREORDER_DEADLINE = new Date('2026-07-31T23:59:59+08:00');
+  const PREORDER_DEADLINE = new Date('2026-08-08T23:59:59+08:00');
   let countdownTimer;
   function updateCountdown(){
     const daysEl = document.getElementById('cdDays');
@@ -1957,6 +2157,90 @@
       if(e.target.id === 'paymentModalOverlay') finalizePaymentModal();
     });
   }
+
+  /* ---------- signup promo popup ---------- */
+  (function(){
+    var STORAGE_KEY = 'kbfc_signup_promo_dismissed_at';
+    var COOLDOWN_DAYS = 7;
+    var SHOW_DELAY_MS = 1500;
+    var SLIDE_INTERVAL_MS = 3200;
+
+    var overlay = document.getElementById('signupPromoOverlay');
+    if(!overlay) return;
+
+    function alreadyDismissedRecently(){
+      var last = localStorage.getItem(STORAGE_KEY);
+      if(!last) return false;
+      var daysSince = (Date.now() - Number(last)) / 86400000;
+      return daysSince < COOLDOWN_DAYS;
+    }
+
+    // ---- mini feature slideshow ----
+    var slides = Array.prototype.slice.call(overlay.querySelectorAll('.promo-slide'));
+    var dotsWrap = document.getElementById('promoSlideDots');
+    var slideIndex = 0;
+    var slideTimer = null;
+
+    if(slides.length && dotsWrap){
+      slides.forEach(function(_, i){
+        var dot = document.createElement('button');
+        dot.className = 'promo-slide-dot' + (i === 0 ? ' active' : '');
+        dot.setAttribute('aria-label', 'Show feature ' + (i + 1));
+        dot.addEventListener('click', function(){ goToSlide(i); restartSlideTimer(); });
+        dotsWrap.appendChild(dot);
+      });
+    }
+    var dots = dotsWrap ? Array.prototype.slice.call(dotsWrap.children) : [];
+
+    function goToSlide(i){
+      slideIndex = (i + slides.length) % slides.length;
+      slides.forEach(function(s, idx){ s.classList.toggle('active', idx === slideIndex); });
+      dots.forEach(function(d, idx){ d.classList.toggle('active', idx === slideIndex); });
+    }
+
+    function startSlideTimer(){
+      if(slides.length < 2) return;
+      stopSlideTimer();
+      slideTimer = setInterval(function(){ goToSlide(slideIndex + 1); }, SLIDE_INTERVAL_MS);
+    }
+    function stopSlideTimer(){
+      if(slideTimer){ clearInterval(slideTimer); slideTimer = null; }
+    }
+    function restartSlideTimer(){ startSlideTimer(); }
+
+    var slideshowEl = document.getElementById('signupPromoSlideshow');
+    if(slideshowEl){
+      slideshowEl.addEventListener('mouseenter', stopSlideTimer);
+      slideshowEl.addEventListener('mouseleave', startSlideTimer);
+    }
+
+    function dismiss(){
+      localStorage.setItem(STORAGE_KEY, String(Date.now()));
+      overlay.classList.remove('active');
+      stopSlideTimer();
+    }
+
+    // Don't show on top of another modal that's already open (e.g. mid-checkout),
+    // and don't show at all if this visitor dismissed it within the cooldown window.
+    if(!alreadyDismissedRecently()){
+      setTimeout(function(){
+        var anotherModalOpen = document.querySelector('.modal-overlay.active');
+        if(!anotherModalOpen){
+          overlay.classList.add('active');
+          goToSlide(0);
+          startSlideTimer();
+        }
+      }, SHOW_DELAY_MS);
+    }
+
+    var closeBtn = document.getElementById('signupPromoClose');
+    var laterBtn = document.getElementById('signupPromoLater');
+    if(closeBtn) closeBtn.addEventListener('click', dismiss);
+    if(laterBtn) laterBtn.addEventListener('click', dismiss);
+    overlay.addEventListener('click', function(e){
+      if(e.target.id === 'signupPromoOverlay') dismiss();
+    });
+  })();
 </script>
 
 </body>
