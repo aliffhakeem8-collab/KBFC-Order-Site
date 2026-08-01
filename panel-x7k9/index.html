@@ -130,6 +130,9 @@
   #adminContent{ display:none; }
 
   .page-title{ font-family:'Oswald',sans-serif; font-size:22px; font-weight:600; margin-bottom:20px; }
+  .nextmatch-grid{ display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
+  .nm-col{ min-width:0; }
+  @media (max-width:900px){ .nextmatch-grid{ grid-template-columns:1fr; } }
 
   .view-section{ display:none; }
   .view-section.active{ display:block; }
@@ -740,80 +743,87 @@
       <div class="page-title">Next Match</div>
       <p style="font-size:12.5px;color:var(--muted);margin:-12px 0 20px;">Shown on the homepage and included on every player's generated share card. There's only ever one upcoming match — saving here replaces whatever was there before.</p>
 
-      <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; max-width:640px;">
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
-          <div>
-            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Opponent *</label>
-            <input type="text" id="nextMatchOpponent" class="edit-input" placeholder="e.g. Harimau FC">
+      <div class="nextmatch-grid">
+        <div class="nm-col">
+          <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+              <div>
+                <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Opponent *</label>
+                <input type="text" id="nextMatchOpponent" class="edit-input" placeholder="e.g. Harimau FC">
+              </div>
+              <div>
+                <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Competition</label>
+                <input type="text" id="nextMatchCompetition" class="edit-input" placeholder="e.g. League Cup, Friendly">
+              </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+              <div>
+                <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Date</label>
+                <input type="date" id="nextMatchDate" class="edit-input">
+              </div>
+              <div>
+                <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Kickoff time</label>
+                <input type="time" id="nextMatchTime" class="edit-input">
+              </div>
+            </div>
+            <div style="margin-bottom:20px;">
+              <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Venue</label>
+              <input type="text" id="nextMatchVenue" class="edit-input" placeholder="e.g. Padang Bali, Section 12">
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <button class="action" id="saveNextMatchBtn">Save match</button>
+              <button class="ghost" id="clearNextMatchBtn">Clear (no upcoming match)</button>
+            </div>
+            <div id="nextMatchMsg" style="font-size:12px; color:var(--muted); margin-top:12px;"></div>
+            <div id="nextMatchLastUpdated" style="font-size:11px; color:var(--muted); margin-top:6px;"></div>
           </div>
-          <div>
-            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Competition</label>
-            <input type="text" id="nextMatchCompetition" class="edit-input" placeholder="e.g. League Cup, Friendly">
-          </div>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
-          <div>
-            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Date</label>
-            <input type="date" id="nextMatchDate" class="edit-input">
-          </div>
-          <div>
-            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Kickoff time</label>
-            <input type="time" id="nextMatchTime" class="edit-input">
-          </div>
-        </div>
-        <div style="margin-bottom:20px;">
-          <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Venue</label>
-          <input type="text" id="nextMatchVenue" class="edit-input" placeholder="e.g. Padang Bali, Section 12">
-        </div>
-        <div style="display:flex; gap:10px; align-items:center;">
-          <button class="action" id="saveNextMatchBtn">Save match</button>
-          <button class="ghost" id="clearNextMatchBtn">Clear (no upcoming match)</button>
-        </div>
-        <div id="nextMatchMsg" style="font-size:12px; color:var(--muted); margin-top:12px;"></div>
-        <div id="nextMatchLastUpdated" style="font-size:11px; color:var(--muted); margin-top:6px;"></div>
-      </div>
 
-      <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; max-width:640px; margin-top:16px;">
-        <h3>Scheduling log</h3>
-        <p class="card-sub" style="margin-bottom:12px;">Every match that's been set, newest first — this is a log of scheduling actions, not results.</p>
-        <div id="nextMatchLogBody"></div>
-      </div>
+          <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; margin-top:16px;">
+            <h3>Scheduling log</h3>
+            <p class="card-sub" style="margin-bottom:12px;">Every match that's been set, newest first — this is a log of scheduling actions, not results.</p>
+            <div id="nextMatchLogBody"></div>
+          </div>
+        </div>
 
-      <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; max-width:640px; margin-top:16px;">
-        <h3>Log a played match</h3>
-        <p class="card-sub" style="margin-bottom:12px;">A separate, deliberate step — logging here is what shows up in "Completed matches" below and on the public homepage. Nothing gets published automatically just from scheduling or clearing above.</p>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
-          <div>
-            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Opponent *</label>
-            <input type="text" id="playedOpponent" class="edit-input" placeholder="e.g. Harimau FC">
+        <div class="nm-col">
+          <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px;">
+            <h3>Log a played match</h3>
+            <p class="card-sub" style="margin-bottom:12px;">A separate, deliberate step — logging here is what shows up in "Completed matches" below and on the public homepage. Nothing gets published automatically just from scheduling or clearing above.</p>
+            <button class="ghost" id="copyFromNextMatchBtn" style="margin-bottom:16px;">Copy from Next Match</button>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+              <div>
+                <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Opponent *</label>
+                <input type="text" id="playedOpponent" class="edit-input" placeholder="e.g. Harimau FC">
+              </div>
+              <div>
+                <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Result</label>
+                <input type="text" id="playedResult" class="edit-input" placeholder="e.g. W 3-1, D 1-1, L 0-2">
+              </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+              <div>
+                <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Competition</label>
+                <input type="text" id="playedCompetition" class="edit-input" placeholder="e.g. League Cup, Friendly">
+              </div>
+              <div>
+                <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Date</label>
+                <input type="date" id="playedDate" class="edit-input">
+              </div>
+            </div>
+            <div style="margin-bottom:20px;">
+              <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Venue</label>
+              <input type="text" id="playedVenue" class="edit-input" placeholder="e.g. Padang Bali, Section 12">
+            </div>
+            <button class="action" id="logPlayedMatchBtn">Log match</button>
+            <div id="playedMatchMsg" style="font-size:12px; color:var(--muted); margin-top:12px;"></div>
           </div>
-          <div>
-            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Result</label>
-            <input type="text" id="playedResult" class="edit-input" placeholder="e.g. W 3-1, D 1-1, L 0-2">
-          </div>
-        </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
-          <div>
-            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Competition</label>
-            <input type="text" id="playedCompetition" class="edit-input" placeholder="e.g. League Cup, Friendly">
-          </div>
-          <div>
-            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Date</label>
-            <input type="date" id="playedDate" class="edit-input">
-          </div>
-        </div>
-        <div style="margin-bottom:20px;">
-          <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Venue</label>
-          <input type="text" id="playedVenue" class="edit-input" placeholder="e.g. Padang Bali, Section 12">
-        </div>
-        <button class="action" id="logPlayedMatchBtn">Log match</button>
-        <div id="playedMatchMsg" style="font-size:12px; color:var(--muted); margin-top:12px;"></div>
-      </div>
 
-      <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; max-width:640px; margin-top:16px;">
-        <h3>Completed matches</h3>
-        <p class="card-sub" style="margin-bottom:12px;">What's actually shown publicly on the homepage. Use the × to remove a mistaken entry.</p>
-        <div id="matchHistoryAdminBody"></div>
+          <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; margin-top:16px;">
+            <h3>Completed matches</h3>
+            <p class="card-sub" style="margin-bottom:12px;">What's actually shown publicly on the homepage. Use the × to remove a mistaken entry.</p>
+            <div id="matchHistoryAdminBody"></div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -2305,6 +2315,20 @@
     } else {
       showToast(data.error || 'Failed to clear.');
     }
+  });
+
+  document.getElementById('copyFromNextMatchBtn').addEventListener('click', () => {
+    const opponent = document.getElementById('nextMatchOpponent').value.trim();
+    if (!opponent){
+      showToast('No upcoming match is currently set — nothing to copy.');
+      return;
+    }
+    document.getElementById('playedOpponent').value = opponent;
+    document.getElementById('playedCompetition').value = document.getElementById('nextMatchCompetition').value.trim();
+    document.getElementById('playedDate').value = document.getElementById('nextMatchDate').value;
+    document.getElementById('playedVenue').value = document.getElementById('nextMatchVenue').value.trim();
+    // Result isn't known at scheduling time — deliberately left for you to fill in.
+    document.getElementById('playedResult').focus();
   });
 
   document.getElementById('logPlayedMatchBtn').addEventListener('click', async () => {
