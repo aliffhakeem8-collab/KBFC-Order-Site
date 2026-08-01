@@ -774,8 +774,8 @@
   .story-card p{ font-size:13.5px; color:var(--muted); line-height:1.6; }
   .story-card.fabric::before{ background-image:url(../images/story-fabric.jpeg); }
   .story-card.colour::before{ background-image:url(../images/story-colour.jpeg); }
-  .story-card.pattern::before{ background-image:url(../images/story-pattern.jpg); }
-  .story-card.slogan::before{ background-image:url(../images/story_slogan.jpeg); }
+  .story-card.pattern::before{ background-image:url(../images/story_pattern.jpeg); }
+  .story-card.slogan::before{ background-image:url(../images/story-slogan.jpeg); }
 
   @media (max-width: 780px){
     .designer-block{ flex-direction:column; align-items:flex-start; text-align:left; }
@@ -1741,9 +1741,10 @@
 
   /* ---------------- COMPLETED MATCHES ---------------- */
   // Same sheet-direct read pattern as the Next Match bar above. A row only
-  // lands here when admin clears a match (see archiveCompletedMatch_ in the
-  // backend) — that's treated as "this match is done" per how the dashboard
-  // is actually used. Result is optional free text like "W 3-1"; parsed
+  // lands in MatchHistory when admin explicitly logs a played match from
+  // the admin dashboard's "Log a played match" card — nothing publishes
+  // here automatically, so this section stays hidden until there's a real
+  // result to show. Result is optional free text like "W 3-1"; parsed
   // just enough to color a badge, everything else displayed as typed.
   (async function loadMatchHistory(){
     const PLAYERS_SHEET_ID = '1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM';
@@ -1919,7 +1920,7 @@
       label: 'KEEPER',
       title: 'GOAL <em>KEEPER</em>',
       desc: 'The dedicated goalkeeper design — same sizing and price as the outfield jersey, pre-order yours today.',
-      art: `<img src="../images/kit-keeper.png" alt="Kelapa Bali FC goalkeeper jersey" style="width:min(46vw, 420px); height:auto; object-fit:contain;">`
+      art: `<img src="../images/kit-keeper.jpg" alt="Kelapa Bali FC goalkeeper jersey" style="width:min(46vw, 420px); height:auto; object-fit:contain;">`
     }
   ];
 
