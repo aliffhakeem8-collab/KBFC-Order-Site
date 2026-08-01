@@ -420,8 +420,9 @@
 
   /* ---------- signup promo popup: shown to first-time visitors ---------- */
   .signup-promo-box{
-    position:relative; overflow:hidden;
+    position:relative; overflow-x:hidden; overflow-y:auto; -webkit-overflow-scrolling:touch;
     max-width:440px; width:100%;
+    max-height:calc(100vh - 48px);
     padding:38px 34px 30px;
     background:
       url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E") repeat,
@@ -1049,6 +1050,11 @@
       padding:28px 22px;
       margin:16px auto;
     }
+    /* Signup promo popup: has its own max-height + scroll (see .signup-promo-box),
+       so unlike the other modals it's safe to center vertically instead of
+       pinning to the top. */
+    #signupPromoOverlay{ align-items:center; overflow-y:hidden; }
+    .signup-promo-box{ max-height:calc(100vh - 32px); }
     .qr-image{ width:200px; }
     .qr-container{ padding:14px; margin:18px 0; }
   }
@@ -1583,7 +1589,7 @@
   // +08:00 is Malaysia time — writing the offset explicitly means this
   // fires at the correct real-world moment for every visitor, regardless
   // of their own device's timezone.
-  const PREORDER_DEADLINE = new Date('2026-08-08T23:59:59+08:00');
+  const PREORDER_DEADLINE = new Date('2026-07-31T23:59:59+08:00');
   let countdownTimer;
   function updateCountdown(){
     const daysEl = document.getElementById('cdDays');
@@ -2215,17 +2221,20 @@
     }
 
     function dismiss(){
-      localStorage.setItem(STORAGE_KEY, String(Date.now()));
       overlay.classList.remove('active');
       stopSlideTimer();
     }
 
     // Don't show on top of another modal that's already open (e.g. mid-checkout),
-    // and don't show at all if this visitor dismissed it within the cooldown window.
+    // and don't show at all if this visitor already saw it within the cooldown
+    // window — recorded the moment it's actually SHOWN, not only if they click
+    // something. Otherwise a visitor who just closes the tab or reloads without
+    // touching the popup would see it again on every single visit.
     if(!alreadyDismissedRecently()){
       setTimeout(function(){
         var anotherModalOpen = document.querySelector('.modal-overlay.active');
         if(!anotherModalOpen){
+          localStorage.setItem(STORAGE_KEY, String(Date.now()));
           overlay.classList.add('active');
           goToSlide(0);
           startSlideTimer();
