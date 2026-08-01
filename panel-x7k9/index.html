@@ -774,9 +774,46 @@
       </div>
 
       <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; max-width:640px; margin-top:16px;">
-        <h3>Match history</h3>
-        <p class="card-sub" style="margin-bottom:12px;">Every match that's been set, newest first — separate from the current one above.</p>
+        <h3>Scheduling log</h3>
+        <p class="card-sub" style="margin-bottom:12px;">Every match that's been set, newest first — this is a log of scheduling actions, not results.</p>
         <div id="nextMatchLogBody"></div>
+      </div>
+
+      <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; max-width:640px; margin-top:16px;">
+        <h3>Log a played match</h3>
+        <p class="card-sub" style="margin-bottom:12px;">A separate, deliberate step — logging here is what shows up in "Completed matches" below and on the public homepage. Nothing gets published automatically just from scheduling or clearing above.</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+          <div>
+            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Opponent *</label>
+            <input type="text" id="playedOpponent" class="edit-input" placeholder="e.g. Harimau FC">
+          </div>
+          <div>
+            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Result</label>
+            <input type="text" id="playedResult" class="edit-input" placeholder="e.g. W 3-1, D 1-1, L 0-2">
+          </div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+          <div>
+            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Competition</label>
+            <input type="text" id="playedCompetition" class="edit-input" placeholder="e.g. League Cup, Friendly">
+          </div>
+          <div>
+            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Date</label>
+            <input type="date" id="playedDate" class="edit-input">
+          </div>
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Venue</label>
+          <input type="text" id="playedVenue" class="edit-input" placeholder="e.g. Padang Bali, Section 12">
+        </div>
+        <button class="action" id="logPlayedMatchBtn">Log match</button>
+        <div id="playedMatchMsg" style="font-size:12px; color:var(--muted); margin-top:12px;"></div>
+      </div>
+
+      <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; max-width:640px; margin-top:16px;">
+        <h3>Completed matches</h3>
+        <p class="card-sub" style="margin-bottom:12px;">What's actually shown publicly on the homepage. Use the × to remove a mistaken entry.</p>
+        <div id="matchHistoryAdminBody"></div>
       </div>
     </section>
 
@@ -2194,6 +2231,42 @@
     `).join('');
   }
 
+  // Public read, same as loadNextMatch above — no token needed, this is the
+  // same data the homepage's "Completed matches" section reads directly
+  // from the sheet. Shown here too so admin doesn't have to open the sheet
+  // just to check what's live, and can remove a bad entry with one click.
+  async function loadMatchHistoryAdmin(){
+    const body = document.getElementById('matchHistoryAdminBody');
+    const data = await (await fetch(`${API_URL}?action=getMatchHistory`)).json();
+    if (!data.ok || !data.matches || data.matches.length === 0){
+      body.innerHTML = `<p style="font-size:12px;color:var(--muted);">No completed matches logged yet.</p>`;
+      return;
+    }
+    body.innerHTML = data.matches.map(m => `
+      <div style="padding:9px 0; border-bottom:1px solid var(--line); font-size:12.5px; display:flex; justify-content:space-between; align-items:center; gap:12px;">
+        <div>
+          <b>vs ${m.opponent}</b>
+          <span style="color:var(--muted);"> — ${[m.date, m.venue, m.competition].filter(Boolean).join(' · ')}</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; flex-shrink:0;">
+          <span style="color:var(--muted); white-space:nowrap;">${m.result || '—'}</span>
+          <button class="ghost delete-match-history-btn" data-row="${m.rowNumber}" title="Remove this entry" style="padding:2px 8px; font-size:12px; line-height:1;">×</button>
+        </div>
+      </div>
+    `).join('');
+
+    body.querySelectorAll('.delete-match-history-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!(await confirmDialog('Remove this match from Completed matches? It\'ll disappear from the public homepage too.', { okLabel: 'Remove', danger: true }))) return;
+        const params = new URLSearchParams({ action: 'adminDeleteMatchHistory', token, rowNumber: btn.dataset.row });
+        const res = await fetch(`${API_URL}?${params.toString()}`);
+        const data = await res.json();
+        if (data.ok) loadMatchHistoryAdmin();
+        else showToast(data.error || 'Failed to remove.');
+      });
+    });
+  }
+
   document.getElementById('saveNextMatchBtn').addEventListener('click', async () => {
     const opponent = document.getElementById('nextMatchOpponent').value.trim();
     const msgEl = document.getElementById('nextMatchMsg');
@@ -2217,7 +2290,7 @@
   });
 
   document.getElementById('clearNextMatchBtn').addEventListener('click', async () => {
-    if (!(await confirmDialog('Clear the upcoming match? The homepage and share cards will show nothing until a new one is set.', { okLabel: 'Clear match', danger: true }))) return;
+    if (!(await confirmDialog('Clear the upcoming match? The homepage and share cards will show nothing until a new one is set. This does NOT log it as a completed match — use "Log a played match" below for that.', { okLabel: 'Clear match', danger: true }))) return;
     const params = new URLSearchParams({ action: 'adminClearNextMatch', token });
     const res = await fetch(`${API_URL}?${params.toString()}`);
     const data = await res.json();
@@ -2231,6 +2304,33 @@
       document.getElementById('nextMatchLastUpdated').textContent = 'No upcoming match set yet.';
     } else {
       showToast(data.error || 'Failed to clear.');
+    }
+  });
+
+  document.getElementById('logPlayedMatchBtn').addEventListener('click', async () => {
+    const opponent = document.getElementById('playedOpponent').value.trim();
+    const msgEl = document.getElementById('playedMatchMsg');
+    if (!opponent){ msgEl.textContent = 'Opponent is required.'; msgEl.style.color = 'var(--accent)'; return; }
+    const params = new URLSearchParams({
+      action: 'adminLogPlayedMatch', token,
+      opponent,
+      result: document.getElementById('playedResult').value.trim(),
+      competition: document.getElementById('playedCompetition').value.trim(),
+      date: document.getElementById('playedDate').value,
+      venue: document.getElementById('playedVenue').value.trim()
+    });
+    const res = await fetch(`${API_URL}?${params.toString()}`);
+    const data = await res.json();
+    if (data.ok){
+      msgEl.textContent = 'Logged.'; msgEl.style.color = 'var(--muted)';
+      document.getElementById('playedOpponent').value = '';
+      document.getElementById('playedResult').value = '';
+      document.getElementById('playedCompetition').value = '';
+      document.getElementById('playedDate').value = '';
+      document.getElementById('playedVenue').value = '';
+      loadMatchHistoryAdmin();
+    } else {
+      msgEl.textContent = data.error || 'Failed to log.'; msgEl.style.color = 'var(--accent)';
     }
   });
 
@@ -2309,7 +2409,7 @@
     loadProduction();
     loadDrops();
     loadSiteAssets();
-    loadNextMatch(); loadNextMatchLog(); loadChangeRequests();
+    loadNextMatch(); loadNextMatchLog(); loadMatchHistoryAdmin(); loadChangeRequests();
   }
 
   init();
