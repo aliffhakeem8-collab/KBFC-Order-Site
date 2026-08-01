@@ -499,8 +499,8 @@
 
       <div class="share-options">
         <label class="share-option">
-          <input type="checkbox" id="shareIncludeMatchday" checked>
-          Matchday info
+          <input type="checkbox" id="shareIncludeLastMatch" checked>
+          Last match result
         </label>
         <label class="share-option">
           <input type="checkbox" id="shareIncludeStats" checked>
@@ -639,7 +639,7 @@ const FALLBACK_SQUAD = [ {
 
 let squad = [];
 
-let nextMatch = null;
+let lastMatch = null;
 
 function parseGvizCell(raw) {
     const str = String(raw == null ? "" : raw).trim();
@@ -653,37 +653,43 @@ function parseGvizCell(raw) {
     };
 }
 
-async function fetchNextMatch() {
+async function fetchLastMatch() {
     try {
-        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=NextMatch`;
+        const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=MatchHistory`;
         const res = await fetch(url);
         if (!res.ok) return;
         const text = await res.text();
         const json = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
-        const row = json.table && json.table.rows && json.table.rows[0];
-        if (!row) return;
-        const cells = row.c || [];
-        const val = i => cells[i] ? cells[i].v : "";
-        const opponent = String(val(0) || "").trim();
-        if (!opponent) return;
-        nextMatch = {
-            opponent: opponent,
-            competition: String(val(1) || "").trim(),
-            date: parseGvizCell(val(2)),
-            time: parseGvizCell(val(3)),
-            venue: String(val(4) || "").trim()
-        };
+        const rows = (json.table && json.table.rows) || [];
+        // Rows are appended chronologically as matches get logged, so the
+        // most recently completed match is the last row with an opponent —
+        // not the first, unlike NextMatch which only ever holds one row.
+        const val = (row, i) => (row.c && row.c[i] ? row.c[i].v : "");
+        for (let i = rows.length - 1; i >= 0; i--) {
+            const opponent = String(val(rows[i], 0) || "").trim();
+            if (!opponent) continue;
+            lastMatch = {
+                opponent: opponent,
+                competition: String(val(rows[i], 1) || "").trim(),
+                date: parseGvizCell(val(rows[i], 2)),
+                time: parseGvizCell(val(rows[i], 3)),
+                venue: String(val(rows[i], 4) || "").trim(),
+                result: String(val(rows[i], 5) || "").trim()
+            };
+            break;
+        }
     } catch (err) {
-        console.warn("Could not load the next match info.", err);
+        console.warn("Could not load the last match info.", err);
     }
 }
 
-function formatNextMatchLine() {
-    if (!nextMatch) return "";
-    let line = "NEXT: vs " + nextMatch.opponent.toUpperCase();
-    if (nextMatch.date) {
+function formatLastMatchLine() {
+    if (!lastMatch) return "";
+    let line = "vs " + lastMatch.opponent.toUpperCase();
+    if (lastMatch.result) line += " · " + lastMatch.result.toUpperCase();
+    if (lastMatch.date) {
         let d = null;
-        if (typeof nextMatch.date === "object") d = new Date(nextMatch.date.year, nextMatch.date.month, nextMatch.date.day); else d = new Date(nextMatch.date + "T00:00:00");
+        if (typeof lastMatch.date === "object") d = new Date(lastMatch.date.year, lastMatch.date.month, lastMatch.date.day); else d = new Date(lastMatch.date + "T00:00:00");
         if (d && !isNaN(d)) line += " · " + d.toLocaleDateString("en-GB", {
             day: "numeric",
             month: "short"
@@ -692,7 +698,7 @@ function formatNextMatchLine() {
     return line;
 }
 
-fetchNextMatch();
+fetchLastMatch();
 
 function resolveImagePath(raw) {
     const v = String(raw || "").trim();
@@ -807,7 +813,7 @@ function drawImageContain(ctx, img, x, y, w, h) {
 }
 
 async function generateShareCard(p, options) {
-    const includeMatchday = options && options.includeMatchday;
+    const includeLastMatch = options && options.includeLastMatch;
     const includeStats = options && options.includeStats;
     const canvas = document.createElement("canvas");
     canvas.width = 1080;
@@ -844,7 +850,7 @@ async function generateShareCard(p, options) {
     ctx.textBaseline = "middle";
     ctx.font = "700 34px Inter, sans-serif";
     ctx.fillText("KELAPA BALI FC", MARGIN + 76, 80);
-    const matchLine = includeMatchday ? formatNextMatchLine() : "";
+    const matchLine = includeLastMatch ? formatLastMatchLine() : "";
     if (matchLine) {
         ctx.textAlign = "right";
         ctx.font = "600 26px Inter, sans-serif";
@@ -907,7 +913,7 @@ document.getElementById("playerModalShare").addEventListener("click", async () =
     statusEl.textContent = "";
     try {
         const options = {
-            includeMatchday: document.getElementById("shareIncludeMatchday").checked,
+            includeLastMatch: document.getElementById("shareIncludeLastMatch").checked,
             includeStats: document.getElementById("shareIncludeStats").checked
         };
         const blob = await generateShareCard(currentModalPlayer, options);
