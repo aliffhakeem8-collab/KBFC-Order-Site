@@ -674,7 +674,8 @@ async function fetchLastMatch() {
                 date: parseGvizCell(val(rows[i], 2)),
                 time: parseGvizCell(val(rows[i], 3)),
                 venue: String(val(rows[i], 4) || "").trim(),
-                result: String(val(rows[i], 5) || "").trim()
+                result: String(val(rows[i], 5) || "").trim(),
+                opponentLogo: String(val(rows[i], 6) || "").trim()
             };
             break;
         }
@@ -850,14 +851,65 @@ async function generateShareCard(p, options) {
     ctx.textBaseline = "middle";
     ctx.font = "700 34px Inter, sans-serif";
     ctx.fillText("KELAPA BALI FC", MARGIN + 76, 80);
+
+    // Opponent side: our crest above is full color (drawn as-is); the
+    // opponent's badge is deliberately grayscale so the club's own colors
+    // stay the only ones that pop, same treatment as the homepage's Next
+    // Match bar. Falls back to a plain shield outline if no logo was
+    // uploaded when the match was logged — never a broken image.
     const matchLine = includeLastMatch ? formatLastMatchLine() : "";
     if (matchLine) {
+        const badgeR = 22;
+        const badgeCx = canvas.width - MARGIN - badgeR;
+        const badgeCy = 80;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(badgeCx, badgeCy, badgeR, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fillStyle = "#14171C";
+        ctx.fill();
+        let drewLogo = false;
+        if (lastMatch && lastMatch.opponentLogo) {
+            try {
+                const oppImg = await loadImageForCanvas(lastMatch.opponentLogo);
+                ctx.save();
+                ctx.clip();
+                ctx.filter = "grayscale(1)";
+                drawImageCover(ctx, oppImg, badgeCx - badgeR, badgeCy - badgeR, badgeR * 2, badgeR * 2);
+                ctx.restore();
+                drewLogo = true;
+            } catch (err) {}
+        }
+        if (!drewLogo) {
+            ctx.strokeStyle = "rgba(255,255,255,.4)";
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.save();
+            ctx.translate(badgeCx - 11, badgeCy - 12);
+            ctx.scale(0.92, 0.92);
+            ctx.beginPath();
+            ctx.moveTo(11, 0);
+            ctx.lineTo(3, 3.6);
+            ctx.lineTo(3, 9.1);
+            ctx.bezierCurveTo(3, 13.6, 6.1, 16.9, 11, 19);
+            ctx.bezierCurveTo(15.9, 16.9, 19, 13.6, 19, 9.1);
+            ctx.lineTo(19, 3.6);
+            ctx.closePath();
+            ctx.strokeStyle = "rgba(255,255,255,.55)";
+            ctx.lineWidth = 1.6;
+            ctx.stroke();
+            ctx.restore();
+        }
+        ctx.restore();
+
         ctx.textAlign = "right";
         ctx.font = "600 26px Inter, sans-serif";
         ctx.fillStyle = "rgba(255,255,255,.9)";
-        ctx.fillText(matchLine, canvas.width - MARGIN, 80);
+        ctx.fillText(matchLine, badgeCx - badgeR - 16, badgeCy);
         ctx.textAlign = "left";
     }
+
     ctx.textBaseline = "alphabetic";
     ctx.fillStyle = "#c0392b";
     ctx.font = "700 90px Oswald, sans-serif";
