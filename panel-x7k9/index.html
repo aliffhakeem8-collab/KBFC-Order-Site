@@ -770,6 +770,16 @@
               <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Venue</label>
               <input type="text" id="nextMatchVenue" class="edit-input" placeholder="e.g. Padang Bali, Section 12">
             </div>
+            <div style="margin-bottom:20px;">
+              <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Opponent logo (optional — shown grayscale on the site, persists until you replace or clear it)</label>
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div id="nextMatchLogoPreview" style="width:44px; height:44px; border-radius:50%; border:1px solid var(--line); background:var(--bg); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
+                  <svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--muted)" fill="none" stroke-width="1.8"><path d="M12 2 4 6v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6l-8-4Z"/></svg>
+                </div>
+                <input type="file" id="nextMatchLogoInput" accept="image/*" style="font-size:12px;">
+                <button type="button" class="ghost" id="nextMatchLogoClearBtn" style="padding:4px 10px; font-size:11.5px; display:none;">Remove</button>
+              </div>
+            </div>
             <div style="display:flex; gap:10px; align-items:center;">
               <button class="action" id="saveNextMatchBtn">Save match</button>
               <button class="ghost" id="clearNextMatchBtn">Clear (no upcoming match)</button>
@@ -2219,11 +2229,19 @@
   }
 
   // ---------------- NEXT MATCH ----------------
+  const shieldIconSvg = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--muted)" fill="none" stroke-width="1.8"><path d="M12 2 4 6v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6l-8-4Z"/></svg>`;
+  let nextMatchClearLogoFlag = false;
+
   async function loadNextMatch(){
     const data = await (await fetch(`${API_URL}?action=getNextMatch`)).json(); // public read, no token needed
     const msgEl = document.getElementById('nextMatchLastUpdated');
+    const preview = document.getElementById('nextMatchLogoPreview');
+    const clearBtn = document.getElementById('nextMatchLogoClearBtn');
+    nextMatchClearLogoFlag = false;
     if (!data.ok || !data.match){
       msgEl.textContent = 'No upcoming match set yet.';
+      preview.innerHTML = shieldIconSvg;
+      clearBtn.style.display = 'none';
       return;
     }
     const m = data.match;
@@ -2232,6 +2250,13 @@
     document.getElementById('nextMatchDate').value = m.date || '';
     document.getElementById('nextMatchTime').value = m.time || '';
     document.getElementById('nextMatchVenue').value = m.venue || '';
+    if (m.opponentLogo){
+      preview.innerHTML = `<img src="${m.opponentLogo}" style="width:100%;height:100%;object-fit:cover;">`;
+      clearBtn.style.display = 'inline-block';
+    } else {
+      preview.innerHTML = shieldIconSvg;
+      clearBtn.style.display = 'none';
+    }
     msgEl.textContent = m.updatedAt ? `Last updated ${m.updatedAt}` : '';
   }
 
@@ -2291,22 +2316,54 @@
     });
   }
 
+  document.getElementById('nextMatchLogoInput').addEventListener('change', () => {
+    const file = document.getElementById('nextMatchLogoInput').files[0];
+    if (!file) return;
+    nextMatchClearLogoFlag = false; // picking a new file supersedes any pending removal
+    const reader = new FileReader();
+    reader.onload = () => { document.getElementById('nextMatchLogoPreview').innerHTML = `<img src="${reader.result}" style="width:100%;height:100%;object-fit:cover;">`; };
+    reader.readAsDataURL(file);
+    document.getElementById('nextMatchLogoClearBtn').style.display = 'inline-block';
+  });
+
+  document.getElementById('nextMatchLogoClearBtn').addEventListener('click', () => {
+    nextMatchClearLogoFlag = true;
+    document.getElementById('nextMatchLogoInput').value = '';
+    document.getElementById('nextMatchLogoPreview').innerHTML = shieldIconSvg;
+    document.getElementById('nextMatchLogoClearBtn').style.display = 'none';
+  });
+
   document.getElementById('saveNextMatchBtn').addEventListener('click', async () => {
     const opponent = document.getElementById('nextMatchOpponent').value.trim();
     const msgEl = document.getElementById('nextMatchMsg');
     if (!opponent){ msgEl.textContent = 'Opponent is required.'; msgEl.style.color = 'var(--accent)'; return; }
-    const params = new URLSearchParams({
+
+    const payload = {
       action: 'adminUpdateNextMatch', token,
       opponent,
       competition: document.getElementById('nextMatchCompetition').value.trim(),
       date: document.getElementById('nextMatchDate').value,
       time: document.getElementById('nextMatchTime').value,
       venue: document.getElementById('nextMatchVenue').value.trim()
+    };
+    const logoFile = document.getElementById('nextMatchLogoInput').files[0];
+    if (logoFile){
+      payload.opponentLogoBase64 = await fileToBase64(logoFile);
+      payload.opponentLogoMimeType = logoFile.type || 'image/png';
+    } else if (nextMatchClearLogoFlag){
+      payload.clearOpponentLogo = 'true';
+    }
+
+    msgEl.textContent = 'Saving…'; msgEl.style.color = 'var(--muted)';
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
     });
-    const res = await fetch(`${API_URL}?${params.toString()}`);
     const data = await res.json();
     if (data.ok){
       msgEl.textContent = 'Saved.'; msgEl.style.color = 'var(--muted)';
+      document.getElementById('nextMatchLogoInput').value = '';
       loadNextMatch(); loadNextMatchLog();
     } else {
       msgEl.textContent = data.error || 'Failed to save.'; msgEl.style.color = 'var(--accent)';
@@ -2324,12 +2381,18 @@
       document.getElementById('nextMatchDate').value = '';
       document.getElementById('nextMatchTime').value = '';
       document.getElementById('nextMatchVenue').value = '';
+      document.getElementById('nextMatchLogoInput').value = '';
+      document.getElementById('nextMatchLogoPreview').innerHTML = shieldIconSvg;
+      document.getElementById('nextMatchLogoClearBtn').style.display = 'none';
+      nextMatchClearLogoFlag = false;
       document.getElementById('nextMatchMsg').textContent = 'Cleared.';
       document.getElementById('nextMatchLastUpdated').textContent = 'No upcoming match set yet.';
     } else {
       showToast(data.error || 'Failed to clear.');
     }
   });
+
+  let carriedOpponentLogoUrl = '';
 
   document.getElementById('copyFromNextMatchBtn').addEventListener('click', () => {
     const opponent = document.getElementById('nextMatchOpponent').value.trim();
@@ -2341,6 +2404,19 @@
     document.getElementById('playedCompetition').value = document.getElementById('nextMatchCompetition').value.trim();
     document.getElementById('playedDate').value = document.getElementById('nextMatchDate').value;
     document.getElementById('playedVenue').value = document.getElementById('nextMatchVenue').value.trim();
+
+    // Carry the logo across too, if one's set — reused as-is (no re-upload)
+    // unless the admin picks a different file before submitting.
+    const nextMatchLogoImg = document.querySelector('#nextMatchLogoPreview img');
+    const playedPreview = document.getElementById('playedLogoPreview');
+    document.getElementById('playedLogoInput').value = '';
+    if (nextMatchLogoImg){
+      carriedOpponentLogoUrl = nextMatchLogoImg.src;
+      playedPreview.innerHTML = `<img src="${carriedOpponentLogoUrl}" style="width:100%;height:100%;object-fit:cover;">`;
+    } else {
+      carriedOpponentLogoUrl = '';
+    }
+
     // Result isn't known at scheduling time — deliberately left for you to fill in.
     document.getElementById('playedResult').focus();
   });
@@ -2349,6 +2425,7 @@
     const file = document.getElementById('playedLogoInput').files[0];
     const preview = document.getElementById('playedLogoPreview');
     if (!file) return;
+    carriedOpponentLogoUrl = ''; // picking a fresh file supersedes anything carried over from Next Match
     const reader = new FileReader();
     reader.onload = () => { preview.innerHTML = `<img src="${reader.result}" style="width:100%;height:100%;object-fit:cover;">`; };
     reader.readAsDataURL(file);
@@ -2371,6 +2448,8 @@
     if (logoFile){
       payload.opponentLogoBase64 = await fileToBase64(logoFile);
       payload.opponentLogoMimeType = logoFile.type || 'image/png';
+    } else if (carriedOpponentLogoUrl){
+      payload.opponentLogoUrl = carriedOpponentLogoUrl;
     }
 
     msgEl.textContent = 'Logging…'; msgEl.style.color = 'var(--muted)';
@@ -2382,6 +2461,7 @@
     const data = await res.json();
     if (data.ok){
       msgEl.textContent = 'Logged.'; msgEl.style.color = 'var(--muted)';
+      carriedOpponentLogoUrl = '';
       document.getElementById('playedOpponent').value = '';
       document.getElementById('playedResult').value = '';
       document.getElementById('playedCompetition').value = '';
