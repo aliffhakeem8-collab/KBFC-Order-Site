@@ -426,14 +426,10 @@
   </button>
 
   <div class="menu-group-label mono">Shop</div>
-  <a class="btn-mini" href="/#pricing-sizing">
-    Pricing &amp; sizing
-    <svg viewBox="0 0 24 24"><path d="M20.59 13.41 12 22l-9-9V4h9z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg>
-  </a>
-  <a class="btn-mini" href="/order/">
-    Pre-order now
+  <button class="btn-mini is-locked" disabled title="Pre-order window closed">
+    Pre-order now <span class="menu-item-soon">· closed</span>
     <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-  </a>
+  </button>
   <button class="btn-mini" disabled title="Coming soon">
     Released Jerseys <span class="menu-item-soon">· coming soon</span>
   </button>
@@ -448,8 +444,8 @@
   </a>
 
   <div class="menu-group-label mono">Account</div>
-  <a class="btn-mini is-locked" href="/login/" aria-disabled="true" tabindex="-1" title="Coming soon">
-    Log in <span class="menu-item-soon">· coming soon</span>
+  <a class="btn-mini" href="/login/">
+    Log in / Sign up
     <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
   </a>
 </div>
