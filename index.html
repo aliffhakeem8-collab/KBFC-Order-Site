@@ -3,17 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kelapa Bali FC | Home</title>
-<meta property="og:site_name" content="Kelapa Bali FC">
-<meta name="description" content="Kelapa Bali FC — track your order, view your digital membership card, and get early access to jersey drops.">
-<meta property="og:title" content="Kelapa Bali FC | Home">
-<meta property="og:description" content="Your club, your account. Track your order, view your digital membership card, and get early access to drops.">
+<title>KBFC | Home</title>
 <link rel="icon" type="image/png" href="/images/Favicon.png">
 <link rel="apple-touch-icon" href="/images/Favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=_Hm2_BC27MYRgfCJXFxeGXPupb02XF6k3pXczC_9_jvJT0pHz25zxxoTKQRhCkEo" charset="UTF-8"></script><style>
+<style>
   :root{
     --bg:#FAFAF8;
     --surface:#FFFFFF;
@@ -171,72 +167,17 @@
 
   /* ================= LANDING VIEW ================= */
   .hero{
-    position:relative; height:100vh; min-height:800px;
-    overflow:hidden;
-    display:flex; flex-direction:column;
-  }
-  .slides{
-    position:absolute; inset:0;
-    display:flex; align-items:center; justify-content:center;
-  }
-  .slide{
-    position:absolute; inset:0;
-    display:flex; align-items:center; justify-content:center;
-    opacity:0; visibility:hidden;
-    transition:opacity .7s ease;
-    background:var(--surface);
-  }
-  .slide.active{opacity:1; visibility:visible;}
-  .slide-art{
-    width:min(55vw, 520px); height:auto;
-    margin-top:60px;
-  }
-  .slide-art path, .slide-art circle, .slide-art line{
-    stroke:var(--ink); fill:none;
-  }
-  .slide-art .fill-accent{fill:var(--accent); stroke:none;}
-  .slide-art .num{
-    font-family:'Oswald',sans-serif; font-weight:700; fill:var(--bg); stroke:none;
-  }
-
-  /* title + arrow nav at top */
-  .hero-top{
-    position:relative; z-index:6;
-    display:flex; flex-direction:column; align-items:center;
-    gap:14px; padding-top:90px;
-    pointer-events:none;
-  }
-  .hero-top > *{ pointer-events:auto; }
-
-  .kit-title{
-    font-family:'Oswald',sans-serif;
-    font-size:clamp(14px, 2.2vw, 30px);
-    font-weight:700; text-transform:uppercase;
-    letter-spacing:0.1em; color:var(--ink);
-    white-space:nowrap; text-align:center;
-  }
-
-  .top-nav{
-    display:flex; flex-direction:column; align-items:center; gap:10px;
-  }
-  .top-nav .slide-nav{ display:flex; gap:10px; }
-  .top-nav .count{ font-size:13px; color:var(--muted); }
-  .top-nav .count b{ color:var(--ink); }
-
-  .hero-scrim{
-    position:absolute; left:0; right:0; bottom:0;
-    padding:120px 6vw 56px;
-    background:linear-gradient(180deg, transparent, var(--bg) 78%);
-    pointer-events:none;
+    position:relative;
+    padding:150px 6vw 64px;
+    display:flex; justify-content:center;
   }
   .hero-content{
-    position:relative; z-index:5; margin-top:auto;
-    display:flex; align-items:flex-end; justify-content:space-between;
-    gap:40px; padding:0 6vw 56px;
-    pointer-events:none;
+    width:100%; max-width:720px;
+    display:flex; justify-content:center;
   }
-  .hero-content > *{pointer-events:auto;}
-  .hero-copy{max-width:560px;}
+  .hero-copy{ text-align:center; }
+  /* title + arrow nav at top */
+
   .season-tag{
     display:inline-flex; align-items:center; gap:8px;
     font-size:12px; color:var(--muted); margin-bottom:18px;
@@ -247,12 +188,12 @@
     font-size:clamp(40px, 6vw, 78px);
     line-height:0.98;
     font-weight:600;
-    margin-bottom:18px;
+    margin-bottom:24px;
   }
   .hero-copy h1 em{font-style:normal;color:var(--accent);}
   .hero-copy p{
     font-size:15.5px; color:var(--muted); max-width:420px; line-height:1.6;
-    margin-bottom:28px;
+    margin:0 auto 28px;
   }
   .btn-primary{
     display:inline-flex; align-items:center; gap:10px;
@@ -265,7 +206,7 @@
   .btn-primary:hover{transform:translateY(-2px); background:var(--accent); color:#fff;}
   .btn-primary svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
 
-  .hero-cta-row{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .hero-cta-row{ display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap; }
   .btn-secondary{
     display:inline-flex; align-items:center; gap:8px;
     background:transparent; color:var(--ink);
@@ -294,37 +235,7 @@
   .nav-btn:hover{border-color:var(--accent); transform:translateY(-2px);}
   .nav-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
 
-  /* info strip */
-  .strip{
-    display:grid; grid-template-columns:repeat(3,1fr);
-    border-top:1px solid var(--line);
-    border-bottom:1px solid var(--line);
-  }
-  .strip .cell{
-    padding:56px 6vw;
-    border-left:1px solid var(--line);
-  }
-  .strip .cell:first-child{border-left:none;}
-  .strip .cell .label{
-    font-size:11px; color:var(--muted); margin-bottom:10px;
-    text-transform:uppercase; letter-spacing:.06em;
-  }
-  .strip .cell .value{font-size:17px; font-weight:500;}
-
-  /* ---------- countdown badge, overlaid on the hero slide ---------- */
-  .hero-dark-overlay{
-    position:absolute; inset:0; z-index:2;
-    background:rgba(0,0,0,.14);
-    pointer-events:none;
-  }
-  .hero-countdown-badge{
-    position:absolute; top:50%; right:7%; left:auto; transform:translateY(-50%);
-    z-index:6; text-align:center;
-    background:rgba(13,15,18,.6);
-    border:1px solid rgba(255,255,255,.16);
-    backdrop-filter:blur(8px);
-    border-radius:0; padding:22px 32px;
-  }
+  /* ---------- next match bar ---------- */
   .next-match-bar{
     position:fixed; top:76px; left:0; right:0; z-index:45;
     display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:11px;
@@ -359,25 +270,56 @@
     .next-match-sep{ display:none; }
     .next-match-meta{ flex-basis:100%; white-space:normal; }
   }
-  .hero-countdown-label{
-    display:block; font-size:13px; color:rgba(255,255,255,.75);
-    letter-spacing:.14em; margin-bottom:16px; font-weight:600;
-    text-transform:uppercase;
+
+  /* ---------- thank-you note (merged into hero) ---------- */
+  .thank-you-icon{
+    position:relative;
+    width:72px; height:72px; margin:0 auto 22px;
+    border-radius:50%; overflow:hidden;
+    background:var(--surface); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow:0 8px 24px rgba(20,23,28,.18);
+    animation:iconPopIn .7s cubic-bezier(.34,1.56,.64,1) both;
   }
-  .hero-countdown-tiles{ display:flex; gap:16px; }
-  .hero-cd-tile{
-    background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.14);
-    border-radius:0; padding:16px 18px; min-width:76px;
+  .thank-you-icon::after{
+    content:''; position:absolute; inset:0; border-radius:50%;
+    border:1.5px solid var(--accent);
+    animation:iconRipple 1.4s ease-out .5s 1 both;
   }
-  .hero-cd-tile span{
-    display:block; font-family:'Oswald',sans-serif; font-size:clamp(34px,5vw,52px); font-weight:700;
-    color:#fff; font-variant-numeric:tabular-nums; line-height:1;
-  }
-  .hero-cd-tile small{
-    display:block; font-size:11.5px; color:rgba(255,255,255,.6); letter-spacing:.06em; margin-top:8px;
+  .thank-you-icon img{ width:100%; height:100%; object-fit:cover; }
+  .thank-you-text{
+    font-size:14.5px; color:var(--muted); line-height:1.6;
+    max-width:480px; margin:0 auto 28px;
   }
 
-  /* ---------- login feature promo: single compact panel ---------- */
+  /* entrance animation, staggered down the hero copy — plays once, then settles */
+  @keyframes heroFadeUp{
+    from{ opacity:0; transform:translateY(20px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  @keyframes iconPopIn{
+    0%{ opacity:0; transform:scale(.4); }
+    100%{ opacity:1; transform:scale(1); }
+  }
+  @keyframes iconRipple{
+    0%{ transform:scale(1); opacity:.6; }
+    100%{ transform:scale(1.6); opacity:0; }
+  }
+  @keyframes accentSweep{
+    0%{ background-position:160% 0; }
+    100%{ background-position:-40% 0; }
+  }
+  .hero-copy .season-tag{ animation:heroFadeUp .6s ease .1s both; }
+  .hero-copy h1{ animation:heroFadeUp .6s ease .2s both; }
+  .hero-copy .thank-you-text{ animation:heroFadeUp .6s ease .32s both; }
+  .hero-copy .hero-cta-row{ animation:heroFadeUp .6s ease .44s both; }
+  .accent-shimmer{
+    background:linear-gradient(90deg, var(--accent) 30%, #ff9d9d 50%, var(--accent) 70%);
+    background-size:300% 100%;
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    animation:accentSweep 1.4s ease-out .5s 1 both;
+  }
+
   .login-promo-compact{
     position:relative; overflow:hidden;
     margin:56px 6vw; padding:26px 30px 26px 34px;
@@ -609,25 +551,11 @@
     filter:none; opacity:1; transform:translateY(-1px);
   }
 
-  .cta-band{
-    display:flex; align-items:center; justify-content:space-between;
-    gap:32px; flex-wrap:wrap;
-    padding:56px 6vw; border-top:1px solid var(--line);
-    background:var(--surface);
-  }
-  .cta-band-copy h2{
-    font-size:clamp(26px,3.4vw,36px); font-weight:600; margin-top:4px;
-  }
-
-  /* ---------- pricing & sizing ---------- */
-  .pricing-sizing{
-    padding:88px 6vw;
-  }
+  /* ---------- section headers (shared) ---------- */
   .ps-header{ margin-bottom:36px; }
   .ps-header h2{
     font-size:clamp(30px,4vw,42px); font-weight:600;
   }
-  .sizing-header{ margin-top:88px; }
 
   /* ---------- completed matches ---------- */
   .match-history{ padding:64px 6vw 24px; }
@@ -669,82 +597,6 @@
     .mh-meta{ font-size:11px; }
   }
 
-
-  .pricing-grid{
-    display:grid; grid-template-columns:repeat(3,1fr); gap:24px; max-width:1040px;
-  }
-  .price-card{
-    position:relative;
-    border:1px solid var(--line);
-    padding:32px 28px;
-    display:flex; flex-direction:column; gap:18px;
-    transition:border-color .25s ease;
-  }
-  .price-card:hover{ border-color:var(--accent); }
-  .price-card.featured{
-    background:var(--bg);
-  }
-  .price-badge{
-    position:absolute; top:-13px; left:28px;
-    background:var(--accent); color:#fff;
-    font-size:10.5px; padding:5px 10px; text-transform:uppercase; letter-spacing:.04em;
-  }
-  .price-name{ font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
-  .price-category{
-    font-size:10px; color:var(--accent); letter-spacing:.1em;
-    margin-bottom:-8px; text-transform:uppercase;
-  }
-  .price-category.kids{ color:var(--accent); }
-  .kids-card{ border-color:var(--line); }
-  .price-tag{
-    font-family:'Oswald',sans-serif; font-size:38px; font-weight:600;
-  }
-
-  .size-toggle{
-    display:inline-flex; gap:8px; margin-bottom:28px;
-  }
-  .size-toggle-btn{
-    padding:10px 22px; border-radius:999px;
-    border:1px solid var(--line); background:transparent; color:var(--ink);
-    font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.05em;
-    text-transform:uppercase;
-    cursor:pointer; transition:background .2s ease, color .2s ease, border-color .2s ease;
-  }
-  .size-toggle-btn:hover{ border-color:var(--accent); }
-  .size-toggle-btn.active{
-    background:var(--ink); color:var(--bg); border-color:var(--ink);
-  }
-  .price-list{
-    list-style:none; display:flex; flex-direction:column; gap:10px;
-    font-size:14px; color:var(--muted);
-  }
-  .price-list li{ padding-left:18px; position:relative; }
-  .price-list li::before{
-    content:"—"; position:absolute; left:0; color:var(--accent);
-  }
-
-  .ps-note{
-    font-size:12.5px; color:var(--muted); margin-top:22px; max-width:640px;
-  }
-  .ps-note code{
-    font-family:'JetBrains Mono',monospace; font-size:11.5px;
-    background:var(--line-soft); padding:2px 6px;
-  }
-
-  .size-table-wrap{ overflow-x:auto; }
-  .size-table{
-    width:100%; border-collapse:collapse;
-  }
-  .size-table th{
-    text-align:left; font-size:11px; color:var(--muted);
-    padding:12px 16px; border-bottom:1px solid var(--line);
-    text-transform:uppercase; letter-spacing:.04em;
-  }
-  .size-table td{
-    padding:16px; border-bottom:1px solid var(--line-soft);
-    font-size:15px;
-  }
-  .size-table tbody tr:hover{ background:var(--surface); }
 
   /* ---------- jersey story: designer + fabric/meaning ---------- */
   .jersey-story{
@@ -1028,45 +880,17 @@
 
 
   @media (max-width: 780px){
-    .strip{grid-template-columns:1fr;}
-    .strip .cell{border-left:none; border-top:1px solid var(--line);}
-    .strip .cell:first-child{border-top:none;}
-
-    /* stack hero as: nav -> photo -> countdown -> copy, instead of overlapping layers */
     .hero{
-      height:auto; min-height:0; overflow:visible;
-      padding-bottom:20px;
+      padding:110px 6vw 32px;
     }
-    .hero-top{
-      /* .hero is the first thing on the page again (login-promo-compact
-         moved below it), so this needs to clear the fixed topbar itself. */
-      order:1; padding-top:90px; gap:14px;
+    .hero-cta-row{ gap:10px; }
+    .hero-cta-row .btn-primary,
+    .hero-cta-row .btn-secondary{
+      padding:12px 16px; font-size:12.5px; letter-spacing:0; gap:6px;
+      white-space:normal; line-height:1.25;
     }
-    .slides{
-      order:2; position:relative; inset:auto;
-      height:62vw; min-height:260px; max-height:420px;
-      margin-top:16px;
-    }
-    .hero-dark-overlay{ display:none; }
-    .hero-scrim{ display:none; }
-    .hero-countdown-badge{
-      order:3; position:static; top:auto; right:auto; left:auto; bottom:auto;
-      transform:none; margin:16px auto 0; width:fit-content;
-      padding:14px 18px; border-radius:0;
-    }
-    .hero-cd-tile{ min-width:52px; padding:10px 10px; border-radius:0; }
-    .hero-countdown-label{ font-size:10.5px; margin-bottom:10px; }
-    .hero-content{
-      order:4; position:relative;
-      flex-direction:column; align-items:flex-start; gap:22px;
-      margin-top:0; padding:24px 6vw 0;
-    }
-    .kit-title{
-      white-space:normal; font-size:18px;
-      line-height:1.25; max-width:240px;
-    }
-    .top-nav .slide-nav{ gap:8px; }
-    .slide-art{ width:min(70vw, 320px); margin-top:0; }
+    .hero-cta-row .btn-primary svg,
+    .hero-cta-row .btn-secondary svg{ width:13px; height:13px; flex-shrink:0; }
     .topbar-menu{
       top:0; left:0; right:0; bottom:auto;
       width:100%; max-width:100%;
@@ -1082,18 +906,6 @@
     }
     .field-row{grid-template-columns:1fr;}
     .topbar{padding:18px 20px;}
-    .hero-cta-row{ flex-wrap:nowrap; gap:8px; width:100%; align-items:stretch; }
-    .hero-cta-row .btn-primary,
-    .hero-cta-row .btn-secondary{
-      flex:1 1 0; min-width:0; min-height:56px;
-      justify-content:center; text-align:center;
-      padding:10px 8px; font-size:12.5px; letter-spacing:0; gap:6px;
-      white-space:normal; line-height:1.25;
-    }
-    .hero-cta-row .btn-primary svg,
-    .hero-cta-row .btn-secondary svg{ width:13px; height:13px; flex-shrink:0; }
-    .pricing-grid{grid-template-columns:1fr;}
-    .sizing-header{margin-top:56px;}
     footer{
       flex-direction:row; flex-wrap:wrap; justify-content:space-between;
       align-items:flex-start; gap:14px;
@@ -1120,6 +932,11 @@
 
   @media (prefers-reduced-motion: reduce){
     *{transition:none !important;}
+    .thank-you-icon, .thank-you-icon::after, .hero-copy .season-tag, .hero-copy h1,
+    .hero-copy .thank-you-text, .hero-copy .hero-cta-row, .accent-shimmer{
+      animation:none !important; opacity:1 !important; transform:none !important;
+    }
+    .thank-you-icon::after{ display:none; }
   }
 </style>
 </head>
@@ -1169,12 +986,8 @@
   </a>
 
   <div class="menu-group-label mono">Shop</div>
-  <button class="btn-mini" id="pricingBtnTop">
-    Pricing &amp; sizing
-    <svg viewBox="0 0 24 24"><path d="M20.59 13.41 12 22l-9-9V4h9z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg>
-  </button>
-  <button class="btn-mini" id="preorderBtnTop">
-    Pre-order now
+  <button class="btn-mini is-locked" disabled title="Pre-order window closed">
+    Pre-order now <span class="menu-item-soon">· closed</span>
     <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
   </button>
   <button class="btn-mini" disabled title="Coming soon">
@@ -1218,40 +1031,20 @@
 <section class="view active" id="view-landing">
 
   <div class="hero">
-    <div class="slides" id="slides"></div>
-    <div class="hero-dark-overlay"></div>
-
-    <div class="hero-top">
-      <div class="kit-title">Official Away Kit</div>
-      <div class="top-nav" id="topNav">
-        <div class="slide-nav">
-          <button class="nav-btn" id="prevBtn" aria-label="Previous slide"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
-          <button class="nav-btn" id="nextBtn" aria-label="Next slide"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
-        </div>
-        <div class="count mono"><b id="curNum">01</b> / <span id="totalNum">04</span></div>
-      </div>
-    </div>
-
-    <div class="hero-countdown-badge">
-      <span class="hero-countdown-label mono">Order closes in</span>
-      <div class="hero-countdown-tiles">
-        <div class="hero-cd-tile"><span id="cdDays">00</span><small>D</small></div>
-        <div class="hero-cd-tile"><span id="cdHours">00</span><small>H</small></div>
-        <div class="hero-cd-tile"><span id="cdMins">00</span><small>M</small></div>
-        <div class="hero-cd-tile"><span id="cdSecs">00</span><small>S</small></div>
-      </div>
-    </div>
-
-    <div class="hero-scrim"></div>
     <div class="hero-content">
       <div class="hero-copy">
-        <div class="season-tag mono">Drop 01 · Pre-order window open</div>
-        <h1 id="slideTitle">FRONT<br>VIEW <em>26/27</em></h1>
+        <div class="thank-you-icon">
+          <img src="../images/club-logo.png" alt="Kelapa Bali FC logo">
+        </div>
+        <div class="season-tag mono">Drop 01 · Official Away Kit 26/27</div>
+        <h1 id="slideTitle">Thank you, <em class="accent-shimmer">KBFC!</em></h1>
+
+        <p class="thank-you-text">Order period closed. We would like to announce that the order period has closed. Thank you for your support — please stay tuned for any updates.</p>
 
         <div class="hero-cta-row">
           <button class="btn-primary" id="preorderBtn">
-            Pre-order yours now
-            <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            Check my order
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </button>
           <button class="btn-secondary" id="deepDiveBtn">
             Deep dive into details
@@ -1262,14 +1055,14 @@
     </div>
   </div>
 
-  <div class="login-promo-compact">
+  <div class="login-promo-compact" id="loginPromoBoard">
     <div class="login-promo-icon">
       <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
     </div>
     <div class="login-promo-text">
       <span class="mono login-promo-tag">NEW</span>
       <h2>Your club, your account.</h2>
-      <p>Track your order, view your digital membership card, and get early access to drops.</p>
+      <p>Log in to track your order, view your digital membership card, and get early access to future drops.</p>
     </div>
     <div class="login-promo-actions">
       <a class="btn-primary" href="login/">
@@ -1282,105 +1075,6 @@
       </span>
     </div>
   </div>
-
-  <div class="strip">
-    <div class="cell">
-      <div class="label mono">Payment</div>
-      <div class="value">Full amount. Once you send your order, scan the QR and inform the admin.</div>
-    </div>
-    <div class="cell">
-      <div class="label mono">Delivery window</div>
-      <div class="value">1-3 weeks after close</div>
-    </div>
-    <div class="cell">
-      <div class="label mono">Sizing</div>
-      <div class="value">XS — 4XL, true to size</div>
-    </div>
-  </div>
-
-  <section class="pricing-sizing" id="pricing-sizing">
-    <div class="ps-header">
-      <div class="season-tag mono">Choose your set</div>
-      <h2>Pricing</h2>
-    </div>
-
-    <div class="pricing-grid">
-      <div class="price-card">
-        <div class="price-category mono">Adult</div>
-        <div class="price-name mono">Jersey only</div>
-        <div class="price-tag">RM 55</div>
-        <ul class="price-list">
-          <li>Match Jersey, Name + Number print</li>
-          <li>No deposit, full amount at order</li>
-        </ul>
-      </div>
-
-      <div class="price-card featured">
-        <div class="price-badge mono">Recommended</div>
-        <div class="price-category mono">Adult</div>
-        <div class="price-name mono">Jersey + shorts</div>
-        <div class="price-tag">RM 85</div>
-        <ul class="price-list">
-          <li>Match Jersey, Name + Number print</li>
-          <li>Matching shorts</li>
-          <li>No deposit, full amount at order</li>
-        </ul>
-      </div>
-
-      <div class="price-card kids-card">
-        <div class="price-category mono kids">Kids</div>
-        <div class="price-name mono">Jersey only</div>
-        <div class="price-tag">RM 35</div>
-        <ul class="price-list">
-          <li>Name + Number Print</li>
-          <li>Pay full amount at order</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="ps-header sizing-header">
-      <div class="season-tag mono">Find your fit</div>
-      <h2>Sizing</h2>
-    </div>
-
-    <div class="size-toggle" role="tablist">
-      <button type="button" class="size-toggle-btn active" id="sizeTabAdult" role="tab" aria-selected="true">Adult</button>
-      <button type="button" class="size-toggle-btn" id="sizeTabKids" role="tab" aria-selected="false">Kids</button>
-    </div>
-
-    <div class="size-table-wrap">
-      <table class="size-table" id="sizeTableAdult">
-        <thead>
-          <tr><th class="mono">Size</th><th class="mono">Width (in)</th><th class="mono">Length (in)</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>XS</td><td class="mono">18</td><td class="mono">24</td></tr>
-          <tr><td>S</td><td class="mono">19</td><td class="mono">25</td></tr>
-          <tr><td>M</td><td class="mono">20</td><td class="mono">26</td></tr>
-          <tr><td>L</td><td class="mono">21</td><td class="mono">27</td></tr>
-          <tr><td>XL</td><td class="mono">22</td><td class="mono">28</td></tr>
-          <tr><td>2XL</td><td class="mono">23</td><td class="mono">29</td></tr>
-          <tr><td>3XL</td><td class="mono">24</td><td class="mono">30</td></tr>
-          <tr><td>4XL</td><td class="mono">25</td><td class="mono">31</td></tr>
-        </tbody>
-      </table>
-
-      <table class="size-table" id="sizeTableKids" style="display:none;">
-        <thead>
-          <tr><th class="mono">Size</th><th class="mono">Width (in)</th><th class="mono">Length (in)</th></tr>
-        </thead>
-        <tbody>
-          <tr><td>XS (2-3 YO)</td><td class="mono">12</td><td class="mono">15.5</td></tr>
-          <tr><td>S (4-5 YO)</td><td class="mono">13</td><td class="mono">17.5</td></tr>
-          <tr><td>M (6-7 YO)</td><td class="mono">14</td><td class="mono">19.5</td></tr>
-          <tr><td>L (8-9 YO)</td><td class="mono">15</td><td class="mono">22.5</td></tr>
-          <tr><td>XL (10-11 YO)</td><td class="mono">16</td><td class="mono">23</td></tr>
-          <tr><td>2XL (12-13 YO)</td><td class="mono">17</td><td class="mono">24</td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p class="ps-note">Raglan cutting, advisable to take one upsize from your current size. Measurements are of the garment laid flat, not your body. </p>
-</section>
 
   <section class="jersey-story" id="jersey-story">
     <div class="ps-header">
@@ -1424,17 +1118,6 @@
       </div>
     </div>
   </section>
-
-  <div class="cta-band">
-    <div class="cta-band-copy">
-      <div class="season-tag mono">Ready when you are</div>
-      <h2>Don't miss this drop.</h2>
-    </div>
-    <button class="btn-primary" id="preorderBtn2">
-      Pre-order yours now
-      <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-    </button>
-  </div>
 
   <section class="match-history" id="matchHistorySection" style="display:none;">
     <div class="ps-header">
@@ -1663,43 +1346,6 @@
 </div>
 
 <script>
-  /* ---------------- COUNTDOWN ---------------- */
-  // +08:00 is Malaysia time — writing the offset explicitly means this
-  // fires at the correct real-world moment for every visitor, regardless
-  // of their own device's timezone.
-  const PREORDER_DEADLINE = new Date('2026-08-08T23:59:59+08:00');
-  let countdownTimer;
-  function updateCountdown(){
-    const daysEl = document.getElementById('cdDays');
-    const hoursEl = document.getElementById('cdHours');
-    const minsEl = document.getElementById('cdMins');
-    const secsEl = document.getElementById('cdSecs');
-    const labelEl = document.querySelector('.hero-countdown-label');
-    if(!daysEl) return;
-    const remainingMs = PREORDER_DEADLINE.getTime() - Date.now();
-
-    if(remainingMs <= 0){
-      daysEl.textContent = hoursEl.textContent = minsEl.textContent = secsEl.textContent = '00';
-      if(labelEl) labelEl.textContent = 'Order window closed';
-      clearInterval(countdownTimer);
-      return;
-    }
-
-    const totalSeconds = Math.floor(remainingMs / 1000);
-    const days = Math.floor(totalSeconds / 86400);
-    const hours = Math.floor((totalSeconds % 86400) / 3600);
-    const mins = Math.floor((totalSeconds % 3600) / 60);
-    const secs = totalSeconds % 60;
-    const pad = (n) => String(n).padStart(2, '0');
-
-    daysEl.textContent = pad(days);
-    hoursEl.textContent = pad(hours);
-    minsEl.textContent = pad(mins);
-    secsEl.textContent = pad(secs);
-  }
-  updateCountdown();
-  countdownTimer = setInterval(updateCountdown, 1000);
-
   /* ---------------- NEXT MATCH BAR ---------------- */
   // Same central spreadsheet the Players page reads from — admin sets this
   // in the dashboard's "Next Match" section. Reads directly via gviz JSON,
@@ -1863,24 +1509,6 @@
     return String(str || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
   }
 
-  /* ---------------- SIZE CHART TOGGLE ---------------- */
-  const sizeTabAdult = document.getElementById('sizeTabAdult');
-  const sizeTabKids = document.getElementById('sizeTabKids');
-  const sizeTableAdult = document.getElementById('sizeTableAdult');
-  const sizeTableKids = document.getElementById('sizeTableKids');
-  if(sizeTabAdult && sizeTabKids && sizeTableAdult && sizeTableKids){
-    sizeTabAdult.addEventListener('click', () => {
-      sizeTabAdult.classList.add('active'); sizeTabAdult.setAttribute('aria-selected','true');
-      sizeTabKids.classList.remove('active'); sizeTabKids.setAttribute('aria-selected','false');
-      sizeTableAdult.style.display = ''; sizeTableKids.style.display = 'none';
-    });
-    sizeTabKids.addEventListener('click', () => {
-      sizeTabKids.classList.add('active'); sizeTabKids.setAttribute('aria-selected','true');
-      sizeTabAdult.classList.remove('active'); sizeTabAdult.setAttribute('aria-selected','false');
-      sizeTableKids.style.display = ''; sizeTableAdult.style.display = 'none';
-    });
-  }
-
   /* ---------------- THEME TOGGLE ---------------- */
   const root = document.documentElement;
   const themeToggle = document.getElementById('themeToggle');
@@ -1939,69 +1567,6 @@
     if(e.key === 'Escape') closeTopbarMenu();
   });
 
-  /* ---------------- SLIDE DATA ---------------- */
-  // Placeholder line-art. Swap these for real product photos:
-  // replace each <div class="slide-art">...</div> block with <img src="your-photo.jpg">
-  const slideData = [
-    {
-      label: 'FRONT',
-      title: 'FRONT<br>VIEW <em>26/27</em>',
-      desc: 'Reserve your shirt before the window closes. Personalise it with your name and number, printed and shipped once the away kit lands.',
-      art: `<img src="../images/kit-front.png" alt="Kelapa Bali FC away kit front view" style="width:min(46vw, 420px); height:auto; object-fit:contain;">`
-    },
-    {
-      label: 'BACK',
-      title: 'BACK<br>VIEW <em>26/27</em>',
-      desc: 'The back print, your name and squad number, set in the club typeface. Confirmed at checkout.',
-      art: `<img src="../images/kit-back.png" alt="Kelapa Bali FC away kit back view" style="width:min(46vw, 420px); height:auto; object-fit:contain;">`
-    },
-    {
-      label: 'SHORT',
-      title: 'MATCH<br>SHORTS',
-      desc: 'Lightweight match shorts with contrast side panel. One size runs true, sized separately from the shirt.',
-      art: `<img src="../images/kit-shorts.png" alt="Kelapa Bali FC match shorts" style="width:min(46vw, 420px); height:auto; object-fit:contain;">`
-    },
-    {
-      label: 'OVERALL',
-      title: 'FULL<br>KIT <em>OVERALL</em>',
-      desc: 'Shirt, shorts and socks in one pre-order, the full matchday set for the season ahead.',
-      art: `<img src="../images/kit-overall.png" alt="Kelapa Bali FC full kit overall" style="width:min(46vw, 420px); height:auto; object-fit:contain;">`
-    },
-    {
-      label: 'KEEPER',
-      title: 'GOAL <em>KEEPER</em>',
-      desc: 'The dedicated goalkeeper design — same sizing and price as the outfield jersey, pre-order yours today.',
-      art: `<img src="../images/kit-keeper.png" alt="Kelapa Bali FC goalkeeper jersey" style="width:min(46vw, 420px); height:auto; object-fit:contain;">`
-    }
-  ];
-
-  const slidesEl = document.getElementById('slides');
-  let current = 0;
-
-  slideData.forEach((s, i) => {
-    const div = document.createElement('div');
-    div.className = 'slide' + (i === 0 ? ' active' : '');
-    div.innerHTML = s.art;
-    slidesEl.appendChild(div);
-  });
-
-  document.getElementById('totalNum').textContent = String(slideData.length).padStart(2,'0');
-
-  function render(){
-    document.querySelectorAll('.slide').forEach((el,i)=> el.classList.toggle('active', i===current));
-    document.getElementById('slideTitle').innerHTML = slideData[current].title;
-    document.getElementById('curNum').textContent = String(current+1).padStart(2,'0');
-  }
-  function goTo(i){ current = (i + slideData.length) % slideData.length; render(); }
-
-  document.getElementById('prevBtn').addEventListener('click', ()=> goTo(current-1));
-  document.getElementById('nextBtn').addEventListener('click', ()=> goTo(current+1));
-
-  let autoplay = setInterval(()=> goTo(current+1), 6000);
-  ['prevBtn','nextBtn'].forEach(id=>{
-    document.getElementById(id).addEventListener('click', ()=>{ clearInterval(autoplay); autoplay = setInterval(()=> goTo(current+1), 6000); });
-  });
-
   /* ---------------- VIEW SWITCH ---------------- */
   const landing = document.getElementById('view-landing');
   const order = document.getElementById('view-order');
@@ -2012,22 +1577,12 @@
     landing.classList.add('active'); order.classList.remove('active');
     document.getElementById('jersey-story').scrollIntoView({behavior:'smooth', block:'start'});
   });
-  document.getElementById('pricingBtnTop').addEventListener('click', ()=>{
-    landing.classList.add('active'); order.classList.remove('active');
-    document.getElementById('pricing-sizing').scrollIntoView({behavior:'smooth', block:'start'});
-  });
   document.getElementById('deepDiveBtn').addEventListener('click', ()=>{
     landing.classList.add('active'); order.classList.remove('active');
     document.getElementById('jersey-story').scrollIntoView({behavior:'smooth', block:'start'});
   });
-  document.getElementById('preorderBtnTop').addEventListener('click', ()=>{
-    window.location.href = '/order/';
-  });
   document.getElementById('preorderBtn').addEventListener('click', ()=>{
-    window.location.href = '/order/';
-  });
-  document.getElementById('preorderBtn2').addEventListener('click', ()=>{
-    window.location.href = '/order/';
+    window.location.href = '/checker/';
   });
   document.getElementById('backBtn').addEventListener('click', ()=>{
     order.classList.remove('active'); landing.classList.add('active');
@@ -2181,7 +1736,7 @@
     }
   }
   refreshTakenNumbers();
-  ['preorderBtn','preorderBtn2','preorderBtnTop'].forEach(id=>{
+  ['preorderBtn'].forEach(id=>{
     const el = document.getElementById(id);
     if(el) el.addEventListener('click', refreshTakenNumbers);
   });
