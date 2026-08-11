@@ -271,6 +271,70 @@
     .next-match-meta{ flex-basis:100%; white-space:normal; }
   }
 
+  /* ---------- next match section (featured card, in-page) ---------- */
+  .next-match-section{
+    padding:44px 6vw; border-top:1px solid var(--line);
+  }
+  .next-match-card{
+    border:1px solid rgba(185,19,33,0.4); background:rgba(185,19,33,0.06);
+    border-radius:10px; padding:26px 28px;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    max-width:640px; margin:0 auto;
+  }
+  .nm-card-team{ display:flex; flex-direction:column; align-items:center; gap:10px; flex:1; }
+  .nm-card-badge{
+    width:52px; height:52px; border-radius:50%; overflow:hidden;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--surface); border:1px solid var(--line);
+  }
+  .nm-card-badge img{ width:100%; height:100%; object-fit:cover; }
+  .nm-card-badge.them{ filter:grayscale(1); }
+  .nm-card-badge svg{ width:22px; height:22px; stroke:var(--muted); fill:none; stroke-width:1.6; }
+  .nm-card-team span{ font-family:'Oswald',sans-serif; font-size:14px; font-weight:600; text-align:center; }
+  .nm-card-mid{ text-align:center; flex:1; }
+  .nm-card-vs{ font-family:'Oswald',sans-serif; font-size:20px; font-weight:600; color:var(--muted); }
+  .nm-card-meta{ font-size:11.5px; color:var(--muted); margin-top:8px; line-height:1.5; }
+
+  @media (max-width:600px){
+    .next-match-card{ padding:20px 18px; gap:8px; }
+    .nm-card-badge{ width:42px; height:42px; }
+    .nm-card-team span{ font-size:12px; }
+  }
+
+  /* ---------- from the club: scrolling photo strip ---------- */
+  .club-photos-section{
+    padding:44px 0 44px 6vw; border-top:1px solid var(--line);
+    overflow:hidden;
+  }
+  .club-photos-header{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap:16px; padding-right:6vw; margin-bottom:24px; flex-wrap:wrap;
+  }
+  .club-photos-header h2{ font-family:'Oswald',sans-serif; font-size:clamp(22px,3vw,28px); font-weight:600; }
+  .club-photos-header a{
+    font-size:11.5px; color:var(--muted); text-decoration:none; font-family:'JetBrains Mono',monospace;
+    display:inline-flex; align-items:center; gap:5px; white-space:nowrap;
+  }
+  .club-photos-header a:hover{ color:var(--accent); }
+  .club-photos-track{
+    display:flex; gap:14px; width:max-content;
+    animation:clubPhotosScroll 32s linear infinite;
+  }
+  .club-photos-section:hover .club-photos-track{ animation-play-state:paused; }
+  .club-photo-item{
+    flex-shrink:0; width:230px; height:155px;
+    border-radius:8px; overflow:hidden;
+    border:1px solid var(--line); background:var(--surface);
+  }
+  .club-photo-item img{ width:100%; height:100%; object-fit:cover; display:block; }
+  @keyframes clubPhotosScroll{
+    from{ transform:translateX(0); }
+    to{ transform:translateX(-50%); }
+  }
+  @media (max-width:600px){
+    .club-photo-item{ width:180px; height:120px; }
+  }
+
   /* ---------- thank-you note (merged into hero) ---------- */
   .thank-you-text{
     font-size:14.5px; color:var(--muted); line-height:1.6;
@@ -502,17 +566,28 @@
   }
 
   footer{
-    display:flex; justify-content:space-between; align-items:flex-end;
-    padding:26px 6vw; border-top:1px solid var(--line);
+    padding:0 6vw 0; border-top:1px solid var(--line);
     font-size:12px; color:var(--muted);
   }
-  .footer-brand{ display:flex; align-items:center; gap:16px; }
-  .footer-right{
-    display:flex; align-items:center; gap:16px;
+  .footer-top{
+    display:flex; align-items:flex-start; justify-content:space-between;
+    gap:40px; flex-wrap:wrap;
+    padding:52px 0 40px;
+  }
+  .footer-col{ display:flex; flex-direction:column; gap:14px; }
+  .footer-col-brand{ gap:10px; max-width:280px; }
+  .footer-logo-row{ display:flex; align-items:center; gap:10px; }
+  .footer-crest{ width:26px; height:26px; object-fit:contain; }
+  .footer-club-name{
+    font-size:14px; font-weight:600; letter-spacing:0.08em; color:var(--ink);
+  }
+  .footer-tagline{ font-size:12.5px; color:var(--muted); line-height:1.5; }
+  .footer-col-label{
+    text-transform:uppercase; color:var(--muted); font-size:11px;
   }
   .footer-credit-label{
     text-transform:uppercase;
-    color:var(--muted);
+    color:var(--muted); font-size:11px;
   }
   .footer-logos{ display:flex; align-items:center; gap:18px; }
   .footer-logos a{ display:inline-flex; line-height:0; }
@@ -527,6 +602,12 @@
   .footer-logos a:hover img{
     filter:none; opacity:1; transform:translateY(-1px);
   }
+  .footer-bottom{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    padding:18px 0; border-top:1px solid var(--line-soft);
+    font-size:11px; color:var(--muted);
+  }
+  .footer-bottom-sep{ opacity:.5; }
 
   /* ---------- section headers (shared) ---------- */
   .ps-header{ margin-bottom:36px; }
@@ -575,65 +656,61 @@
   }
 
 
-  /* ---------- jersey story: designer + fabric/meaning ---------- */
-  .jersey-story{
+  /* ---------- squad teaser (homepage hint of the players page) ---------- */
+  .squad-teaser{
     padding:88px 6vw; border-top:1px solid var(--line);
   }
-  .designer-block{
-    display:flex; align-items:center; gap:24px;
-    margin-bottom:56px; padding-bottom:40px;
-    border-bottom:1px solid var(--line-soft);
+  .squad-teaser-header{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    gap:24px; flex-wrap:wrap;
   }
-  .designer-avatar{
-    flex-shrink:0; width:72px; height:72px; border-radius:50%;
+  .squad-teaser-link svg{ width:14px; height:14px; }
+  .squad-teaser-link-mobile{ display:none; }
+  .squad-teaser-grid{
+    display:grid; grid-template-columns:repeat(6, 1fr); gap:16px;
+  }
+  .squad-teaser-card{
+    position:relative; aspect-ratio:3/4; overflow:hidden;
     background:var(--surface); border:1px solid var(--line);
-    display:flex; align-items:center; justify-content:center;
-    font-family:'Oswald',sans-serif; font-size:24px; font-weight:600;
-    color:var(--accent);
-    background-size:cover; background-position:center; overflow:hidden;
+    text-decoration:none; color:inherit; display:block;
+    transition:border-color .25s ease, transform .25s ease;
   }
-  .designer-name{ font-size:18px; font-weight:600; }
-  .designer-role{ font-size:11.5px; color:var(--muted); margin:2px 0 10px; }
-  .designer-copy p{ font-size:14px; color:var(--muted); max-width:640px; line-height:1.6; }
-  .designer-follow{
-    display:inline-flex; align-items:center; gap:6px;
-    margin-top:14px; font-size:11px; letter-spacing:.08em; text-transform:uppercase;
-    color:var(--muted); text-decoration:none; font-family:'JetBrains Mono',monospace;
-    border:1px solid var(--line); border-radius:999px; padding:7px 14px;
-    transition:border-color .2s ease, color .2s ease;
+  .squad-teaser-card:hover{ border-color:var(--accent); transform:translateY(-3px); }
+  .squad-teaser-card img{
+    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
   }
-  .designer-follow:hover{ border-color:var(--accent); color:var(--accent); }
-  .designer-follow svg{ width:13px; height:13px; }
-
-  .story-grid{
-    display:grid; grid-template-columns:repeat(2,1fr); gap:24px;
+  .squad-teaser-overlay{
+    position:absolute; left:0; right:0; bottom:0; padding:14px;
+    background:linear-gradient(180deg, transparent, rgba(0,0,0,.82));
+    color:#fff;
   }
-  .story-card{
+  .squad-teaser-number{
+    font-family:'Oswald',sans-serif; font-weight:700; font-size:clamp(20px,2.4vw,28px);
+    line-height:1; margin-bottom:4px;
+  }
+  .squad-teaser-name{
+    font-family:'Oswald',sans-serif; font-weight:600; font-size:12px;
+    text-transform:uppercase; letter-spacing:.02em;
+  }
+  .squad-teaser-skeleton{
+    aspect-ratio:3/4; background:var(--surface); border:1px solid var(--line);
     position:relative; overflow:hidden;
-    border:1px solid var(--line); padding:28px 26px;
-    transition:border-color .25s ease;
   }
-  .story-card:hover{ border-color:var(--accent); }
-  .story-card::before{
-    content:""; position:absolute; inset:0;
-    background-size:cover; background-position:center;
-    opacity:.14; z-index:0; pointer-events:none;
+  .squad-teaser-skeleton::after{
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(90deg, transparent, var(--line-soft), transparent);
+    animation:skeletonShimmer 1.6s ease-in-out infinite;
   }
-  .story-card > *{ position:relative; z-index:1; }
-  .story-card .story-icon{
-    width:34px; height:34px; margin-bottom:16px;
-    stroke:var(--accent); fill:none; stroke-width:1.5;
+  @keyframes skeletonShimmer{
+    0%{ transform:translateX(-100%); }
+    100%{ transform:translateX(100%); }
   }
-  .story-card h3{ font-size:15.5px; font-weight:600; margin-bottom:8px; }
-  .story-card p{ font-size:13.5px; color:var(--muted); line-height:1.6; }
-  .story-card.fabric::before{ background-image:url(../images/story-fabric.jpeg); }
-  .story-card.colour::before{ background-image:url(../images/story-colour.jpeg); }
-  .story-card.pattern::before{ background-image:url(../images/story_pattern.jpeg); }
-  .story-card.slogan::before{ background-image:url(../images/story-slogan.jpeg); }
 
   @media (max-width: 780px){
-    .designer-block{ flex-direction:column; align-items:flex-start; text-align:left; }
-    .story-grid{ grid-template-columns:1fr; }
+    .squad-teaser-grid{ grid-template-columns:repeat(3, 1fr); }
+    .squad-teaser-header{ align-items:flex-start; }
+    .squad-teaser-link{ display:none; }
+    .squad-teaser-link-mobile{ display:inline-flex; margin-top:24px; width:100%; justify-content:center; }
   }
 
 
@@ -883,14 +960,12 @@
     }
     .field-row{grid-template-columns:1fr;}
     .topbar{padding:18px 20px;}
-    footer{
-      flex-direction:row; flex-wrap:wrap; justify-content:space-between;
-      align-items:flex-start; gap:14px;
-      text-align:left;
+    .footer-top{
+      flex-direction:column; align-items:flex-start; gap:28px;
+      padding:40px 0 32px;
     }
-    .footer-brand{ flex-direction:column; align-items:flex-start; gap:12px; }
-    .footer-right{ flex-direction:column; align-items:center; gap:12px; }
-    .footer-logos{ gap:16px; }
+    .footer-col-brand{ max-width:none; }
+    .footer-bottom{ padding:16px 0; }
 
     .modal-overlay{ padding:16px; align-items:flex-start; overflow-y:auto; }
     .modal-box{
@@ -913,6 +988,7 @@
     .hero-copy .thank-you-text, .hero-copy .hero-cta-row, .accent-shimmer{
       animation:none !important; opacity:1 !important; transform:none !important;
     }
+    .club-photos-track{ animation:none !important; }
   }
 </style>
 </head>
@@ -948,10 +1024,10 @@
   </div>
 
   <div class="menu-group-label mono">Club</div>
-  <button class="btn-mini" id="jerseyStoryBtnTop">
-    The Jersey Story
-    <svg viewBox="0 0 24 24"><path d="M4 8c0-2.2 3.6-4 8-4s8 1.8 8 4-3.6 4-8 4-8-1.8-8-4Z"/><path d="M4 8v8c0 2.2 3.6 4 8 4s8-1.8 8-4V8"/></svg>
-  </button>
+  <a class="btn-mini" href="/about/">
+    About Us
+    <svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M12 16v-4"/><circle cx="12" cy="8" r=".6" fill="currentColor" stroke="none"/></svg>
+  </a>
   <a class="btn-mini" href="https://instagram.com/kelapabalifc/" target="_blank" rel="noopener">
     Contact Us
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
@@ -960,18 +1036,16 @@
     Players
     <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17.5" cy="9.5" r="2.6"/><path d="M15.5 20c0-2.6 2-4.7 4.6-4.9"/></svg>
   </a>
+  <a class="btn-mini" href="/sponsors/">
+    Sponsors
+    <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+  </a>
 
   <div class="menu-group-label mono">Shop</div>
-  <button class="btn-mini is-locked" disabled title="Pre-order window closed">
-    Pre-order now <span class="menu-item-soon">· closed</span>
-    <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-  </button>
-  <button class="btn-mini" disabled title="Coming soon">
-    Released Jerseys <span class="menu-item-soon">· coming soon</span>
-  </button>
-  <button class="btn-mini" disabled title="Coming soon">
-    Upcoming Release <span class="menu-item-soon">· coming soon</span>
-  </button>
+  <a class="btn-mini" href="/released-jerseys/">
+    Club Jersey
+    <svg viewBox="0 0 24 24"><path d="M20.59 13.41 12 22l-9-9V4h9z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg>
+  </a>
 
   <div class="menu-group-label mono">Orders</div>
   <button class="btn-mini" id="checkOrderBtnTop">
@@ -1019,14 +1093,33 @@
             Check my order
             <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
           </button>
-          <button class="btn-secondary" id="deepDiveBtn">
-            Deep dive into details
-            <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </button>
         </div>
       </div>
     </div>
   </div>
+
+  <section class="next-match-section" id="nextMatchSection" style="display:none;">
+    <div class="ps-header">
+      <div class="season-tag mono">Season 26/27</div>
+      <h2>Next match</h2>
+    </div>
+    <div class="next-match-card">
+      <div class="nm-card-team">
+        <div class="nm-card-badge us"><img src="../images/club-logo.png" alt=""></div>
+        <span>Kelapa Bali FC</span>
+      </div>
+      <div class="nm-card-mid">
+        <div class="nm-card-vs mono">VS</div>
+        <div class="nm-card-meta mono" id="nmSectionMeta"></div>
+      </div>
+      <div class="nm-card-team">
+        <div class="nm-card-badge them" id="nmSectionOpponentBadge">
+          <svg viewBox="0 0 24 24"><path d="M12 2 4 6v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6l-8-4Z"/></svg>
+        </div>
+        <span id="nmSectionOpponentName"></span>
+      </div>
+    </div>
+  </section>
 
   <div class="login-promo-compact" id="loginPromoBoard">
     <div class="login-promo-icon">
@@ -1049,46 +1142,52 @@
     </div>
   </div>
 
-  <section class="jersey-story" id="jersey-story">
-    <div class="ps-header">
-      <div class="season-tag mono">The story</div>
-      <h2>Designed with purpose</h2>
+  <section class="squad-teaser" id="squad-teaser">
+    <div class="ps-header squad-teaser-header">
+      <div>
+        <div class="season-tag mono">The squad</div>
+        <h2>Meet the team</h2>
+      </div>
+      <a class="btn-secondary squad-teaser-link" href="/players/">
+        View full squad
+        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
     </div>
-
-    <div class="designer-block">
-      <div class="designer-avatar mono" style="background-image:url(../images/designer-avatar.jpg)"></div>
-      <div class="designer-copy">
-        <div class="designer-name">Freshphysics a.k.a Nenok</div>
-        <div class="designer-role mono">Kit Designer</div>
-        <p>Nenok, a talented Shah Alam street artist and well known circa 2008. His enthusiast and skill in designing arts, grafitti and even this kit is made from that passion. Every kit he designs for Kelapa Bali FC ended up as a masterpiece.</p>
-        <a href="https://www.instagram.com/freshphysics/" target="_blank" rel="noopener" class="designer-follow">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
-          Follow designer
-        </a>
-      </div>
+    <div class="squad-teaser-grid" id="squadTeaserGrid">
+      <div class="squad-teaser-skeleton"></div>
+      <div class="squad-teaser-skeleton"></div>
+      <div class="squad-teaser-skeleton"></div>
+      <div class="squad-teaser-skeleton"></div>
+      <div class="squad-teaser-skeleton"></div>
+      <div class="squad-teaser-skeleton"></div>
     </div>
+    <a class="btn-secondary squad-teaser-link squad-teaser-link-mobile" href="/players/">
+      View full squad
+      <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+  </section>
 
-    <div class="story-grid">
-      <div class="story-card fabric">
-        <svg class="story-icon" viewBox="0 0 24 24"><path d="M4 8c0-2.2 3.6-4 8-4s8 1.8 8 4-3.6 4-8 4-8-1.8-8-4Z"/><path d="M4 8v8c0 2.2 3.6 4 8 4s8-1.8 8-4V8"/><path d="M4 12c0 2.2 3.6 4 8 4s8-1.8 8-4"/></svg>
-        <h3>The Fabric</h3>
-        <p>Jacquard, 140gsm patterned polyester mediumweight, breathable, and built to move sweat away from the skin during a specific football match. Raglan-cut sleeves for a freer range of motion that suits for a long match. On a side note, this fabric was recommended by Nenok .</p>
-      </div>
-      <div class="story-card colour">
-        <svg class="story-icon" viewBox="0 0 24 24"><path d="M12 3 3 8v8l9 5 9-5V8l-9-5Z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg>
-        <h3>The Colours</h3>
-        <p>Different jersey, different story. As our home kit already striking with red and yellow (Inspired from Selangor FC), White and Deep navy was our choice to depict that we strikes in silent when we are on an opponent ground.</p>
-      </div>
-      <div class="story-card pattern">
-        <svg class="story-icon" viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M5 7c1.5 2 1.5 4 0 6s-1.5 4 0 6"/><path d="M19 7c-1.5 2-1.5 4 0 6s1.5 4 0 6"/></svg>
-        <h3>The Pattern</h3>
-        <p>The diagonal lines running across the body are a nod to France's World Cup 2026 campaign, the same restless, forward-leaning stripe language seen on Les Bleus' kits, reworked here in Kelapa Bali FC's navy to carry that same energy onto our friendly match.</p>
-      </div>
-      <div class="story-card slogan">
-        <svg class="story-icon" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
-        <h3>The Slogan</h3>
-        <p>40200, where it all started. It's the postcode of the field this club calls home, and it carries more than an address: the love for football, the friendships built on it, and everything that's grown out of both.</p>
-      </div>
+  <section class="club-photos-section" id="clubPhotosSection">
+    <div class="club-photos-header">
+      <h2>From the club</h2>
+      <a href="https://instagram.com/kelapabalifc/" target="_blank" rel="noopener">
+        Follow on Instagram
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
+      </a>
+    </div>
+    <div class="club-photos-track">
+      <div class="club-photo-item"><img src="../images/club-photo-1.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
+      <div class="club-photo-item"><img src="../images/club-photo-2.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
+      <div class="club-photo-item"><img src="../images/club-photo-3.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
+      <div class="club-photo-item"><img src="../images/club-photo-4.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
+      <div class="club-photo-item"><img src="../images/club-photo-5.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
+      <div class="club-photo-item"><img src="../images/club-photo-6.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
+      <div class="club-photo-item"><img src="../images/club-photo-1.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
+      <div class="club-photo-item"><img src="../images/club-photo-2.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
+      <div class="club-photo-item"><img src="../images/club-photo-3.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
+      <div class="club-photo-item"><img src="../images/club-photo-4.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
+      <div class="club-photo-item"><img src="../images/club-photo-5.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
+      <div class="club-photo-item"><img src="../images/club-photo-6.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
     </div>
   </section>
 
@@ -1101,24 +1200,40 @@
   </section>
 
   <footer>
-    <div class="footer-brand">
-      <span class="mono">KELAPA BALI FC</span>
-      <div class="social-row">
-        <a href="https://instagram.com/kelapabalifc/" target="_blank" rel="noopener" aria-label="Instagram" class="social-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
-        </a>
-        <a href="https://www.threads.com/kelapabalifc/" target="_blank" rel="noopener" aria-label="Threads" class="social-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9.5"/><text x="12" y="16" text-anchor="middle" font-size="12" font-family="Georgia, serif" fill="currentColor" stroke="none">@</text></svg>
-        </a>
+    <div class="footer-top">
+      <div class="footer-col footer-col-brand">
+        <div class="footer-logo-row">
+          <img src="../images/club-logo.png" alt="Kelapa Bali FC logo" class="footer-crest">
+          <span class="mono footer-club-name">KELAPA BALI FC</span>
+        </div>
+        <p class="footer-tagline">Community football club · Season 26/27</p>
       </div>
-    </div>
-    <div class="footer-right">
-      <span class="footer-credit-label mono">Brought to you by</span>
-      <div class="footer-logos">
+
+      <div class="footer-col footer-col-social">
+        <span class="footer-col-label mono">Follow us</span>
+        <div class="social-row">
+          <a href="https://instagram.com/kelapabalifc/" target="_blank" rel="noopener" aria-label="Instagram" class="social-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
+          </a>
+          <a href="https://www.threads.com/kelapabalifc/" target="_blank" rel="noopener" aria-label="Threads" class="social-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9.5"/><text x="12" y="16" text-anchor="middle" font-size="12" font-family="Georgia, serif" fill="currentColor" stroke="none">@</text></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-col footer-col-credit">
+        <span class="footer-credit-label mono">Brought to you by</span>
+        <div class="footer-logos">
           <a href="https://shopee.com.my/shop.eclipse" target="_blank" rel="noopener" aria-label="ES on Shopee"><img src="../images/footer-logo-shopee.png" alt="ES logo"></a>
           <a href="https://www.instagram.com/cilimerahrestaurant/" target="_blank" rel="noopener" aria-label="Cili Merah on Instagram"><img src="../images/footer-logo-cilimerah.png" alt="Cilmer logo"></a>
         </div>
       </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span class="mono">© 2026 Kelapa Bali FC</span>
+      <span class="footer-bottom-sep mono">·</span>
+      <span class="mono">All rights reserved</span>
     </div>
   </footer>
 </section>
@@ -1398,6 +1513,20 @@
       // guessed, so nothing sits hidden underneath it.
       const hero = document.querySelector('.hero');
       if (hero) hero.style.marginTop = bar.offsetHeight + 'px';
+
+      // Same data, also shown as a proper in-page card further down —
+      // the fixed bar is a quick glance while scrolling, this is the
+      // fuller, easier-to-read version.
+      const nmSection = document.getElementById('nextMatchSection');
+      if (nmSection){
+        document.getElementById('nmSectionOpponentName').textContent = opponent;
+        document.getElementById('nmSectionMeta').textContent = metaParts.join(' · ');
+        const sectionBadgeEl = document.getElementById('nmSectionOpponentBadge');
+        if (opponentLogo){
+          sectionBadgeEl.innerHTML = `<img src="${opponentLogo}" alt="">`;
+        }
+        nmSection.style.display = 'block';
+      }
     } catch (err) {
       console.warn('Could not load next match info — bar stays hidden.', err);
     }
@@ -1478,6 +1607,79 @@
     }
   })();
 
+  /* ---------------- SQUAD TEASER (homepage hint of the Players page) ---------------- */
+  function placeholderSquadImg(number, name){
+    const initials = String(name || '').trim().split(/\s+/).map(w => w[0]).slice(0,2).join('').toUpperCase();
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400"><rect width="100%" height="100%" fill="#1a1d22"/><text x="50%" y="55%" font-family="Oswald, sans-serif" font-size="64" fill="#3a3d42" text-anchor="middle">${initials || number}</text></svg>`;
+    return 'data:image/svg+xml;base64,' + btoa(svg);
+  }
+
+  (async function loadSquadTeaser(){
+    const PLAYERS_SHEET_ID = '1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM';
+    const PLAYER_IMAGE_BASE = '/images/players/';
+    const teaserSection = document.getElementById('squad-teaser');
+    const grid = document.getElementById('squadTeaserGrid');
+    if (!grid) return;
+
+    function resolvePlayerImage(raw){
+      const v = String(raw || '').trim();
+      if (!v) return '';
+      if (/^https?:\/\//i.test(v)) return v;
+      return PLAYER_IMAGE_BASE + v;
+    }
+
+    try {
+      const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=Players`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Sheet request failed: ' + res.status);
+      const text = await res.text();
+      const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
+      const cols = (json.table && json.table.cols) || [];
+      const rows = (json.table && json.table.rows) || [];
+      const colIndex = {};
+      cols.forEach((c, i) => { if (c.label) colIndex[c.label.trim()] = i; });
+      const idx = (label, fallback) => colIndex[label] !== undefined ? colIndex[label] : fallback;
+      const iNumber = idx('Number', 0), iName = idx('Name', 1), iPosition = idx('Position', 2), iPhoto = idx('Photo', 3);
+
+      const players = rows.map(r => {
+        const cells = r.c || [];
+        const val = i => (i >= 0 && cells[i]) ? cells[i].v : '';
+        return {
+          number: Number(val(iNumber)),
+          name: String(val(iName) || '').trim(),
+          position: String(val(iPosition) || '').trim(),
+          photo: resolvePlayerImage(val(iPhoto))
+        };
+      }).filter(p => p.number && p.name && p.position);
+
+      if (!players.length) { teaserSection.style.display = 'none'; return; }
+
+      // A small hint of the squad, not the full roster — picks up to 6
+      // players spaced evenly through the sheet so it isn't just
+      // whoever happens to be listed first.
+      const count = Math.min(6, players.length);
+      const step = players.length / count;
+      const featured = [];
+      for (let i = 0; i < count; i++) featured.push(players[Math.floor(i * step)]);
+
+      grid.innerHTML = featured.map(p => {
+        const fallback = placeholderSquadImg(p.number, p.name);
+        return `
+          <a class="squad-teaser-card" href="/players/">
+            <img src="${p.photo || fallback}" alt="${escapeHtml_(p.name)}" loading="lazy"
+                 onerror="this.onerror=null; this.src='${fallback}';">
+            <div class="squad-teaser-overlay">
+              <div class="squad-teaser-number mono">${p.number}</div>
+              <div class="squad-teaser-name">${escapeHtml_(p.name)}</div>
+            </div>
+          </a>`;
+      }).join('');
+    } catch (err) {
+      console.warn('Could not load squad teaser — section stays hidden.', err);
+      if (teaserSection) teaserSection.style.display = 'none';
+    }
+  })();
+
   function escapeHtml_(str){
     return String(str || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
   }
@@ -1545,14 +1747,6 @@
   const order = document.getElementById('view-order');
   document.getElementById('checkOrderBtnTop').addEventListener('click', ()=>{
     window.location.href = '/checker/';
-  });
-  document.getElementById('jerseyStoryBtnTop').addEventListener('click', ()=>{
-    landing.classList.add('active'); order.classList.remove('active');
-    document.getElementById('jersey-story').scrollIntoView({behavior:'smooth', block:'start'});
-  });
-  document.getElementById('deepDiveBtn').addEventListener('click', ()=>{
-    landing.classList.add('active'); order.classList.remove('active');
-    document.getElementById('jersey-story').scrollIntoView({behavior:'smooth', block:'start'});
   });
   document.getElementById('preorderBtn').addEventListener('click', ()=>{
     window.location.href = '/checker/';
