@@ -235,42 +235,6 @@
   .nav-btn:hover{border-color:var(--accent); transform:translateY(-2px);}
   .nav-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
 
-  /* ---------- next match bar ---------- */
-  .next-match-bar{
-    position:fixed; top:76px; left:0; right:0; z-index:45;
-    display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:11px;
-    background:var(--surface); color:var(--ink);
-    border-bottom:1px solid var(--line); box-shadow:0 4px 12px rgba(0,0,0,.08);
-    padding:13px 6vw; text-align:center;
-  }
-  .next-match-label{
-    display:inline-block; flex-shrink:0;
-    background:var(--accent); color:#fff;
-    font-size:10px; text-transform:uppercase; letter-spacing:.1em;
-    padding:4px 10px;
-  }
-  .nmb-team{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
-  .nmb-badge{
-    width:26px; height:26px; border-radius:50%; overflow:hidden; flex-shrink:0;
-    display:flex; align-items:center; justify-content:center;
-    background:var(--bg); border:1px solid var(--line);
-  }
-  .nmb-badge img{ width:100%; height:100%; object-fit:cover; }
-  .nmb-them{ filter:grayscale(1); }
-  .nmb-them svg{ width:12px; height:12px; stroke:var(--muted); fill:none; stroke-width:1.8; }
-  .nmb-vs{ font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; flex-shrink:0; }
-  .nmb-team-name{
-    font-family:'Oswald',sans-serif; font-size:15px; font-weight:700; color:var(--ink); white-space:nowrap;
-  }
-  .next-match-sep{ color:var(--muted); flex-shrink:0; }
-  .next-match-meta{ font-size:12px; color:var(--muted); white-space:nowrap; }
-  @media (max-width:640px){
-    .next-match-bar{ top:70px; padding:11px 5vw; gap:8px; }
-    .nmb-team-name{ font-size:13px; }
-    .next-match-sep{ display:none; }
-    .next-match-meta{ flex-basis:100%; white-space:normal; }
-  }
-
   /* ---------- next match section (featured card, in-page) ---------- */
   .next-match-section{
     padding:44px 6vw; border-top:1px solid var(--line);
@@ -1060,23 +1024,6 @@
   </a>
 </div>
 
-<div class="next-match-bar" id="nextMatchBar" style="display:none;">
-  <span class="next-match-label mono">Next match</span>
-  <div class="nmb-team">
-    <div class="nmb-badge nmb-us"><img src="../images/club-logo.png" alt=""></div>
-    <span class="nmb-team-name">Kelapa Bali FC</span>
-  </div>
-  <span class="nmb-vs">vs</span>
-  <div class="nmb-team">
-    <div class="nmb-badge nmb-them" id="nextMatchOpponentBadge">
-      <svg viewBox="0 0 24 24"><path d="M12 2 4 6v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6l-8-4Z"/></svg>
-    </div>
-    <span class="nmb-team-name" id="nextMatchOpponentDisplay"></span>
-  </div>
-  <span class="next-match-sep">·</span>
-  <span class="next-match-meta" id="nextMatchMetaDisplay"></span>
-</div>
-
 <!-- ============ VIEW 1: LANDING ============ -->
 <section class="view active" id="view-landing">
 
@@ -1119,6 +1066,14 @@
         <span id="nmSectionOpponentName"></span>
       </div>
     </div>
+  </section>
+
+  <section class="match-history" id="matchHistorySection" style="display:none;">
+    <div class="ps-header">
+      <div class="season-tag mono">Season 26/27</div>
+      <h2>Completed matches</h2>
+    </div>
+    <div class="match-history-list" id="matchHistoryList"></div>
   </section>
 
   <div class="login-promo-compact" id="loginPromoBoard">
@@ -1189,14 +1144,6 @@
       <div class="club-photo-item"><img src="../images/club-photo-5.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
       <div class="club-photo-item"><img src="../images/club-photo-6.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
     </div>
-  </section>
-
-  <section class="match-history" id="matchHistorySection" style="display:none;">
-    <div class="ps-header">
-      <div class="season-tag mono">Season 26/27</div>
-      <h2>Completed matches</h2>
-    </div>
-    <div class="match-history-list" id="matchHistoryList"></div>
   </section>
 
   <footer>
@@ -1492,31 +1439,10 @@
       if (venue) metaParts.push(venue);
       if (competition) metaParts.push(competition);
 
-      const bar = document.getElementById('nextMatchBar');
-      document.getElementById('nextMatchOpponentDisplay').textContent = opponent;
-      document.getElementById('nextMatchMetaDisplay').textContent = metaParts.join(' · ');
       // Grayscale via CSS filter (not a pre-processed image) so any logo
       // works regardless of its original colors — our own crest right next
       // to it stays full color, same "us vs them" treatment used on the
       // generated player share cards.
-      const badgeEl = document.getElementById('nextMatchOpponentBadge');
-      if (opponentLogo){
-        badgeEl.innerHTML = `<img src="${opponentLogo}" alt="">`;
-      }
-      bar.style.display = 'flex';
-
-      // The bar is position:fixed (guaranteed to never disappear while
-      // scrolling, unlike position:sticky) — but that means it no longer
-      // pushes page content down on its own the way an in-flow element
-      // would. Push the hero (and everything after it) down by however
-      // tall the bar actually rendered, measured directly rather than
-      // guessed, so nothing sits hidden underneath it.
-      const hero = document.querySelector('.hero');
-      if (hero) hero.style.marginTop = bar.offsetHeight + 'px';
-
-      // Same data, also shown as a proper in-page card further down —
-      // the fixed bar is a quick glance while scrolling, this is the
-      // fuller, easier-to-read version.
       const nmSection = document.getElementById('nextMatchSection');
       if (nmSection){
         document.getElementById('nmSectionOpponentName').textContent = opponent;
@@ -1528,7 +1454,7 @@
         nmSection.style.display = 'block';
       }
     } catch (err) {
-      console.warn('Could not load next match info — bar stays hidden.', err);
+      console.warn('Could not load next match info — section stays hidden.', err);
     }
   })();
 
