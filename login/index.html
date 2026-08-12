@@ -675,7 +675,16 @@
     showGoogleMsg('', '');
     const googleAction = mode === 'signup' ? 'googleSignup' : 'googleLogin';
     try {
-      const data = await (await fetch(`${API_URL}?action=${googleAction}&idToken=${encodeURIComponent(response.credential)}`)).json();
+      // POST, not GET — a Google idToken (JWT) is long enough that stuffing it
+      // into a query string blows past the URL-length limit the Apps Script
+      // /exec redirect layer can handle, which showed up as a 404. The
+      // backend's doPost already accepts { action, idToken } as JSON, and the
+      // Cloudflare Worker proxy already forwards POST bodies correctly — so
+      // this just needed to actually send it as a POST instead of a GET.
+      const data = await (await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: googleAction, idToken: response.credential })
+      })).json();
       if (data.ok){
         localStorage.setItem(STORAGE_KEY, data.token);
         redirectAfterLogin(data);
