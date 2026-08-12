@@ -961,6 +961,7 @@
               <label class="social-label">What happened</label>
               <select id="socialEventType" class="edit-input" style="width:100%;">
                 <option value="goal">⚽ Goal</option>
+                <option value="missed">🎯 Missed chance</option>
                 <option value="penalty_goal">⚽ Penalty scored</option>
                 <option value="penalty_missed">❌ Penalty missed</option>
                 <option value="own_goal">⚠️ Own goal</option>
@@ -976,8 +977,15 @@
               </select>
             </div>
 
+            <div class="social-field" id="socialAssistWrap" style="display:none;">
+              <label class="social-label">Assisted by <span style="font-weight:400; color:var(--muted); text-transform:none; letter-spacing:0;">(optional — counts toward their Assists too)</span></label>
+              <select id="socialAssistSelect" class="edit-input" style="width:100%;">
+                <option value="">— No assist / not from our roster —</option>
+              </select>
+            </div>
+
             <div class="social-field">
-              <label class="social-label">Note <span style="font-weight:400; color:var(--muted); text-transform:none; letter-spacing:0;">(optional — e.g. "assisted by #7")</span></label>
+              <label class="social-label">Note <span style="font-weight:400; color:var(--muted); text-transform:none; letter-spacing:0;">(optional extra detail)</span></label>
               <input type="text" id="socialNote" class="edit-input" style="width:100%;" placeholder="Optional extra detail">
             </div>
 
@@ -1880,6 +1888,14 @@
       ? allPlayers.map(p => `<option value="${p.rowNumber}" data-name="${(p.name || '').replace(/"/g,'&quot;')}" data-number="${(p.number || '').replace(/"/g,'&quot;')}">#${p.number || '—'} — ${(p.name || 'Unnamed').replace(/"/g,'&quot;')}</option>`).join('')
       : `<option value="">No players yet — add one in Players first</option>`;
     if (prevValue && allPlayers.some(p => String(p.rowNumber) === prevValue)) sel.value = prevValue;
+
+    const assistSel = document.getElementById('socialAssistSelect');
+    if (assistSel){
+      const prevAssist = assistSel.value;
+      assistSel.innerHTML = '<option value="">— No assist / not from our roster —</option>' +
+        allPlayers.map(p => `<option value="${p.rowNumber}" data-name="${(p.name || '').replace(/"/g,'&quot;')}" data-number="${(p.number || '').replace(/"/g,'&quot;')}">#${p.number || '—'} — ${(p.name || 'Unnamed').replace(/"/g,'&quot;')}</option>`).join('');
+      if (prevAssist && allPlayers.some(p => String(p.rowNumber) === prevAssist)) assistSel.value = prevAssist;
+    }
     updateSocialPreview();
   }
   els.playerSearch.addEventListener('input', renderPlayersTable);
@@ -2695,8 +2711,9 @@
   // and Instagram captions read best short too. {player} / {minute} / {note} / {opponent}
   // get swapped in by buildSocialCaption() below.
   const socialTemplates = {
-    goal:            (p, min, note, opp) => `⚽ GOAL!\n\n${p} — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
-    penalty_goal:    (p, min, note, opp) => `⚽ PENALTY SCORED!\n\n${p} — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
+    goal:            (p, min, note, opp, assistLine) => `⚽ GOAL!\n\n${p} — ${min}'${assistLine ? '\n' + assistLine : ''}${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
+    missed:          (p, min, note, opp) => `🎯 Missed chance\n\n${p} — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
+    penalty_goal:    (p, min, note, opp, assistLine) => `⚽ PENALTY SCORED!\n\n${p} — ${min}'${assistLine ? '\n' + assistLine : ''}${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
     penalty_missed:  (p, min, note, opp) => `❌ Penalty missed\n\n${p} — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
     own_goal:        (p, min, note, opp) => `⚠️ Own goal\n\n${p} — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
     assist:          (p, min, note, opp) => `🅰️ Assist\n\n${p} — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
@@ -2709,6 +2726,24 @@
     halftime:        (p, min, note, opp) => `⏸️ Half-time${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
     fulltime:        (p, min, note, opp) => `🔚 Full-time${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`
   };
+
+  // Assist selector only makes sense for events where someone actually
+  // scored — shown/hidden as the event type changes.
+  const ASSIST_ELIGIBLE_EVENTS = ['goal', 'penalty_goal'];
+  document.getElementById('socialEventType').addEventListener('change', () => {
+    const wrap = document.getElementById('socialAssistWrap');
+    wrap.style.display = ASSIST_ELIGIBLE_EVENTS.includes(document.getElementById('socialEventType').value) ? 'block' : 'none';
+    updateSocialPreview();
+  });
+
+  function getSocialAssistInfo(){
+    const sel = document.getElementById('socialAssistSelect');
+    if (!sel || !sel.value) return null;
+    const opt = sel.selectedOptions[0];
+    return { rowNumber: sel.value, label: opt.textContent, name: opt.dataset.name || '', number: opt.dataset.number || '' };
+  }
+
+  document.getElementById('socialAssistSelect').addEventListener('change', updateSocialPreview);
 
   let socialPlayerSource = 'roster';
   function currentSocialPlayerSource(){
@@ -2771,8 +2806,10 @@
     const minute = player.minute || '—';
     const note = document.getElementById('socialNote').value.trim();
     const opponent = currentMatchContext ? currentMatchContext.opponent : '';
+    const assist = getSocialAssistInfo();
+    const assistLine = assist ? ('Assisted by ' + assist.label) : '';
     const tmpl = socialTemplates[eventType] || socialTemplates.goal;
-    return tmpl(player.label, minute, note, opponent);
+    return tmpl(player.label, minute, note, opponent, assistLine);
   }
 
   let socialPreviewedImageUrl = null; // cleared whenever a field changes, so a stale preview never gets posted silently
@@ -2849,12 +2886,15 @@
     const caption = document.getElementById('socialPreview').value.trim() || buildSocialCaption();
     if (!(await confirmDialog(`Post this now?\n\n${caption}`, { okLabel: 'Post update' }))) return;
 
+    const assist = getSocialAssistInfo();
+
     const payload = {
       action: 'adminPostSocialUpdate', token,
       playerRowNumber: player.rowNumber, // blank for "other player" — backend skips roster stat updates in that case
       playerLabel: player.label,
       playerName: player.name,
       playerNumber: player.number,
+      assistRowNumber: assist ? assist.rowNumber : '', // present only when an assist was picked from our roster
       eventType: document.getElementById('socialEventType').value,
       minute: player.minute,
       note: document.getElementById('socialNote').value.trim(),
@@ -2879,6 +2919,7 @@
         if (data.instagramStatus) parts.push('Instagram: ' + data.instagramStatus);
         if (data.graphicError) parts.push('Graphic failed — posted as text only (' + data.graphicError + ')');
         if (data.statUpdated) parts.push('Roster stat updated');
+        if (data.assistStatUpdated) parts.push('Assist stat updated');
         msgEl.textContent = parts.join(' · ') || 'Posted.';
         msgEl.style.color = data.graphicError ? 'var(--accent)' : 'var(--muted)';
         document.getElementById('socialMinute').value = '';
@@ -2886,6 +2927,7 @@
         document.getElementById('socialOtherNumber').value = '';
         document.getElementById('socialOtherMinute').value = '';
         document.getElementById('socialNote').value = '';
+        document.getElementById('socialAssistSelect').value = '';
         document.getElementById('socialGraphicPreviewWrap').style.display = 'none';
         document.getElementById('socialGraphicPreviewMsg').textContent = '';
         socialPreviewedImageUrl = null;
