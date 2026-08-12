@@ -941,7 +941,7 @@
               No upcoming match set — go to <b>Next Match</b> to set one.
             </div>
 
-            <div style="margin-bottom:18px;">
+            <div id="socialPlayerFieldGroup" style="margin-bottom:18px;">
               <div class="social-seg" role="tablist">
                 <button type="button" class="social-seg-btn active" id="socialSourceRoster" data-source="roster">From our roster</button>
                 <button type="button" class="social-seg-btn" id="socialSourceOther" data-source="other">Other player</button>
@@ -957,6 +957,21 @@
               </div>
             </div>
 
+            <div id="socialSubWrap" class="social-field" style="display:none;">
+              <label class="social-label">Substitution</label>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:10px;">
+                <div>
+                  <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Coming off</label>
+                  <select id="socialSubOffSelect" class="edit-input" style="width:100%;"></select>
+                </div>
+                <div>
+                  <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Coming on</label>
+                  <select id="socialSubOnSelect" class="edit-input" style="width:100%;"></select>
+                </div>
+              </div>
+              <input type="number" id="socialSubMinute" class="edit-input" placeholder="Minute" min="0" max="120" style="width:100%;">
+            </div>
+
             <div class="social-field">
               <label class="social-label">What happened</label>
               <select id="socialEventType" class="edit-input" style="width:100%;">
@@ -968,8 +983,7 @@
                 <option value="assist">🅰️ Assist</option>
                 <option value="yellow_card">🟨 Yellow card</option>
                 <option value="red_card">🟥 Red card</option>
-                <option value="sub_on">🔄 Substituted on</option>
-                <option value="sub_off">🔄 Substituted off</option>
+                <option value="sub">🔄 Substitution</option>
                 <option value="injury">🩹 Injury</option>
                 <option value="kickoff">🏁 Kick-off</option>
                 <option value="halftime">⏸️ Half-time</option>
@@ -1896,6 +1910,18 @@
         allPlayers.map(p => `<option value="${p.rowNumber}" data-name="${(p.name || '').replace(/"/g,'&quot;')}" data-number="${(p.number || '').replace(/"/g,'&quot;')}">#${p.number || '—'} — ${(p.name || 'Unnamed').replace(/"/g,'&quot;')}</option>`).join('');
       if (prevAssist && allPlayers.some(p => String(p.rowNumber) === prevAssist)) assistSel.value = prevAssist;
     }
+
+    const playerOptionsHtml = allPlayers.length
+      ? allPlayers.map(p => `<option value="${p.rowNumber}" data-name="${(p.name || '').replace(/"/g,'&quot;')}" data-number="${(p.number || '').replace(/"/g,'&quot;')}">#${p.number || '—'} — ${(p.name || 'Unnamed').replace(/"/g,'&quot;')}</option>`).join('')
+      : `<option value="">No players yet</option>`;
+    ['socialSubOffSelect','socialSubOnSelect'].forEach(id => {
+      const s = document.getElementById(id);
+      if (!s) return;
+      const prev = s.value;
+      s.innerHTML = playerOptionsHtml;
+      if (prev && allPlayers.some(p => String(p.rowNumber) === prev)) s.value = prev;
+    });
+
     updateSocialPreview();
   }
   els.playerSearch.addEventListener('input', renderPlayersTable);
@@ -2719,8 +2745,6 @@
     assist:          (p, min, note, opp) => `🅰️ Assist\n\n${p} — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
     yellow_card:     (p, min, note, opp) => `🟨 Yellow card\n\n${p} — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
     red_card:        (p, min, note, opp) => `🟥 Red card\n\n${p} — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
-    sub_on:          (p, min, note, opp) => `🔄 ${p} comes on — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
-    sub_off:         (p, min, note, opp) => `🔄 ${p} comes off — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
     injury:          (p, min, note, opp) => `🩹 ${p} down injured — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
     kickoff:         (p, min, note, opp) => `🏁 Kick-off!\n\nKBFC${opp ? ' vs ' + opp : ''}${note ? '\n' + note : ''}`,
     halftime:        (p, min, note, opp) => `⏸️ Half-time${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
@@ -2728,11 +2752,15 @@
   };
 
   // Assist selector only makes sense for events where someone actually
-  // scored — shown/hidden as the event type changes.
+  // scored — shown/hidden as the event type changes. Substitution swaps
+  // out the normal player field group entirely for the off/on pair.
   const ASSIST_ELIGIBLE_EVENTS = ['goal', 'penalty_goal'];
   document.getElementById('socialEventType').addEventListener('change', () => {
-    const wrap = document.getElementById('socialAssistWrap');
-    wrap.style.display = ASSIST_ELIGIBLE_EVENTS.includes(document.getElementById('socialEventType').value) ? 'block' : 'none';
+    const eventType = document.getElementById('socialEventType').value;
+    document.getElementById('socialAssistWrap').style.display = ASSIST_ELIGIBLE_EVENTS.includes(eventType) ? 'block' : 'none';
+    const isSub = eventType === 'sub';
+    document.getElementById('socialPlayerFieldGroup').style.display = isSub ? 'none' : 'block';
+    document.getElementById('socialSubWrap').style.display = isSub ? 'block' : 'none';
     updateSocialPreview();
   });
 
@@ -2744,6 +2772,27 @@
   }
 
   document.getElementById('socialAssistSelect').addEventListener('change', updateSocialPreview);
+
+  function getSocialSubInfo(){
+    const offSel = document.getElementById('socialSubOffSelect');
+    const onSel = document.getElementById('socialSubOnSelect');
+    const offOpt = offSel && offSel.selectedOptions[0];
+    const onOpt = onSel && onSel.selectedOptions[0];
+    return {
+      offRowNumber: offSel ? offSel.value : '',
+      offLabel: offOpt ? offOpt.textContent : '—',
+      offName: offOpt ? (offOpt.dataset.name || '') : '',
+      offNumber: offOpt ? (offOpt.dataset.number || '') : '',
+      onRowNumber: onSel ? onSel.value : '',
+      onLabel: onOpt ? onOpt.textContent : '—',
+      onName: onOpt ? (onOpt.dataset.name || '') : '',
+      onNumber: onOpt ? (onOpt.dataset.number || '') : '',
+      minute: document.getElementById('socialSubMinute').value
+    };
+  }
+  ['socialSubOffSelect','socialSubOnSelect','socialSubMinute'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateSocialPreview);
+  });
 
   let socialPlayerSource = 'roster';
   function currentSocialPlayerSource(){
@@ -2801,11 +2850,18 @@
   });
 
   function buildSocialCaption(){
-    const player = getSocialPlayerInfo();
     const eventType = document.getElementById('socialEventType').value;
-    const minute = player.minute || '—';
     const note = document.getElementById('socialNote').value.trim();
     const opponent = currentMatchContext ? currentMatchContext.opponent : '';
+
+    if (eventType === 'sub'){
+      const sub = getSocialSubInfo();
+      const minute = sub.minute || '—';
+      return `🔄 SUBSTITUTION\n\n${sub.offLabel} OFF\n${sub.onLabel} ON\n\n${minute}'${note ? '\n' + note : ''}\n\nKBFC${opponent ? ' vs ' + opponent : ''}`;
+    }
+
+    const player = getSocialPlayerInfo();
+    const minute = player.minute || '—';
     const assist = getSocialAssistInfo();
     const assistLine = assist ? ('Assisted by ' + assist.label) : '';
     const tmpl = socialTemplates[eventType] || socialTemplates.goal;
@@ -2832,30 +2888,46 @@
   // submit time (see caption below), without being overwritten by the
   // auto-template unless one of the other fields changes.
 
+  // Builds the fields sent to the backend for image generation — branches
+  // for substitution (two players) vs. every other event (one player).
+  function buildSocialGraphicFields(){
+    const eventType = document.getElementById('socialEventType').value;
+    if (eventType === 'sub'){
+      const sub = getSocialSubInfo();
+      return { name: '', number: '', nameOff: sub.offName, numberOff: sub.offNumber, nameOn: sub.onName, numberOn: sub.onNumber, minute: sub.minute };
+    }
+    const player = getSocialPlayerInfo();
+    return { name: player.name, number: player.number, nameOff: '', numberOff: '', nameOn: '', numberOn: '', minute: player.minute };
+  }
+
   document.getElementById('previewSocialGraphicBtn').addEventListener('click', async () => {
     const previewMsg = document.getElementById('socialGraphicPreviewMsg');
     const previewWrap = document.getElementById('socialGraphicPreviewWrap');
     const previewImg = document.getElementById('socialGraphicPreviewImg');
-    const player = getSocialPlayerInfo();
+    const eventType = document.getElementById('socialEventType').value;
 
-    if (currentSocialPlayerSource() === 'roster' && !player.rowNumber){ previewMsg.textContent = 'Pick a player first.'; previewMsg.style.color = 'var(--accent)'; return; }
-    if (currentSocialPlayerSource() === 'other' && !player.name){ previewMsg.textContent = 'Enter the player\'s name.'; previewMsg.style.color = 'var(--accent)'; return; }
+    if (eventType === 'sub'){
+      const sub = getSocialSubInfo();
+      if (!sub.offRowNumber || !sub.onRowNumber){ previewMsg.textContent = 'Pick both players first.'; previewMsg.style.color = 'var(--accent)'; return; }
+    } else {
+      const player = getSocialPlayerInfo();
+      if (currentSocialPlayerSource() === 'roster' && !player.rowNumber){ previewMsg.textContent = 'Pick a player first.'; previewMsg.style.color = 'var(--accent)'; return; }
+      if (currentSocialPlayerSource() === 'other' && !player.name){ previewMsg.textContent = 'Enter the player\'s name.'; previewMsg.style.color = 'var(--accent)'; return; }
+    }
 
     previewMsg.textContent = 'Building preview…'; previewMsg.style.color = 'var(--muted)';
     previewWrap.style.display = 'none';
     document.getElementById('previewSocialGraphicBtn').disabled = true;
     try {
+      const fields = buildSocialGraphicFields();
       const res = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({
+        body: JSON.stringify(Object.assign({
           action: 'adminPreviewSocialGraphic', token,
-          eventType: document.getElementById('socialEventType').value,
-          playerName: player.name,
-          playerNumber: player.number,
-          minute: player.minute,
+          eventType,
           opponent: currentMatchContext ? currentMatchContext.opponent : ''
-        })
+        }, fields))
       });
       const data = await res.json();
       if (data.ok && data.url){
@@ -2877,32 +2949,37 @@
     const msgEl = document.getElementById('socialPostMsg');
     const postThreads = document.getElementById('socialPostThreads').checked;
     const postInstagram = document.getElementById('socialPostInstagram').checked;
-    const player = getSocialPlayerInfo();
+    const eventType = document.getElementById('socialEventType').value;
+    const isSub = eventType === 'sub';
+    const player = isSub ? null : getSocialPlayerInfo();
+    const sub = isSub ? getSocialSubInfo() : null;
 
-    if (currentSocialPlayerSource() === 'roster' && !player.rowNumber){ msgEl.textContent = 'Pick a player first.'; msgEl.style.color = 'var(--accent)'; return; }
-    if (currentSocialPlayerSource() === 'other' && !player.name){ msgEl.textContent = 'Enter the player\'s name.'; msgEl.style.color = 'var(--accent)'; return; }
+    if (isSub && (!sub.offRowNumber || !sub.onRowNumber)){ msgEl.textContent = 'Pick both players for the substitution.'; msgEl.style.color = 'var(--accent)'; return; }
+    if (!isSub && currentSocialPlayerSource() === 'roster' && !player.rowNumber){ msgEl.textContent = 'Pick a player first.'; msgEl.style.color = 'var(--accent)'; return; }
+    if (!isSub && currentSocialPlayerSource() === 'other' && !player.name){ msgEl.textContent = 'Enter the player\'s name.'; msgEl.style.color = 'var(--accent)'; return; }
     if (!postThreads && !postInstagram){ msgEl.textContent = 'Pick at least one platform.'; msgEl.style.color = 'var(--accent)'; return; }
 
     const caption = document.getElementById('socialPreview').value.trim() || buildSocialCaption();
     if (!(await confirmDialog(`Post this now?\n\n${caption}`, { okLabel: 'Post update' }))) return;
 
-    const assist = getSocialAssistInfo();
+    const assist = isSub ? null : getSocialAssistInfo();
+    const fields = buildSocialGraphicFields();
 
-    const payload = {
+    const payload = Object.assign({
       action: 'adminPostSocialUpdate', token,
-      playerRowNumber: player.rowNumber, // blank for "other player" — backend skips roster stat updates in that case
-      playerLabel: player.label,
-      playerName: player.name,
-      playerNumber: player.number,
+      playerRowNumber: isSub ? '' : player.rowNumber, // blank for "other player" or substitution — backend skips roster stat updates then
+      playerLabel: isSub ? (sub.offLabel + ' → ' + sub.onLabel) : player.label,
+      subOffRowNumber: isSub ? sub.offRowNumber : '',
+      subOnRowNumber: isSub ? sub.onRowNumber : '',
       assistRowNumber: assist ? assist.rowNumber : '', // present only when an assist was picked from our roster
-      eventType: document.getElementById('socialEventType').value,
-      minute: player.minute,
+      eventType,
+      minute: isSub ? sub.minute : player.minute,
       note: document.getElementById('socialNote').value.trim(),
       opponent: currentMatchContext ? currentMatchContext.opponent : '',
       caption,
       imageUrl: socialPreviewedImageUrl, // reuse the previewed graphic if one's still fresh, instead of regenerating
       platforms: { threads: postThreads, instagram: postInstagram }
-    };
+    }, fields);
 
     msgEl.textContent = 'Posting…'; msgEl.style.color = 'var(--muted)';
     document.getElementById('postSocialUpdateBtn').disabled = true;
@@ -2926,6 +3003,7 @@
         document.getElementById('socialOtherName').value = '';
         document.getElementById('socialOtherNumber').value = '';
         document.getElementById('socialOtherMinute').value = '';
+        document.getElementById('socialSubMinute').value = '';
         document.getElementById('socialNote').value = '';
         document.getElementById('socialAssistSelect').value = '';
         document.getElementById('socialGraphicPreviewWrap').style.display = 'none';
