@@ -916,14 +916,24 @@
               No upcoming match set — go to <b>Next Match</b> to set one.
             </div>
 
-            <div style="display:grid; grid-template-columns:2fr 1fr; gap:10px; margin-bottom:14px;">
-              <div>
-                <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Player</label>
-                <select id="socialPlayerSelect" class="edit-input"></select>
+            <div style="margin-bottom:14px;">
+              <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Player</label>
+              <div style="display:flex; gap:16px; margin-bottom:8px; font-size:12.5px;">
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="radio" name="socialPlayerSource" id="socialSourceRoster" checked style="width:15px;height:15px;"> From our roster
+                </label>
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="radio" name="socialPlayerSource" id="socialSourceOther" style="width:15px;height:15px;"> Other player
+                </label>
               </div>
-              <div>
-                <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Minute</label>
-                <input type="number" id="socialMinute" class="edit-input" placeholder="62" min="0" max="120">
+              <div id="socialRosterWrap" style="display:grid; grid-template-columns:2fr 1fr; gap:10px;">
+                <select id="socialPlayerSelect" class="edit-input"></select>
+                <input type="number" id="socialMinute" class="edit-input" placeholder="Minute" min="0" max="120">
+              </div>
+              <div id="socialOtherWrap" style="display:none; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+                <input type="text" id="socialOtherName" class="edit-input" placeholder="Player name">
+                <input type="text" id="socialOtherNumber" class="edit-input" placeholder="Number">
+                <input type="number" id="socialOtherMinute" class="edit-input" placeholder="Minute" min="0" max="120">
               </div>
             </div>
 
@@ -961,8 +971,8 @@
             </div>
 
             <div style="margin-bottom:18px;">
-              <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Preview</label>
-              <div id="socialPreview" style="background:var(--surface-2); border:1px solid var(--line); border-radius:9px; padding:14px; font-size:13.5px; line-height:1.5; white-space:pre-wrap; min-height:60px;"></div>
+              <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Caption (auto-filled — edit freely before posting)</label>
+              <textarea id="socialPreview" class="edit-input" style="width:100%; min-height:90px; font-size:13.5px; line-height:1.5; resize:vertical; font-family:inherit;"></textarea>
             </div>
 
             <button class="action" id="postSocialUpdateBtn">Post update</button>
@@ -2660,49 +2670,88 @@
     fulltime:        (p, min, note, opp) => `🔚 Full-time${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`
   };
 
-  function buildSocialCaption(){
+  function currentSocialPlayerSource(){
+    return document.getElementById('socialSourceOther').checked ? 'other' : 'roster';
+  }
+
+  function getSocialPlayerInfo(){
+    if (currentSocialPlayerSource() === 'other'){
+      return {
+        rowNumber: '',
+        label: '#' + (document.getElementById('socialOtherNumber').value.trim() || '—') + ' — ' + (document.getElementById('socialOtherName').value.trim() || 'Unnamed'),
+        name: document.getElementById('socialOtherName').value.trim(),
+        number: document.getElementById('socialOtherNumber').value.trim(),
+        minute: document.getElementById('socialOtherMinute').value
+      };
+    }
     const sel = document.getElementById('socialPlayerSelect');
     const opt = sel && sel.selectedOptions[0];
-    const playerLabel = opt && opt.value ? opt.textContent : '—';
+    return {
+      rowNumber: sel.value,
+      label: opt && opt.value ? opt.textContent : '—',
+      name: opt ? (opt.dataset.name || '') : '',
+      number: opt ? (opt.dataset.number || '') : '',
+      minute: document.getElementById('socialMinute').value
+    };
+  }
+
+  document.getElementById('socialSourceRoster').addEventListener('change', () => {
+    document.getElementById('socialRosterWrap').style.display = 'grid';
+    document.getElementById('socialOtherWrap').style.display = 'none';
+    updateSocialPreview();
+  });
+  document.getElementById('socialSourceOther').addEventListener('change', () => {
+    document.getElementById('socialRosterWrap').style.display = 'none';
+    document.getElementById('socialOtherWrap').style.display = 'grid';
+    updateSocialPreview();
+  });
+
+  function buildSocialCaption(){
+    const player = getSocialPlayerInfo();
     const eventType = document.getElementById('socialEventType').value;
-    const minute = document.getElementById('socialMinute').value || '—';
+    const minute = player.minute || '—';
     const note = document.getElementById('socialNote').value.trim();
     const opponent = currentMatchContext ? currentMatchContext.opponent : '';
     const tmpl = socialTemplates[eventType] || socialTemplates.goal;
-    return tmpl(playerLabel, minute, note, opponent);
+    return tmpl(player.label, minute, note, opponent);
   }
 
   function updateSocialPreview(){
     const el = document.getElementById('socialPreview');
     if (!el) return;
-    el.textContent = buildSocialCaption();
+    el.value = buildSocialCaption();
   }
 
-  ['socialPlayerSelect','socialEventType','socialMinute','socialNote'].forEach(id => {
+  ['socialPlayerSelect','socialEventType','socialMinute','socialNote','socialOtherName','socialOtherNumber','socialOtherMinute'].forEach(id => {
     const node = document.getElementById(id);
     if (node) node.addEventListener('input', updateSocialPreview);
   });
+  // Deliberately no listener on socialPreview itself — the textarea is
+  // freely editable, and whatever the admin types there is read as-is at
+  // submit time (see caption below), without being overwritten by the
+  // auto-template unless one of the other fields changes.
 
   document.getElementById('postSocialUpdateBtn').addEventListener('click', async () => {
-    const sel = document.getElementById('socialPlayerSelect');
     const msgEl = document.getElementById('socialPostMsg');
     const postThreads = document.getElementById('socialPostThreads').checked;
     const postInstagram = document.getElementById('socialPostInstagram').checked;
+    const player = getSocialPlayerInfo();
 
-    if (!sel.value){ msgEl.textContent = 'Pick a player first.'; msgEl.style.color = 'var(--accent)'; return; }
+    if (currentSocialPlayerSource() === 'roster' && !player.rowNumber){ msgEl.textContent = 'Pick a player first.'; msgEl.style.color = 'var(--accent)'; return; }
+    if (currentSocialPlayerSource() === 'other' && !player.name){ msgEl.textContent = 'Enter the player\'s name.'; msgEl.style.color = 'var(--accent)'; return; }
     if (!postThreads && !postInstagram){ msgEl.textContent = 'Pick at least one platform.'; msgEl.style.color = 'var(--accent)'; return; }
 
-    const caption = buildSocialCaption();
+    const caption = document.getElementById('socialPreview').value.trim() || buildSocialCaption();
     if (!(await confirmDialog(`Post this now?\n\n${caption}`, { okLabel: 'Post update' }))) return;
 
     const payload = {
       action: 'adminPostSocialUpdate', token,
-      playerRowNumber: sel.value,
-      playerLabel: sel.selectedOptions[0].textContent,
-      playerName: sel.selectedOptions[0].dataset.name || '',
-      playerNumber: sel.selectedOptions[0].dataset.number || '',
+      playerRowNumber: player.rowNumber, // blank for "other player" — backend skips roster stat updates in that case
+      playerLabel: player.label,
+      playerName: player.name,
+      playerNumber: player.number,
       eventType: document.getElementById('socialEventType').value,
-      minute: document.getElementById('socialMinute').value,
+      minute: player.minute,
       note: document.getElementById('socialNote').value.trim(),
       opponent: currentMatchContext ? currentMatchContext.opponent : '',
       caption,
@@ -2723,9 +2772,13 @@
         if (data.threadsStatus) parts.push('Threads: ' + data.threadsStatus);
         if (data.instagramStatus) parts.push('Instagram: ' + data.instagramStatus);
         if (data.graphicError) parts.push('Graphic failed — posted as text only (' + data.graphicError + ')');
+        if (data.statUpdated) parts.push('Roster stat updated');
         msgEl.textContent = parts.join(' · ') || 'Posted.';
         msgEl.style.color = data.graphicError ? 'var(--accent)' : 'var(--muted)';
         document.getElementById('socialMinute').value = '';
+        document.getElementById('socialOtherName').value = '';
+        document.getElementById('socialOtherNumber').value = '';
+        document.getElementById('socialOtherMinute').value = '';
         document.getElementById('socialNote').value = '';
         updateSocialPreview();
         loadSocialLog();
