@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KBFC | Home</title>
-<link rel="icon" type="image/png" href="/images/Favicon.png">
-<link rel="apple-touch-icon" href="/images/Favicon.png">
+<title>KBFC | My Account</title>
+<link rel="icon" type="image/png" href="../images/Favicon.png">
+<link rel="apple-touch-icon" href="../images/Favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
   :root{
     --bg:#FAFAF8;
@@ -19,6 +20,11 @@
     --line: rgba(20,23,28,0.12);
     --line-soft: rgba(20,23,28,0.06);
     --shadow: 0 20px 60px rgba(20,23,28,0.10);
+    --gold:#b8860b;
+    --gold-bg: rgba(184,134,11,0.10);
+    --success:#1f8a4c;
+    --success-bg: rgba(31,138,76,0.10);
+    --panel-dark:#14171C;
   }
   html[data-theme="dark"]{
     --bg:#0D0F12;
@@ -29,9 +35,14 @@
     --line: rgba(242,241,236,0.14);
     --line-soft: rgba(242,241,236,0.07);
     --shadow: 0 20px 60px rgba(0,0,0,0.45);
+    --gold:#d9ab3f;
+    --gold-bg: rgba(217,171,63,0.12);
+    --success:#3fbd7c;
+    --success-bg: rgba(63,189,124,0.12);
+    --panel-dark:#0A0B0D;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
-  html,body{height:100%; overflow-x:hidden;}
+  html,body{height:100%;}
   body{
     background:var(--bg);
     color:var(--ink);
@@ -40,7 +51,6 @@
     transition:background .35s ease, color .35s ease;
   }
   .mono{font-family:'JetBrains Mono',monospace; letter-spacing:0.06em;}
-  .display{font-family:'Oswald',sans-serif; text-transform:uppercase;}
 
   /* ---------- topbar ---------- */
   .topbar{
@@ -52,1565 +62,310 @@
     color:var(--ink);
     transition:background .35s ease, border-color .35s ease;
   }
-  .brand-wrap{ display:flex; flex-direction:column; gap:6px; }
-  .brand{
-    cursor:pointer;
-  }
-  .brand:hover{ opacity:.85; }
-  .brand{
-    display:flex; align-items:center; gap:10px;
-    font-size:14px; font-weight:600; letter-spacing:0.08em;
-  }
+  .brand{ display:flex; align-items:center; gap:10px; font-size:14px; font-weight:600; letter-spacing:0.08em; cursor:pointer; }
   .brand-logo{ width:24px; height:24px; object-fit:contain; }
   .brand span{font-family:'JetBrains Mono',monospace;}
-
-  .social-row{ display:flex; align-items:center; gap:10px; padding-left:2px; }
-  .social-icon{
-    color:var(--muted); display:flex; opacity:.85;
-    transition:color .2s ease, opacity .2s ease;
-  }
-  .social-icon:hover{ color:var(--accent); opacity:1; }
-  .social-icon svg{ width:16px; height:16px; }
-
-  .topbar-actions{display:flex; align-items:center; gap:14px; position:relative;}
-  .menu-overlay{
-    position:fixed; inset:0; background:rgba(0,0,0,0.45);
-    opacity:0; pointer-events:none;
-    transition:opacity .3s ease;
-    z-index:1000;
-  }
-  .menu-overlay.active{ opacity:1; pointer-events:auto; }
-  .topbar-menu{
-    position:fixed; top:0; right:0; bottom:0;
-    width:320px; max-width:82vw;
-    background:var(--surface); border-left:1px solid var(--line);
-    display:flex; flex-direction:column;
-    padding:22px 22px 28px;
-    transform:translateX(100%);
-    transition:transform .32s ease;
-    z-index:1001;
-    overflow-y:auto;
-  }
-  .topbar-menu.active{ transform:translateX(0); }
-  .topbar-menu-head{
-    display:flex; align-items:center; justify-content:space-between;
-    margin-bottom:18px; padding-bottom:16px;
-    border-bottom:1px solid var(--line);
-  }
-  .topbar-menu-head span{
-    font-family:'Oswald',sans-serif; font-weight:600; font-size:14px;
-    letter-spacing:.04em; text-transform:uppercase; color:var(--muted);
-  }
-  .menu-close-btn{
-    width:34px; height:34px; border-radius:50%; border:1px solid var(--line);
-    background:transparent; color:var(--ink); cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-  }
-  .menu-close-btn svg{ width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2; }
-  .topbar-menu .btn-mini{
-    width:100%; justify-content:flex-start; gap:12px;
-    font-size:14px !important; padding:16px 4px;
-    border:none; border-radius:0;
-    border-bottom:1px solid var(--line);
-  }
-  .topbar-menu .btn-mini svg{ width:16px; height:16px; }
-  .menu-group-label{
-    font-size:10.5px; font-weight:700; letter-spacing:.08em;
-    color:var(--accent); text-transform:uppercase;
-    padding:16px 4px 6px;
-  }
-  .topbar-menu .menu-group-label:first-of-type{ padding-top:4px; }
-  .topbar-menu .btn-mini:disabled{
-    cursor:not-allowed; opacity:.5;
-  }
-  .btn-mini.is-locked{
-    cursor:not-allowed; opacity:.5; pointer-events:none;
-    filter:grayscale(1);
-  }
-  .menu-item-soon{ font-size:10px; opacity:.8; margin-left:2px; }
-  .btn-mini.menu-toggle-btn{
-    display:flex; width:40px; height:40px; padding:0;
-    align-items:center; justify-content:center; border-radius:50%;
-  }
-  .menu-toggle-btn svg{ width:16px; height:16px; }
-  .btn-mini{
-    display:inline-flex; align-items:center; gap:8px;
-    border:1px solid var(--line);
-    background:transparent; color:var(--ink);
-    padding:9px 16px; border-radius:999px;
-    font-family:'Inter',sans-serif; font-size:12.5px; font-weight:600;
-    letter-spacing:0.01em; cursor:pointer;
-    transition:transform .2s ease, border-color .25s ease;
-    outline:none; text-decoration:none;
-  }
-  .btn-mini:hover{transform:translateY(-1px); border-color:var(--accent);}
-  .btn-mini:focus-visible{ border-color:var(--accent); }
-  .btn-mini svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.4;}
-  .btn-mini-ghost{ color:var(--muted); }
-
   .theme-toggle{
     width:40px;height:40px;border-radius:50%;
-    border:1px solid var(--line);
-    background:transparent;
+    border:1px solid var(--line); background:transparent;
     display:flex;align-items:center;justify-content:center;
-    cursor:pointer;
-    color:var(--ink);
+    cursor:pointer; color:var(--ink);
   }
   .theme-toggle svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;}
   .theme-toggle .moon{display:none;}
   html[data-theme="dark"] .theme-toggle .sun{display:none;}
   html[data-theme="dark"] .theme-toggle .moon{display:block;}
 
-  /* ---------- VIEW SWITCH ---------- */
-  .view{display:none;}
-  .view.active{display:block;}
-
-  /* ================= LANDING VIEW ================= */
-  .hero{
-    position:relative;
-    padding:150px 6vw 64px;
-    display:flex; justify-content:center;
-  }
-  .hero-content{
-    width:100%; max-width:720px;
-    display:flex; justify-content:center;
-  }
-  .hero-copy{ text-align:center; }
-  /* title + arrow nav at top */
-
-  .season-tag{
-    display:inline-flex; align-items:center; gap:8px;
-    font-size:12px; color:var(--muted); margin-bottom:18px;
-    text-transform:uppercase; letter-spacing:.06em;
-  }
-  .season-tag::before{content:"";width:18px;height:1px;background:var(--accent);}
-  .hero-copy h1{
-    font-size:clamp(40px, 6vw, 78px);
-    line-height:0.98;
-    font-weight:600;
-    margin-bottom:24px;
-  }
-  .hero-copy h1 em{font-style:normal;color:var(--accent);}
-  .hero-copy p{
-    font-size:15.5px; color:var(--muted); max-width:420px; line-height:1.6;
-    margin:0 auto 28px;
-  }
-  .btn-primary{
-    display:inline-flex; align-items:center; gap:10px;
-    background:var(--ink); color:var(--bg);
-    border:none; padding:16px 26px;
-    font-family:'Inter',sans-serif; font-weight:600; font-size:14.5px;
-    cursor:pointer; letter-spacing:0.01em;
-    transition:transform .25s ease, background .3s ease;
-  }
-  .btn-primary:hover{transform:translateY(-2px); background:var(--accent); color:#fff;}
-  .btn-primary svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
-
-  .hero-cta-row{ display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap; }
-  .btn-secondary{
-    display:inline-flex; align-items:center; gap:8px;
-    background:transparent; color:var(--ink);
-    border:1px solid var(--line); padding:15px 22px;
-    font-family:'Inter',sans-serif; font-weight:600; font-size:14.5px;
-    cursor:pointer; letter-spacing:0.01em;
-    transition:border-color .25s ease, color .25s ease, transform .25s ease;
-  }
-  .btn-secondary:hover{ border-color:var(--accent); color:var(--accent); transform:translateY(-2px); }
-  .btn-secondary svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;}
-
-  .slide-index{
-    display:flex; flex-direction:column; align-items:flex-end; gap:14px;
-  }
-  .slide-index .count{font-size:13px; color:var(--muted);}
-  .slide-index .count b{color:var(--ink);}
-  .slide-nav{display:flex; gap:10px;}
-  .nav-btn{
-    width:44px;height:44px;border-radius:50%;
-    border:1px solid var(--line);
-    background:var(--surface);
-    display:flex;align-items:center;justify-content:center;
-    cursor:pointer; color:var(--ink);
-    transition:border-color .25s ease, transform .2s ease;
-  }
-  .nav-btn:hover{border-color:var(--accent); transform:translateY(-2px);}
-  .nav-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
-
-  /* ---------- next match section (featured card, in-page) ---------- */
-  .next-match-section{
-    padding:44px 6vw; border-top:1px solid var(--line);
-  }
-  .next-match-card{
-    border:1px solid rgba(185,19,33,0.4); background:rgba(185,19,33,0.06);
-    border-radius:10px; padding:26px 28px;
-    display:flex; align-items:center; justify-content:space-between; gap:16px;
-    max-width:640px; margin:0 auto;
-  }
-  .nm-card-team{ display:flex; flex-direction:column; align-items:center; gap:10px; flex:1; }
-  .nm-card-badge{
-    width:52px; height:52px; border-radius:50%; overflow:hidden;
-    display:flex; align-items:center; justify-content:center;
-    background:var(--surface); border:1px solid var(--line);
-  }
-  .nm-card-badge img{ width:100%; height:100%; object-fit:cover; }
-  .nm-card-badge.them{ filter:grayscale(1); }
-  .nm-card-badge svg{ width:22px; height:22px; stroke:var(--muted); fill:none; stroke-width:1.6; }
-  .nm-card-team span{ font-family:'Oswald',sans-serif; font-size:14px; font-weight:600; text-align:center; }
-  .nm-card-mid{ text-align:center; flex:1; }
-  .nm-card-vs{ font-family:'Oswald',sans-serif; font-size:20px; font-weight:600; color:var(--muted); }
-  .nm-card-meta{ font-size:11.5px; color:var(--muted); margin-top:8px; line-height:1.5; }
-
-  @media (max-width:600px){
-    .next-match-card{ padding:20px 18px; gap:8px; }
-    .nm-card-badge{ width:42px; height:42px; }
-    .nm-card-team span{ font-size:12px; }
-  }
-
-  /* ---------- from the club: scrolling photo strip ---------- */
-  .club-photos-section{
-    padding:44px 0 44px 6vw; border-top:1px solid var(--line);
-    overflow:hidden;
-  }
-  .club-photos-header{
-    display:flex; align-items:flex-end; justify-content:space-between;
-    gap:16px; padding-right:6vw; margin-bottom:24px; flex-wrap:wrap;
-  }
-  .club-photos-header h2{ font-family:'Oswald',sans-serif; font-size:clamp(22px,3vw,28px); font-weight:600; }
-  .club-photos-header a{
-    font-size:11.5px; color:var(--muted); text-decoration:none; font-family:'JetBrains Mono',monospace;
-    display:inline-flex; align-items:center; gap:5px; white-space:nowrap;
-  }
-  .club-photos-header a:hover{ color:var(--accent); }
-  .club-photos-track{
-    display:flex; gap:14px; width:max-content;
-    animation:clubPhotosScroll 32s linear infinite;
-  }
-  .club-photos-section:hover .club-photos-track{ animation-play-state:paused; }
-  .club-photo-item{
-    flex-shrink:0; width:230px; height:155px;
-    border-radius:8px; overflow:hidden;
-    border:1px solid var(--line); background:var(--surface);
-  }
-  .club-photo-item img{ width:100%; height:100%; object-fit:cover; display:block; }
-  @keyframes clubPhotosScroll{
-    from{ transform:translateX(0); }
-    to{ transform:translateX(-50%); }
-  }
-  @media (max-width:600px){
-    .club-photo-item{ width:180px; height:120px; }
-  }
-
-  /* ---------- thank-you note (merged into hero) ---------- */
-  .thank-you-text{
-    font-size:14.5px; color:var(--muted); line-height:1.6;
-    max-width:480px; margin:0 auto 28px;
-  }
-
-  /* entrance animation, staggered down the hero copy — plays once, then settles */
-  @keyframes heroFadeUp{
-    from{ opacity:0; transform:translateY(20px); }
-    to{ opacity:1; transform:translateY(0); }
-  }
-  @keyframes accentSweep{
-    0%{ background-position:160% 0; }
-    100%{ background-position:-40% 0; }
-  }
-  .hero-copy .season-tag{ animation:heroFadeUp .6s ease .1s both; }
-  .hero-copy h1{ animation:heroFadeUp .6s ease .2s both; }
-  .hero-copy .thank-you-text{ animation:heroFadeUp .6s ease .32s both; }
-  .hero-copy .hero-cta-row{ animation:heroFadeUp .6s ease .44s both; }
-  .accent-shimmer{
-    background:linear-gradient(90deg, var(--accent) 30%, #ff9d9d 50%, var(--accent) 70%);
-    background-size:300% 100%;
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-    animation:accentSweep 1.4s ease-out .5s 1 both;
-  }
-
-  .login-promo-compact{
-    position:relative; overflow:hidden;
-    margin:56px 6vw; padding:26px 30px 26px 34px;
-    background:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E") repeat,
-      linear-gradient(115deg, #14171C 0%, #1f1215 60%, #2a1215 100%);
-    background-blend-mode:overlay;
-    border:1px solid rgba(185,19,33,.25); border-radius:0;
-    box-shadow:0 24px 60px rgba(185,19,33,.14), 0 20px 60px rgba(20,23,28,0.14);
-    display:flex; align-items:center; gap:22px;
-  }
-  .login-promo-compact::before{
-    content:''; position:absolute; left:0; top:0; bottom:0; width:5px;
-    background:linear-gradient(180deg, var(--accent), #ff5a5a);
-  }
-  .login-promo-compact::after{
-    content:''; position:absolute; top:-40%; right:-8%;
-    width:220px; height:220px; border-radius:50%;
-    background:radial-gradient(circle, rgba(185,19,33,.28) 0%, rgba(185,19,33,0) 70%);
-    pointer-events:none;
-  }
-  .login-promo-icon{
-    position:relative; width:52px; height:52px; border-radius:50%; flex-shrink:0;
-    background:linear-gradient(135deg, var(--accent), #7a0e15);
-    display:flex; align-items:center; justify-content:center;
-    box-shadow:0 8px 20px rgba(185,19,33,.35);
-  }
-  .login-promo-icon svg{ width:24px; height:24px; stroke:#fff; fill:none; stroke-width:1.8; }
-  .login-promo-text{ position:relative; flex:1; min-width:220px; }
-  .login-promo-tag{
-    font-size:10px; font-weight:700; color:#ff8a8a; letter-spacing:.1em;
-    display:inline-block; margin-bottom:6px;
-    background:rgba(255,255,255,.06); padding:3px 9px; border-radius:999px;
-  }
-  .login-promo-text h2{
-    font-family:'Oswald',sans-serif; font-size:20px; font-weight:600; margin-bottom:4px;
-    color:#fff;
-  }
-  .login-promo-text p{ font-size:12.5px; color:rgba(255,255,255,.6); line-height:1.4; }
-  .login-promo-actions{
-    position:relative; display:flex; flex-direction:column; align-items:flex-end; gap:9px; flex-shrink:0;
-  }
-  .login-promo-actions .btn-primary{
-    white-space:nowrap; background:#fff; color:#14171C; border-color:#fff;
-    font-weight:700;
-  }
-  .login-promo-actions .btn-primary:hover{ background:#f2f2f2; }
-  .login-promo-google{
-    display:flex; align-items:center; gap:6px;
-    font-size:11px; color:rgba(255,255,255,.55);
-  }
-
-  @media (max-width:720px){
-    .login-promo-compact{ flex-direction:column; align-items:flex-start; text-align:left; margin:24px 5vw; }
-    .login-promo-actions{ align-items:flex-start; width:100%; }
-    .login-promo-actions .btn-primary{ width:100%; justify-content:center; }
-  }
-
-  /* ---------- signup promo popup: shown to first-time visitors ---------- */
-  .signup-promo-box{
-    position:relative; overflow-x:hidden; overflow-y:auto; -webkit-overflow-scrolling:touch;
-    max-width:440px; width:100%;
-    max-height:calc(100vh - 48px);
-    padding:38px 34px 30px;
-    background:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E") repeat,
-      linear-gradient(115deg, #14171C 0%, #1f1215 60%, #2a1215 100%);
-    background-blend-mode:overlay;
-    border:1px solid rgba(185,19,33,.25);
-    box-shadow:0 30px 80px rgba(0,0,0,.5);
-    text-align:left;
-  }
-  .signup-promo-box::before{
-    content:''; position:absolute; left:0; top:0; bottom:0; width:5px;
-    background:linear-gradient(180deg, var(--accent), #ff5a5a);
-  }
-  .signup-promo-box::after{
-    content:''; position:absolute; top:-40%; right:-15%;
-    width:260px; height:260px; border-radius:50%;
-    background:radial-gradient(circle, rgba(185,19,33,.28) 0%, rgba(185,19,33,0) 70%);
-    pointer-events:none;
-  }
-  .signup-promo-close{
-    position:absolute; top:16px; right:16px; z-index:2;
-    width:30px; height:30px; border-radius:50%; border:1px solid rgba(255,255,255,.18);
-    background:rgba(255,255,255,.05); color:rgba(255,255,255,.6);
-    display:flex; align-items:center; justify-content:center; cursor:pointer;
-    transition:border-color .2s ease, color .2s ease;
-  }
-  .signup-promo-close:hover{ border-color:rgba(255,255,255,.4); color:#fff; }
-  .signup-promo-close svg{ width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2; }
-  .signup-promo-tag{
-    position:relative; font-size:10px; font-weight:700; color:#ff8a8a; letter-spacing:.1em;
-    display:inline-block; margin-bottom:12px;
-    background:rgba(255,255,255,.06); padding:3px 9px; border-radius:999px;
-  }
-  .signup-promo-box h2{
-    position:relative; font-family:'Oswald',sans-serif; font-size:24px; font-weight:600;
-    color:#fff; margin-bottom:8px; line-height:1.2;
-  }
-  .signup-promo-box > p{
-    position:relative; font-size:13px; color:rgba(255,255,255,.6); line-height:1.5; margin-bottom:20px;
-  }
-
-  /* ---------- auto-playing feature slideshow inside the popup ---------- */
-  .signup-promo-slideshow{ position:relative; margin-bottom:22px; }
-  .promo-slide-frame{ position:relative; min-height:150px; }
-  .promo-slide{
-    position:absolute; inset:0; opacity:0; pointer-events:none;
-    transition:opacity .45s ease;
-    display:flex; flex-direction:column; align-items:center; gap:14px;
-  }
-  .promo-slide.active{ opacity:1; pointer-events:auto; }
-  .promo-slide p{
-    margin:0; font-size:12.5px; color:rgba(255,255,255,.75); line-height:1.4; text-align:center; max-width:320px;
-  }
-  .promo-slide b{ color:#fff; font-weight:600; }
-  .promo-mock{ font-family:'Inter',sans-serif; }
-
-  .promo-mock-card{
-    position:relative; overflow:hidden; width:180px; padding:12px 14px; border-radius:8px;
-    background:#000; box-shadow:0 10px 26px rgba(0,0,0,.4);
-  }
-  .promo-mock-card-rule{
-    position:absolute; top:0; left:0; right:0; height:2px;
-    background:linear-gradient(90deg, transparent, #d9ab3f 35%, #d9ab3f 65%, transparent); opacity:.6;
-  }
-  .promo-mock-card-top{ display:flex; justify-content:space-between; align-items:flex-start; }
-  .promo-mock-card-club{ font-family:'JetBrains Mono',monospace; font-size:7px; letter-spacing:.08em; color:#d9ab3f; font-weight:600; line-height:1.6; }
-  .promo-mock-card-club span{ display:block; color:rgba(255,255,255,.4); font-weight:400; }
-  .promo-mock-card-num{ font-size:20px; font-weight:800; line-height:1; color:#b91321; }
-  .promo-mock-card-name{ margin-top:16px; font-size:13px; font-weight:700; color:#fff; }
-  .promo-mock-card-pos{ font-size:7.5px; color:rgba(255,255,255,.5); text-transform:uppercase; letter-spacing:.05em; margin-top:2px; }
-
-  .promo-mock-order{
-    display:flex; align-items:center; justify-content:space-between; gap:14px;
-    width:220px; padding:12px 14px; border-radius:6px;
-    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
-  }
-  .promo-mock-order-id{ font-family:'JetBrains Mono',monospace; font-size:11px; color:#fff; }
-  .promo-mock-order-sub{ font-size:9px; color:rgba(255,255,255,.45); margin-top:3px; }
-  .promo-mock-pill{
-    background:rgba(217,171,63,.15); border:1px solid #d9ab3f; color:#d9ab3f;
-    font-size:9px; font-weight:700; padding:4px 9px; border-radius:999px; text-transform:uppercase; letter-spacing:.03em; white-space:nowrap;
-  }
-
-  .promo-mock-stats{ display:grid; grid-template-columns:repeat(4, 1fr); gap:7px; width:240px; }
-  .promo-mock-stat{
-    display:flex; flex-direction:column; align-items:center; gap:3px;
-    padding:10px 4px; border-radius:6px;
-    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
-    font-size:7px; color:rgba(255,255,255,.45); text-transform:uppercase; letter-spacing:.04em; text-align:center;
-  }
-  .promo-mock-stat span{ font-size:16px; font-weight:700; color:#fff; line-height:1; }
-
-  .promo-mock-shop{
-    display:flex; align-items:center; gap:12px;
-    width:210px; padding:10px 14px; border-radius:6px;
-    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
-  }
-  .promo-mock-shop-thumb{
-    flex-shrink:0; width:40px; height:40px; border-radius:6px;
-    background:linear-gradient(135deg,#1a1a1a,#2a1215);
-    display:flex; align-items:center; justify-content:center; color:#d9ab3f;
-  }
-  .promo-mock-shop-thumb svg{ stroke:currentColor; fill:none; stroke-width:1.8; }
-  .promo-mock-shop-name{ font-size:11px; color:#fff; font-weight:600; }
-  .promo-mock-shop-tag{ font-size:9px; color:#d9ab3f; margin-top:3px; }
-
-  .promo-mock-match{
-    width:220px; padding:12px 14px; border-radius:6px;
-    background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
-  }
-  .promo-mock-match-label{ font-family:'JetBrains Mono',monospace; font-size:8px; color:#d9ab3f; text-transform:uppercase; letter-spacing:.08em; margin-bottom:5px; }
-  .promo-mock-match-opp{ font-size:12.5px; color:#fff; font-weight:600; }
-  .promo-mock-match-time{ font-size:9.5px; color:rgba(255,255,255,.5); margin-top:3px; }
-
-  .promo-slide-dots{ position:relative; display:flex; justify-content:center; gap:7px; margin-top:14px; }
-  .promo-slide-dot{
-    width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.22); cursor:pointer;
-    transition:background .2s ease, transform .2s ease; border:none; padding:0;
-  }
-  .promo-slide-dot.active{ background:#d9ab3f; transform:scale(1.25); }
-
-  .signup-promo-actions{ position:relative; display:flex; flex-direction:column; gap:10px; }
-  .signup-promo-actions .btn-primary{
-    width:100%; justify-content:center; background:#fff; color:#14171C; border-color:#fff; font-weight:700;
-  }
-  .signup-promo-actions .btn-primary:hover{ background:#f2f2f2; }
-  .signup-promo-later{
-    background:none; border:none; color:rgba(255,255,255,.45); font-size:12.5px;
-    cursor:pointer; text-align:center; padding:4px; transition:color .2s ease;
-  }
-  .signup-promo-later:hover{ color:rgba(255,255,255,.75); }
-  .signup-promo-google{
-    position:relative; display:flex; align-items:center; justify-content:center; gap:6px;
-    font-size:11px; color:rgba(255,255,255,.5); margin-top:2px;
-  }
-
-  @media (max-width:480px){
-    .signup-promo-box{ padding:32px 24px 26px; }
-    .signup-promo-box h2{ font-size:21px; }
-  }
-
-  footer{
-    padding:0 6vw 0; border-top:1px solid var(--line);
-    font-size:12px; color:var(--muted);
-  }
-  .footer-top{
-    display:flex; align-items:flex-start; justify-content:space-between;
-    gap:40px; flex-wrap:wrap;
-    padding:52px 0 40px;
-  }
-  .footer-col{ display:flex; flex-direction:column; gap:14px; }
-  .footer-col-brand{ gap:10px; max-width:280px; }
-  .footer-logo-row{ display:flex; align-items:center; gap:10px; }
-  .footer-crest{ width:26px; height:26px; object-fit:contain; }
-  .footer-club-name{
-    font-size:14px; font-weight:600; letter-spacing:0.08em; color:var(--ink);
-  }
-  .footer-tagline{ font-size:12.5px; color:var(--muted); line-height:1.5; }
-  .footer-col-label{
-    text-transform:uppercase; color:var(--muted); font-size:11px;
-  }
-  .footer-credit-label{
-    text-transform:uppercase;
-    color:var(--muted); font-size:11px;
-  }
-  .footer-logos{ display:flex; align-items:center; gap:18px; }
-  .footer-logos a{ display:inline-flex; line-height:0; }
-  .footer-logos img{
-    height:22px; width:auto; object-fit:contain;
-    filter:grayscale(1) invert(1); opacity:.75;
-    transition:filter .25s ease, opacity .25s ease, transform .25s ease;
-  }
-  html[data-theme="dark"] .footer-logos img{
-    filter:grayscale(1) brightness(1.6); opacity:.85;
-  }
-  .footer-logos a:hover img{
-    filter:none; opacity:1; transform:translateY(-1px);
-  }
-  .footer-bottom{
-    display:flex; align-items:center; justify-content:center; gap:10px;
-    padding:18px 0; border-top:1px solid var(--line-soft);
-    font-size:11px; color:var(--muted);
-  }
-  .footer-bottom-sep{ opacity:.5; }
-
-  /* ---------- section headers (shared) ---------- */
-  .ps-header{ margin-bottom:36px; }
-  .ps-header h2{
-    font-size:clamp(30px,4vw,42px); font-weight:600;
-  }
-
-  /* ---------- completed matches ---------- */
-  .match-history{ padding:64px 6vw 24px; }
-  .match-history .ps-header{ margin-bottom:24px; }
-  .match-history-list{
-    display:flex; flex-direction:column; border-top:1px solid var(--line);
-  }
-  .match-history-row{
-    display:flex; align-items:center; gap:18px;
-    padding:18px 4px; border-bottom:1px solid var(--line);
-  }
-  .mh-result{
-    flex-shrink:0; width:34px; height:34px; border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-    font-family:'Oswald',sans-serif; font-size:13px; font-weight:600; letter-spacing:.02em;
-    border:1.5px solid var(--line); color:var(--muted);
-  }
-  .mh-result.win{ border-color:#1fa855; color:#1fa855; background:rgba(31,168,85,.1); }
-  .mh-result.loss{ border-color:var(--accent); color:var(--accent); background:rgba(185,19,33,.08); }
-  .mh-result.draw{ border-color:var(--muted); color:var(--muted); }
-  .mh-badge{
-    flex-shrink:0; width:26px; height:26px; border-radius:50%; overflow:hidden;
-    display:flex; align-items:center; justify-content:center;
-    background:var(--bg); border:1px solid var(--line); filter:grayscale(1);
-  }
-  .mh-badge img{ width:100%; height:100%; object-fit:cover; }
-  .mh-badge svg{ width:12px; height:12px; stroke:var(--muted); fill:none; stroke-width:1.8; }
-  .mh-info{ flex:1; min-width:0; }
-  .mh-opponent{ font-size:15px; font-weight:600; }
-  .mh-meta{ font-size:12px; color:var(--muted); margin-top:3px; }
-  .mh-score{
-    flex-shrink:0; font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700;
-    color:var(--ink); white-space:nowrap;
-  }
-  @media (max-width:640px){
-    .match-history{ padding:44px 6vw 12px; }
-    .match-history-row{ gap:12px; }
-    .mh-opponent{ font-size:13.5px; }
-    .mh-meta{ font-size:11px; }
-  }
-
-
-  /* ---------- squad teaser (homepage hint of the players page) ---------- */
-  .squad-teaser{
-    padding:88px 6vw; border-top:1px solid var(--line);
-  }
-  .squad-teaser-header{
-    display:flex; align-items:flex-end; justify-content:space-between;
-    gap:24px; flex-wrap:wrap;
-  }
-  .squad-teaser-link svg{ width:14px; height:14px; }
-  .squad-teaser-link-mobile{ display:none; }
-  .squad-teaser-grid{
-    display:grid; grid-template-columns:repeat(6, 1fr); gap:16px;
-  }
-  .squad-teaser-card{
-    position:relative; aspect-ratio:3/4; overflow:hidden;
-    background:var(--surface); border:1px solid var(--line);
-    text-decoration:none; color:inherit; display:block;
-    transition:border-color .25s ease, transform .25s ease;
-  }
-  .squad-teaser-card:hover{ border-color:var(--accent); transform:translateY(-3px); }
-  .squad-teaser-card img{
-    position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
-  }
-  .squad-teaser-overlay{
-    position:absolute; left:0; right:0; bottom:0; padding:14px;
-    background:linear-gradient(180deg, transparent, rgba(0,0,0,.82));
-    color:#fff;
-  }
-  .squad-teaser-number{
-    font-family:'Oswald',sans-serif; font-weight:700; font-size:clamp(20px,2.4vw,28px);
-    line-height:1; margin-bottom:4px;
-  }
-  .squad-teaser-name{
-    font-family:'Oswald',sans-serif; font-weight:600; font-size:12px;
-    text-transform:uppercase; letter-spacing:.02em;
-  }
-  .squad-teaser-skeleton{
-    aspect-ratio:3/4; background:var(--surface); border:1px solid var(--line);
-    position:relative; overflow:hidden;
-  }
-  .squad-teaser-skeleton::after{
-    content:''; position:absolute; inset:0;
-    background:linear-gradient(90deg, transparent, var(--line-soft), transparent);
-    animation:skeletonShimmer 1.6s ease-in-out infinite;
-  }
-  @keyframes skeletonShimmer{
-    0%{ transform:translateX(-100%); }
-    100%{ transform:translateX(100%); }
-  }
-
-  @media (max-width: 780px){
-    .squad-teaser-grid{ grid-template-columns:repeat(3, 1fr); }
-    .squad-teaser-header{ align-items:flex-start; }
-    .squad-teaser-link{ display:none; }
-    .squad-teaser-link-mobile{ display:inline-flex; margin-top:24px; width:100%; justify-content:center; }
-  }
-
-
-  .order-wrap{
+  /* ---------- split layout ---------- */
+  .split{
+    display:grid; grid-template-columns:1.05fr 1fr;
     min-height:100vh;
+  }
+
+  .visual-panel{
+    position:relative; overflow:hidden;
+    display:flex; flex-direction:column; justify-content:flex-end;
+    padding:110px 5vw 60px;
+    background:
+      linear-gradient(180deg, rgba(10,10,10,.45), rgba(10,10,10,.92) 90%),
+      url('../images/Frontpic.jpg');
+    background-size:cover;
+    background-position:center;
+    color:#fff;
+  }
+  /* To go back to the placeholder pattern instead of a real photo, swap
+     the background above for:
+     background:
+       linear-gradient(180deg, rgba(10,10,10,.15), rgba(10,10,10,.88) 90%),
+       repeating-linear-gradient(135deg, #0D0F12, #0D0F12 22px, #14171B 22px, #14171B 44px);
+  */
+  .visual-crest{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-58%);
+    width:min(70%, 420px); opacity:.07; pointer-events:none;
+  }
+  .visual-crest img{ width:100%; display:block; filter:brightness(0) invert(1); }
+  .visual-eyebrow{
+    font-size:11.5px; font-weight:600; letter-spacing:.12em;
+    color:var(--accent); text-transform:uppercase; margin-bottom:14px;
+  }
+  .visual-panel h1{
+    font-family:'Oswald',sans-serif; font-size:clamp(30px,4vw,44px);
+    font-weight:600; letter-spacing:-0.01em; color:#fff; line-height:1.15; margin-bottom:14px;
+  }
+  .visual-panel p{
+    font-size:14px; color:rgba(255,255,255,.65); max-width:340px; line-height:1.6;
+  }
+  .visual-stats{ display:flex; gap:28px; margin-top:32px; }
+  .visual-stats div b{
+    display:block; font-family:'Oswald',sans-serif; font-size:22px; font-weight:600; color:#fff;
+  }
+  .visual-stats div span{ font-size:11px; color:rgba(255,255,255,.5); text-transform:uppercase; letter-spacing:.05em; }
+
+  .form-panel{
+    background:var(--bg); color:var(--ink);
     display:flex; align-items:center; justify-content:center;
-    padding:140px 6vw 80px;
+    padding:120px 48px 60px;
   }
-  .order-card{
-    width:100%; max-width:560px;
-  }
-  .back-link{
-    display:inline-flex; align-items:center; gap:8px;
-    font-size:13px; color:var(--muted); cursor:pointer;
-    margin-bottom:34px; background:none; border:none; padding:0;
-    font-family:'Inter',sans-serif;
-  }
-  .back-link svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;}
-  .back-link:hover{color:var(--ink);}
+  .form-inner{ width:100%; max-width:360px; }
 
-  .order-card h2{
-    font-size:clamp(32px,4.5vw,44px); font-weight:600; margin-bottom:16px;
+  .form-eyebrow{
+    font-size:11px; font-weight:600; letter-spacing:.12em;
+    color:var(--accent); text-transform:uppercase; margin-bottom:10px;
   }
-  .order-card > p.sub{color:var(--muted); font-size:14.5px; line-height:1.6; margin-bottom:44px; max-width:420px;}
+  .form-panel h2{
+    font-family:'Oswald',sans-serif; font-size:clamp(24px,2.6vw,28px);
+    font-weight:600; margin-bottom:8px; color:var(--ink);
+  }
+  .form-sub{ font-size:13px; color:var(--muted); margin-bottom:26px; line-height:1.5; }
 
-  .field{margin-bottom:26px;}
-  .field label{
-    display:block; font-size:11px; color:var(--muted); margin-bottom:10px;
-    text-transform:uppercase; letter-spacing:.04em;
+  .tab-row{ display:flex; gap:6px; margin-bottom:24px; }
+  .tab{
+    flex:1; padding:10px; border:1px solid var(--line); background:transparent;
+    color:var(--muted); font-family:'Inter',sans-serif; font-size:12.5px; font-weight:600;
+    border-radius:999px; cursor:pointer; transition:all .2s ease;
   }
-  .field label .req{ color:var(--accent); }
-  .field input{
-    width:100%; background:transparent; border:none;
-    border-bottom:1px solid var(--line);
-    padding:10px 2px 12px; font-size:17px; color:var(--ink);
-    font-family:'Inter',sans-serif;
-    outline:none;
-    transition:border-color .25s ease;
-  }
-  .field input::placeholder{color:var(--muted); opacity:.55;}
-  .field input:focus{border-color:var(--accent);}
-  .field select{
-    width:100%; background:transparent; border:none;
-    border-bottom:1px solid var(--line);
-    padding:10px 2px 12px; font-size:16px; color:var(--ink);
-    font-family:'Inter',sans-serif;
-    outline:none; cursor:pointer;
-    transition:border-color .25s ease;
-    -webkit-appearance:none; appearance:none;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-    background-repeat:no-repeat; background-position:right 2px center; background-size:16px;
-  }
-  .field select:focus{border-color:var(--accent);}
-  .field select option{ color:#000; }
-  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:26px;}
+  .tab.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
 
-  .qty-stepper{
-    display:inline-flex; align-items:center; gap:20px;
-    border:1px solid var(--line); padding:8px 6px;
+  label{
+    font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.06em;
+    display:block; margin-bottom:7px; font-family:'JetBrains Mono',monospace;
   }
-  .qty-btn{
-    width:32px; height:32px; border:none; background:transparent;
-    color:var(--ink); font-size:18px; cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-    transition:color .2s ease;
+  input{
+    width:100%; background:var(--line-soft); border:1px solid var(--line); color:var(--ink);
+    border-radius:8px; padding:13px 14px; font-size:15px; margin-bottom:17px; outline:none;
+    font-family:'Inter',sans-serif; transition:border-color .2s ease;
   }
-  .qty-btn:hover{ color:var(--accent); }
-  .qty-value{ min-width:20px; text-align:center; font-size:15px; }
+  input::placeholder{ color:var(--muted); opacity:.7; }
+  input:focus{ border-color:var(--accent); }
 
-  .main-info-box{
-    background:var(--surface);
-    border:1px solid var(--line);
-    padding:30px 26px;
-    margin-bottom:28px;
-  }
-
-  .jersey-entry{
-    background:var(--surface);
-    border:1px solid var(--line);
-    padding:26px 26px 30px;
-    margin-bottom:20px;
-  }
-  .jersey-entry .field:last-of-type{ margin-bottom:0; }
-  .jersey-entry-label{
-    display:inline-flex; align-items:center; gap:8px;
-    font-size:11px; color:var(--muted); margin-bottom:16px;
-    text-transform:uppercase; letter-spacing:.04em;
-  }
-  .jersey-entry-label::before{
-    content:""; width:16px; height:1px; background:var(--accent);
-  }
-  .jersey-error{
-    font-size:12px; color:var(--accent); margin-top:8px; display:none;
-  }
-  .jersey-error.active{ display:block; }
-
-  .submit-btn{
-    width:100%; margin-top:10px;
-    background:var(--ink); color:var(--bg);
-    border:none; padding:18px; font-size:14.5px; font-weight:600;
-    cursor:pointer; letter-spacing:.01em;
-    display:flex; align-items:center; justify-content:center; gap:10px;
-    transition:background .3s ease;
-  }
-  .submit-btn:hover{background:var(--accent); color:#fff;}
-  .submit-btn:disabled{opacity:.5; cursor:default;}
-
-  .form-note{font-size:12px; color:var(--muted); margin-top:16px; text-align:center;}
-
-  .total-row{
-    display:flex; align-items:center; justify-content:space-between;
-    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
-    padding:20px 2px; margin:30px 0 24px;
-  }
-  .total-row .mono{ font-size:12px; color:var(--muted); }
-  .total-amount{
-    font-family:'Oswald',sans-serif; font-size:26px; font-weight:600;
-  }
-
-  .success-box{
-    display:none; text-align:center; padding:40px 20px;
-  }
-  .success-box.active{display:block;}
-  .success-box .num-badge{
-    width:56px;height:56px;border-radius:50%;
-    border:1px solid var(--accent); color:var(--accent);
-    display:flex;align-items:center;justify-content:center;
-    margin:0 auto 22px; font-family:'JetBrains Mono',monospace; font-size:13px;
-  }
-  .success-box h3{font-size:26px; font-weight:600; margin-bottom:10px;}
-  .success-box p{color:var(--muted); font-size:14px; max-width:340px; margin:0 auto;}
-
-  /* ---------- duplicate number modal ---------- */
-  .modal-overlay{
-    display:none; position:fixed; inset:0; z-index:100;
-    background:rgba(10,10,10,0.55);
-    backdrop-filter:blur(4px);
-    align-items:center; justify-content:center;
-    padding:24px;
-  }
-  .modal-overlay.active{display:flex;}
-  .modal-box{
-    background:var(--surface); border:1px solid var(--line);
-    max-width:400px; width:100%;
-    padding:36px 32px;
-    text-align:center;
-    box-shadow:var(--shadow);
-    max-height:calc(100vh - 48px);
-    overflow-y:auto;
-    -webkit-overflow-scrolling:touch;
-  }
-  .modal-icon{
-    width:44px;height:44px;border-radius:50%;
-    border:1px solid var(--accent); color:var(--accent);
-    display:flex;align-items:center;justify-content:center;
-    margin:0 auto 20px; font-size:16px;
-  }
-  .modal-box h3{font-size:22px; font-weight:600; margin-bottom:10px;}
-  .modal-msg{font-size:14px; color:var(--ink); margin-bottom:6px;}
-  .modal-sub{font-size:13px; color:var(--muted); margin-bottom:20px;}
-  .modal-contacts{
-    display:flex; flex-direction:column; gap:10px; margin-bottom:24px;
-  }
-  .modal-contact{
-    display:flex; align-items:center; justify-content:space-between;
-    border:1px solid var(--line); padding:12px 16px;
-    text-decoration:none; color:var(--ink); font-size:13.5px;
-    transition:border-color .2s ease;
-  }
-  .modal-contact:hover{ border-color:var(--accent); }
-  .modal-contact .mono{ color:var(--muted); font-size:11px; }
-  .modal-close-btn{
-    width:100%; background:var(--ink); color:var(--bg);
-    border:none; padding:14px; font-size:13.5px; font-weight:600;
-    cursor:pointer; transition:background .3s ease;
-  }
-  .modal-close-btn:hover{ background:var(--accent); color:#fff; }
-
-  /* ---------- payment modal ---------- */
-  .payment-modal .modal-msg{ margin-bottom:20px; }
-  .qr-container{
-    display:flex; justify-content:center; margin:24px 0;
-    padding:20px; background:var(--bg); border:1px solid var(--line);
+  .password-wrap{ position:relative; }
+  .password-wrap input{ padding-right:44px; margin-bottom:0; }
+  .password-wrap{ margin-bottom:17px; }
+  .eye-toggle{
+    position:absolute; right:4px; top:0; bottom:0; margin:auto 0;
+    background:none; border:none; cursor:pointer; color:var(--muted);
+    width:34px; height:34px; display:flex; align-items:center; justify-content:center;
     border-radius:8px;
   }
-  .qr-image{
-    width:280px; height:auto; max-width:90%;
-  }
-  .payment-note{
-    font-size:14px; color:var(--ink); margin:16px 0 20px;
-    font-weight:500;
-  }
-  .payment-note span{
-    color:var(--accent); font-family:'Oswald',sans-serif; font-size:18px;
-  }
-  .payment-actions{
-    margin-bottom:20px;
-  }
-  .whatsapp-btn{
-    display:flex; align-items:center; justify-content:center; gap:8px;
-    background:#25D366; color:#fff;
-    padding:14px 20px; width:100%;
-    font-weight:600; text-decoration:none;
-    border:none; cursor:pointer;
-    transition:background .3s ease;
-  }
-  .whatsapp-btn:hover{ background:#1FAE52; }
-  .payment-sub{
-    font-size:13px; color:var(--muted);
-    margin-bottom:20px;
-  }
-  .pay-later-check{
-    display:flex; align-items:flex-start; gap:10px;
-    text-align:left; font-size:13px; color:var(--muted);
-    margin:20px 0; cursor:pointer; user-select:none;
-  }
-  .pay-later-check input[type="checkbox"]{
-    margin-top:2px; width:16px; height:16px; flex-shrink:0;
-    accent-color:var(--accent); cursor:pointer;
-  }
+  .eye-toggle:hover{ color:var(--ink); background:var(--line-soft); }
+  .eye-toggle svg{ width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:1.7; }
 
+  .hint{ font-size:11.5px; color:var(--muted); line-height:1.5; margin:-8px 0 18px; }
 
-  @media (max-width: 780px){
-    .hero{
-      padding:110px 6vw 32px;
-    }
-    .hero-cta-row{ gap:10px; }
-    .hero-cta-row .btn-primary,
-    .hero-cta-row .btn-secondary{
-      padding:12px 16px; font-size:12.5px; letter-spacing:0; gap:6px;
-      white-space:normal; line-height:1.25;
-    }
-    .hero-cta-row .btn-primary svg,
-    .hero-cta-row .btn-secondary svg{ width:13px; height:13px; flex-shrink:0; }
-    .topbar-menu{
-      top:0; left:0; right:0; bottom:auto;
-      width:100%; max-width:100%;
-      max-height:85vh;
-      border-left:none; border-bottom:1px solid var(--line);
-      transform:translateY(-100%);
-      transition:transform .35s cubic-bezier(.4,0,.2,1);
-      overflow-y:auto;
-      padding:20px 20px 26px;
-    }
-    .topbar-menu.active{
-      transform:translateY(0);
-    }
-    .field-row{grid-template-columns:1fr;}
-    .topbar{padding:18px 20px;}
-    .footer-top{
-      flex-direction:column; align-items:flex-start; gap:28px;
-      padding:40px 0 32px;
-    }
-    .footer-col-brand{ max-width:none; }
-    .footer-bottom{ padding:16px 0; }
-
-    .modal-overlay{ padding:16px; align-items:flex-start; overflow-y:auto; }
-    .modal-box{
-      max-height:calc(100vh - 32px);
-      padding:28px 22px;
-      margin:16px auto;
-    }
-    /* Signup promo popup: has its own max-height + scroll (see .signup-promo-box),
-       so unlike the other modals it's safe to center vertically instead of
-       pinning to the top. */
-    #signupPromoOverlay{ align-items:center; overflow-y:hidden; }
-    .signup-promo-box{ max-height:calc(100vh - 32px); }
-    .qr-image{ width:200px; }
-    .qr-container{ padding:14px; margin:18px 0; }
+  button.primary{
+    width:100%; padding:14px; border:none; border-radius:999px; font-weight:600;
+    font-size:13.5px; letter-spacing:.02em; cursor:pointer;
+    background:var(--accent); color:#fff; font-family:'Inter',sans-serif;
+    transition:transform .2s ease, opacity .2s ease, box-shadow .2s ease;
   }
+  button.primary:hover{ transform:translateY(-1px); box-shadow:0 10px 24px rgba(185,19,33,.35); }
+  button.primary:disabled{ opacity:.5; cursor:default; transform:none; box-shadow:none; }
 
-  @media (prefers-reduced-motion: reduce){
-    *{transition:none !important;}
-    .hero-copy .season-tag, .hero-copy h1,
-    .hero-copy .thank-you-text, .hero-copy .hero-cta-row, .accent-shimmer{
-      animation:none !important; opacity:1 !important; transform:none !important;
-    }
-    .club-photos-track{ animation:none !important; }
+  button.link{
+    display:block; width:100%; background:none; border:none; color:var(--muted);
+    font-size:12.5px; font-weight:500; padding:14px 0 0; cursor:pointer;
+    text-decoration:underline; font-family:'Inter',sans-serif; text-align:center;
+  }
+  button.link:hover{ color:var(--accent); }
+
+  .msg{ font-size:12.5px; margin:0 0 14px; line-height:1.5; }
+  .msg.error{ color:var(--accent); }
+  .msg.success{ color:var(--success); }
+  .hidden{ display:none; }
+
+  /* ---------- account view ---------- */
+  .account-head{ display:flex; align-items:center; gap:12px; margin-bottom:22px; }
+  .avatar{
+    width:48px; height:48px; border-radius:50%; background:rgba(185,19,33,.14);
+    border:1px solid rgba(185,19,33,.4);
+    display:flex; align-items:center; justify-content:center; font-weight:700;
+    font-family:'Oswald',sans-serif; color:var(--accent); flex-shrink:0; font-size:16px;
+  }
+  .account-head .name{ font-family:'Oswald',sans-serif; font-weight:600; font-size:17px; margin-bottom:1px; color:var(--ink); }
+  .account-head .email{ font-size:12px; color:var(--muted); }
+
+  .premium-badge{
+    background:var(--gold-bg); border:1px solid var(--gold); border-radius:10px;
+    padding:14px 15px; margin-bottom:24px; font-size:12.5px; color:var(--gold);
+  }
+  .premium-badge b{ display:flex; align-items:center; gap:6px; margin-bottom:3px; font-family:'Oswald',sans-serif; font-size:14px; letter-spacing:.02em; }
+  .premium-badge b svg{ width:14px; height:14px; stroke:var(--gold); fill:var(--gold); }
+  .premium-badge span{ color:var(--muted); font-weight:400; }
+
+  .section-label{
+    font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent); margin:0 0 14px; font-family:'JetBrains Mono',monospace;
+  }
+  .order{
+    border-top:1px solid var(--line); padding:14px 0; font-size:13px;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .order:last-child{ border-bottom:1px solid var(--line); }
+  .order .left b{ display:block; font-size:14px; font-family:'JetBrains Mono',monospace; font-weight:500; letter-spacing:.02em; color:var(--ink); }
+  .order .left span{ color:var(--muted); font-size:11.5px; }
+  .status{ font-size:11px; padding:5px 12px; border-radius:999px; font-weight:600; text-transform:uppercase; letter-spacing:.03em; white-space:nowrap; }
+  .status.paid{ background:var(--success-bg); color:var(--success); }
+  .status.pending, .status.pay-later{ background:var(--gold-bg); color:var(--gold); }
+
+  .empty{ font-size:13px; color:var(--muted); padding:6px 0 2px; }
+
+  .logout-row{ margin-top:26px; padding-top:20px; border-top:1px solid var(--line); text-align:center; }
+  .logout-row button{
+    background:none; border:1px solid var(--line); color:var(--muted);
+    font-weight:500; border-radius:999px; padding:9px 20px; font-size:12.5px;
+    cursor:pointer; font-family:'Inter',sans-serif;
+  }
+  .logout-row button:hover{ border-color:var(--accent); color:var(--accent); }
+
+  @media (max-width:860px){
+    .split{ grid-template-columns:1fr; }
+    .visual-panel{ min-height:280px; padding:110px 6vw 32px; }
+    .form-panel{ padding:48px 6vw 60px; }
   }
 </style>
 </head>
 <body>
 
-<div class="menu-overlay" id="menuOverlay"></div>
-
 <div class="topbar">
-  <div class="brand-wrap">
-    <div class="brand" id="brandHome" role="button" tabindex="0" aria-label="Back to home">
-      <img src="../images/club-logo.png" alt="Kelapa Bali FC logo" class="brand-logo">
-      <span>KELAPA BALI FC <span style="color:inherit;opacity:.7">SEASON 26/27</span></span>
-    </div>
-  
+  <div class="brand" id="brandHome">
+    <img src="../images/Favicon.png" alt="Kelapa Bali FC logo" class="brand-logo">
+    <span>KELAPA BALI FC <span style="opacity:.7">SEASON 26/27</span></span>
   </div>
-  <div class="topbar-actions">
-    <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark theme">
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark theme">
     <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="4" y1="4" x2="5.8" y2="5.8"/><line x1="18.2" y1="18.2" x2="20" y2="20"/><line x1="1.5" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22.5" y2="12"/><line x1="4" y1="20" x2="5.8" y2="18.2"/><line x1="18.2" y1="5.8" x2="20" y2="4"/></svg>
     <svg class="moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg>
   </button>
-    <button class="btn-mini menu-toggle-btn" id="menuToggleBtn" aria-label="Open menu" aria-expanded="false">
-      <svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
-    </button>
-  </div>
 </div>
 
-<div class="topbar-menu" id="topbarMenu">
-  <div class="topbar-menu-head">
-    <span>Menu</span>
-    <button class="menu-close-btn" id="menuCloseBtn" aria-label="Close menu">
-      <svg viewBox="0 0 24 24"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
-    </button>
+<div class="split">
+
+  <div class="visual-panel" id="visualPanel">
+
+    <div class="visual-eyebrow">Members area</div>
+    <h1>Your club.<br>Your account.</h1>
+    <p>Log in to track your jersey orders, payment status, and get early access to new releases before anyone else.</p>
+    <div class="visual-stats">
+      <div><b>26/27</b><span>Season</span></div>
+      <div><b>Early</b><span>Access</span></div>
+      <div><b>1-click</b><span>Order status</span></div>
+    </div>
   </div>
 
-  <div class="menu-group-label mono">Club</div>
-  <a class="btn-mini" href="/about/">
-    About Us
-    <svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M12 16v-4"/><circle cx="12" cy="8" r=".6" fill="currentColor" stroke="none"/></svg>
-  </a>
-  <a class="btn-mini" href="https://instagram.com/kelapabalifc/" target="_blank" rel="noopener">
-    Contact Us
-    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
-  </a>
-  <a class="btn-mini" href="/players/">
-    Players
-    <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17.5" cy="9.5" r="2.6"/><path d="M15.5 20c0-2.6 2-4.7 4.6-4.9"/></svg>
-  </a>
-  <a class="btn-mini" href="/sponsors/">
-    Sponsors
-    <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
-  </a>
+  <div class="form-panel">
+    <div class="form-inner">
 
-  <div class="menu-group-label mono">Shop</div>
-  <a class="btn-mini" href="/released-jerseys/">
-    Club Jersey
-    <svg viewBox="0 0 24 24"><path d="M20.59 13.41 12 22l-9-9V4h9z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg>
-  </a>
+      <div id="loginCard">
+        <div class="form-eyebrow">Welcome</div>
+        <h2 id="formTitle">Log in</h2>
+        <p class="form-sub" id="formSub">Use the email and password you set up, or sign up if you haven't yet.</p>
 
-  <div class="menu-group-label mono">Orders</div>
-  <button class="btn-mini" id="checkOrderBtnTop">
-    Check order
-    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-  </button>
+        <div id="googleBtnContainer" style="margin-bottom:16px; display:flex; justify-content:center;"></div>
+        <div id="googleMsg"></div>
+        <div style="display:flex; align-items:center; gap:12px; margin:18px 0;">
+          <div style="flex:1; height:1px; background:var(--line);"></div>
+          <span style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.05em;">or</span>
+          <div style="flex:1; height:1px; background:var(--line);"></div>
+        </div>
 
-  <div class="menu-group-label mono">Account</div>
-  <a class="btn-mini" href="login/">
-    Log in / Sign up
-    <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-  </a>
-</div>
+        <div class="tab-row">
+          <button class="tab active" id="tabLogin" type="button">Log in</button>
+          <button class="tab" id="tabSignup" type="button">Sign up</button>
+        </div>
 
-<!-- ============ VIEW 1: LANDING ============ -->
-<section class="view active" id="view-landing">
-
-  <div class="hero">
-    <div class="hero-content">
-      <div class="hero-copy">
-        <div class="season-tag mono">Drop 01 · Official Away Kit 26/27</div>
-        <h1 id="slideTitle">Thank you, <em class="accent-shimmer">KBFC!</em></h1>
-
-        <p class="thank-you-text">Order period closed. We would like to announce that the order period has closed. Thank you for your support — please stay tuned for any updates.</p>
-
-        <div class="hero-cta-row">
-          <button class="btn-primary" id="preorderBtn">
-            Check my order
-            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <div id="authMsg"></div>
+        <label>Email</label>
+        <input type="email" id="emailInput" placeholder="name@gmail.com" autocomplete="email" />
+        <label>Password</label>
+        <div class="password-wrap">
+          <input type="password" id="passwordInput" placeholder="••••••••" autocomplete="current-password" />
+          <button class="eye-toggle" id="passwordEyeBtn" type="button" aria-label="Show password">
+            <svg class="eye-open" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-closed" viewBox="0 0 24 24" style="display:none;"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 20c-7 0-11-8-11-8a20.3 20.3 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 11 8 11 8a20.3 20.3 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
           </button>
         </div>
+        <p class="hint hidden" id="signupHint">Must be at least 6 characters. If this email has an order with us, you'll get premium access automatically.</p>
+        <button class="primary" id="authSubmitBtn">Log in</button>
+        <button class="link" id="forgotLink" type="button">Forgot password?</button>
       </div>
+
+      <div class="hidden" id="resetCard">
+        <div class="form-eyebrow">Reset</div>
+        <h2 id="resetTitle">Forgot password</h2>
+        <p class="form-sub" id="resetSub">Enter your email and we'll send you a reset code.</p>
+
+        <div id="resetMsg"></div>
+
+        <div id="resetStepRequest">
+          <label>Email</label>
+          <input type="email" id="resetEmailInput" placeholder="name@gmail.com" autocomplete="email" />
+          <button class="primary" id="requestResetBtn">Send reset code</button>
+        </div>
+
+        <div class="hidden" id="resetStepConfirm">
+          <label>Code</label>
+          <input type="text" id="resetCodeInput" maxlength="6" inputmode="numeric" placeholder="6-digit code" />
+          <label>New password</label>
+          <div class="password-wrap">
+            <input type="password" id="newPasswordInput" placeholder="••••••••" autocomplete="new-password" />
+            <button class="eye-toggle" id="newPasswordEyeBtn" type="button" aria-label="Show password">
+              <svg class="eye-open" viewBox="0 0 24 24"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="eye-closed" viewBox="0 0 24 24" style="display:none;"><path d="M17.94 17.94A10.9 10.9 0 0 1 12 20c-7 0-11-8-11-8a20.3 20.3 0 0 1 5.06-5.94M9.9 4.24A9.1 9.1 0 0 1 12 4c7 0 11 8 11 8a20.3 20.3 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+          <button class="primary" id="confirmResetBtn">Reset password</button>
+        </div>
+
+        <button class="link" id="backToLoginLink" type="button">Back to log in</button>
+      </div>
+
+      <div class="hidden" id="accountView">
+        <div class="account-head">
+          <div class="avatar" id="avatarInitials">--</div>
+          <div>
+            <p class="name">Welcome back</p>
+            <p class="email" id="accountEmail"></p>
+          </div>
+        </div>
+
+        <div class="premium-badge hidden" id="premiumBadge">
+          <b><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.6L22 9.3l-5 4.9 1.2 7-6.2-3.6L5.8 21.2 7 14.2 2 9.3l7.1-.7z"/></svg>Premium — early access unlocked</b>
+          <span>New release previews appear here before public launch.</span>
+        </div>
+
+        <p class="section-label">Your orders</p>
+        <div id="ordersList"></div>
+
+        <div class="logout-row">
+          <button id="logoutBtn">Log out</button>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <section class="next-match-section" id="nextMatchSection" style="display:none;">
-    <div class="ps-header">
-      <div class="season-tag mono">Season 26/27</div>
-      <h2>Next match</h2>
-    </div>
-    <div class="next-match-card">
-      <div class="nm-card-team">
-        <div class="nm-card-badge us"><img src="../images/club-logo.png" alt=""></div>
-        <span>Kelapa Bali FC</span>
-      </div>
-      <div class="nm-card-mid">
-        <div class="nm-card-vs mono">VS</div>
-        <div class="nm-card-meta mono" id="nmSectionMeta"></div>
-      </div>
-      <div class="nm-card-team">
-        <div class="nm-card-badge them" id="nmSectionOpponentBadge">
-          <svg viewBox="0 0 24 24"><path d="M12 2 4 6v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6l-8-4Z"/></svg>
-        </div>
-        <span id="nmSectionOpponentName"></span>
-      </div>
-    </div>
-  </section>
-
-  <section class="match-history" id="matchHistorySection" style="display:none;">
-    <div class="ps-header">
-      <div class="season-tag mono">Season 26/27</div>
-      <h2>Completed matches</h2>
-    </div>
-    <div class="match-history-list" id="matchHistoryList"></div>
-  </section>
-
-  <div class="login-promo-compact" id="loginPromoBoard">
-    <div class="login-promo-icon">
-      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-    </div>
-    <div class="login-promo-text">
-      <span class="mono login-promo-tag">NEW</span>
-      <h2>Your club, your account.</h2>
-      <p>Log in to track your order, view your digital membership card, and get early access to future drops.</p>
-    </div>
-    <div class="login-promo-actions">
-      <a class="btn-primary" href="login/">
-        Log in / Sign up
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-      <span class="login-promo-google">
-        <svg width="13" height="13" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
-        or sign up instantly with Google
-      </span>
-    </div>
-  </div>
-
-  <section class="squad-teaser" id="squad-teaser">
-    <div class="ps-header squad-teaser-header">
-      <div>
-        <div class="season-tag mono">The squad</div>
-        <h2>Meet the team</h2>
-      </div>
-      <a class="btn-secondary squad-teaser-link" href="/players/">
-        View full squad
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-    </div>
-    <div class="squad-teaser-grid" id="squadTeaserGrid">
-      <div class="squad-teaser-skeleton"></div>
-      <div class="squad-teaser-skeleton"></div>
-      <div class="squad-teaser-skeleton"></div>
-      <div class="squad-teaser-skeleton"></div>
-      <div class="squad-teaser-skeleton"></div>
-      <div class="squad-teaser-skeleton"></div>
-    </div>
-    <a class="btn-secondary squad-teaser-link squad-teaser-link-mobile" href="/players/">
-      View full squad
-      <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-    </a>
-  </section>
-
-  <section class="club-photos-section" id="clubPhotosSection">
-    <div class="club-photos-header">
-      <h2>From the club</h2>
-      <a href="https://instagram.com/kelapabalifc/" target="_blank" rel="noopener">
-        Follow on Instagram
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
-      </a>
-    </div>
-    <div class="club-photos-track">
-      <div class="club-photo-item"><img src="../images/club-photo-1.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
-      <div class="club-photo-item"><img src="../images/club-photo-2.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
-      <div class="club-photo-item"><img src="../images/club-photo-3.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
-      <div class="club-photo-item"><img src="../images/club-photo-4.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
-      <div class="club-photo-item"><img src="../images/club-photo-5.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
-      <div class="club-photo-item"><img src="../images/club-photo-6.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
-      <div class="club-photo-item"><img src="../images/club-photo-1.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
-      <div class="club-photo-item"><img src="../images/club-photo-2.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
-      <div class="club-photo-item"><img src="../images/club-photo-3.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
-      <div class="club-photo-item"><img src="../images/club-photo-4.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
-      <div class="club-photo-item"><img src="../images/club-photo-5.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
-      <div class="club-photo-item"><img src="../images/club-photo-6.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
-    </div>
-  </section>
-
-  <footer>
-    <div class="footer-top">
-      <div class="footer-col footer-col-brand">
-        <div class="footer-logo-row">
-          <img src="../images/club-logo.png" alt="Kelapa Bali FC logo" class="footer-crest">
-          <span class="mono footer-club-name">KELAPA BALI FC</span>
-        </div>
-        <p class="footer-tagline">Community football club · Season 26/27</p>
-      </div>
-
-      <div class="footer-col footer-col-social">
-        <span class="footer-col-label mono">Follow us</span>
-        <div class="social-row">
-          <a href="https://instagram.com/kelapabalifc/" target="_blank" rel="noopener" aria-label="Instagram" class="social-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
-          </a>
-          <a href="https://www.threads.com/kelapabalifc/" target="_blank" rel="noopener" aria-label="Threads" class="social-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9.5"/><text x="12" y="16" text-anchor="middle" font-size="12" font-family="Georgia, serif" fill="currentColor" stroke="none">@</text></svg>
-          </a>
-        </div>
-      </div>
-
-      <div class="footer-col footer-col-credit">
-        <span class="footer-credit-label mono">Brought to you by</span>
-        <div class="footer-logos">
-          <a href="https://shopee.com.my/shop.eclipse" target="_blank" rel="noopener" aria-label="ES on Shopee"><img src="../images/footer-logo-shopee.png" alt="ES logo"></a>
-          <a href="https://www.instagram.com/cilimerahrestaurant/" target="_blank" rel="noopener" aria-label="Cili Merah on Instagram"><img src="../images/footer-logo-cilimerah.png" alt="Cilmer logo"></a>
-        </div>
-      </div>
-    </div>
-
-    <div class="footer-bottom">
-      <span class="mono">© 2026 Kelapa Bali FC</span>
-      <span class="footer-bottom-sep mono">·</span>
-      <span class="mono">All rights reserved</span>
-    </div>
-  </footer>
-</section>
-
-<!-- ============ VIEW 2: ORDER FORM ============ -->
-<section class="view" id="view-order">
-  <div class="order-wrap">
-    <div class="order-card">
-      <button class="back-link" id="backBtn">
-        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> Back to kit
-      </button>
-
-      <div id="formBox">
-        <h2>Reserve your kit</h2>
-        <p class="sub">Fill in your details below. This locks in your size, number and name print for the 26/27 away kit.</p>
-        <p class="sub" style="margin-bottom: 20px;"></p>
-
-        <form id="orderForm">
-          <div class="main-info-box">
-            <div class="field">
-              <label class="mono">Name <span class="req">*</span></label>
-              <input type="text" name="Name" placeholder="Full Name" required>
-            </div>
-            <div class="field">
-              <label class="mono">Email <span class="req">*</span></label>
-              <input type="email" name="Email" placeholder="you@email.com" required>
-            </div>
-            <div class="field">
-              <label class="mono">Phone number <span class="req">*</span></label>
-              <input type="tel" name="Phone Number" placeholder="e.g. 012-3456789" required>
-            </div>
-
-            <div class="field" style="margin-bottom:0;">
-              <label class="mono">Quantity</label>
-              <div class="qty-stepper">
-                <button type="button" class="qty-btn" id="qtyMinus" aria-label="Decrease quantity">−</button>
-                <span class="qty-value mono" id="qtyValue">1</span>
-                <button type="button" class="qty-btn" id="qtyPlus" aria-label="Increase quantity">+</button>
-              </div>
-            </div>
-          </div>
-
-          <div id="jerseyEntries"></div>
-
-          <div class="total-row">
-            <span class="mono">Total amount to transfer</span>
-            <span class="total-amount" id="totalAmount">RM 0</span>
-          </div>
-
-          <button type="submit" class="submit-btn" id="submitBtn">Confirm pre-order</button>
-          <p class="form-note">Your details are sent straight to our team's order sheet. Each jersey number is checked against existing orders. Our system dont allowed duplicates.</p>
-        </form>
-      </div>
-
-      <div class="success-box" id="successBox">
-        <div class="num-badge mono">✓</div>
-        <h3 id="successTitle">You're on the list</h3>
-        <p id="successMsg">Thank you Forza Bali! your pre-order has been recorded. We'll reach out on WhatsApp for any updates.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ PAYMENT CONFIRMATION POPUP ============ -->
-<div class="modal-overlay" id="signupPromoOverlay">
-  <div class="signup-promo-box" id="signupPromoBox">
-    <button class="signup-promo-close" id="signupPromoClose" aria-label="Close">
-      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-    </button>
-    <span class="mono signup-promo-tag">NEW</span>
-    <h2>Your club, your account.</h2>
-    <p>Create a free KBFC account and unlock a bunch of perks — more are landing every season.</p>
-    <div class="signup-promo-slideshow" id="signupPromoSlideshow">
-      <div class="promo-slide-frame">
-
-        <div class="promo-slide active" data-slide="0">
-          <div class="promo-mock promo-mock-card">
-            <div class="promo-mock-card-rule"></div>
-            <div class="promo-mock-card-top">
-              <div class="promo-mock-card-club">KBFC<span>SEASON 26/27</span></div>
-              <div class="promo-mock-card-num">#22</div>
-            </div>
-            <div class="promo-mock-card-name">ALIFF</div>
-            <div class="promo-mock-card-pos">Forward</div>
-          </div>
-          <p><b>Digital membership card</b> — your name, number, and photo, ready to share.</p>
-        </div>
-
-        <div class="promo-slide" data-slide="1">
-          <div class="promo-mock promo-mock-order">
-            <div>
-              <div class="promo-mock-order-id">MAH-1968-B2P</div>
-              <div class="promo-mock-order-sub">#22 &middot; Size M</div>
-            </div>
-            <span class="promo-mock-pill">Pay later</span>
-          </div>
-          <p><b>Track your order</b> — see your payment status in real time, no need to ask.</p>
-        </div>
-
-        <div class="promo-slide" data-slide="2">
-          <div class="promo-mock promo-mock-stats">
-            <div class="promo-mock-stat"><span>12</span>Apps</div>
-            <div class="promo-mock-stat"><span>4</span>Goals</div>
-            <div class="promo-mock-stat"><span>2</span>Assists</div>
-            <div class="promo-mock-stat"><span>3</span>Clean sheets</div>
-          </div>
-          <p><b>Player stats on your profile</b> — appearances, goals, assists, and clean sheets.</p>
-        </div>
-
-        <div class="promo-slide" data-slide="3">
-          <div class="promo-mock promo-mock-shop">
-            <div class="promo-mock-shop-thumb">
-              <svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
-            </div>
-            <div>
-              <div class="promo-mock-shop-name">Anniversary tee</div>
-              <div class="promo-mock-shop-tag">Members only</div>
-            </div>
-          </div>
-          <p><b>Early access to Premium Shop drops</b> — limited merch before it goes public.</p>
-        </div>
-
-        <div class="promo-slide" data-slide="4">
-          <div class="promo-mock promo-mock-match">
-            <div class="promo-mock-match-label">Next match</div>
-            <div class="promo-mock-match-opp">vs Bukit Raja FC</div>
-            <div class="promo-mock-match-time">Sat, 12 Aug &middot; 8:00 PM</div>
-          </div>
-          <p><b>Never miss a match</b> — the next fixture, date, and venue right on your dashboard.</p>
-        </div>
-
-      </div>
-      <div class="promo-slide-dots" id="promoSlideDots"></div>
-    </div>
-    <div class="signup-promo-actions">
-      <a class="btn-primary" href="login/">
-        Log in / Sign up
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-      <span class="signup-promo-google">
-        <svg width="13" height="13" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
-        or sign up instantly with Google
-      </span>
-      <button class="signup-promo-later" id="signupPromoLater">Maybe later</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="paymentModalOverlay">
-  <div class="modal-box payment-modal">
-    <div class="modal-icon mono">$</div>
-    <h3>Complete your payment</h3>
-    <p class="modal-msg">Scan the QR code below to pay via DuitNow, then send the receipt to confirm.</p>
-    
-    <div class="qr-container">
-      <img src="../images/payment-qr.jpg" alt="DuitNow QR Code" class="qr-image">
-    </div>
-
-    <p class="payment-note"><strong>Amount:</strong> <span id="paymentAmount">RM 0</span></p>
-    <p class="payment-note"><strong>Order ID:</strong> <span id="paymentOrderId">—</span></p>
-    <p class="payment-sub">Please write this Order ID as the payment remark / reference so we can match your receipt.</p>
-
-    <div class="modal-contacts">
-      <a class="modal-contact" id="whatsappSendReceipt" href="https://wa.me/601126291968?text=Hi%20Aliff,%20I%27ve%20completed%20my%20payment%20for%20the%20jersey%20pre-order.%20Please%20find%20the%20receipt%20screenshot%20attached." target="_blank" rel="noopener">
-        <span>Send receipt to Aliff</span>
-        <span class="mono">+60 11 2629 1968</span>
-      </a>
-    </div>
-
-    <label class="pay-later-check">
-      <input type="checkbox" id="payLaterCheckbox">
-      <span>I'm not paying right now — mark this order as unpaid so the team can follow up.</span>
-    </label>
-
-    <p class="payment-sub">Once you've sent the receipt, close this popup.</p>
-    <button class="modal-close-btn" id="paymentModalClose">Done, Proceed</button>
-  </div>
-</div>
-
-<!-- ============ DUPLICATE NUMBER POPUP ============ -->
-<div class="modal-overlay" id="dupModalOverlay">
-  <div class="modal-box">
-    <div class="modal-icon mono">!</div>    <h3>That number's taken</h3>
-    <p class="modal-msg" id="dupModalMsg"></p>
-    <p class="modal-sub">Pick a different number, or reach out to sort out a clash:</p>
-    <div class="modal-contacts">
-      <a class="modal-contact" href="https://wa.me/601135594075" target="_blank" rel="noopener">
-        <span class="mono">AKEEM</span>
-        <span>+60 11 3559 4075</span>
-      </a>
-      <a class="modal-contact" href="https://wa.me/60172740981" target="_blank" rel="noopener">
-        <span class="mono">DANISH</span>
-        <span>+60 17 274 0981</span>
-      </a>
-    </div>
-    <button class="modal-close-btn" id="dupModalClose">Got it, I'll change it</button>
-  </div>
 </div>
 
 <script>
-  /* ---------------- NEXT MATCH BAR ---------------- */
-  // Same central spreadsheet the Players page reads from — admin sets this
-  // in the dashboard's "Next Match" section. Reads directly via gviz JSON,
-  // same pattern used everywhere else public content gets pulled from a
-  // sheet, no backend round-trip needed.
-  //
-  // parseGvizCell handles a Sheets/gviz quirk: if a cell ever gets
-  // auto-detected as a real Date/Time value (which used to happen before
-  // the backend started forcing those columns to plain text), gviz
-  // serializes it as a literal string like "Date(2026,7,2,0,0,0)" instead
-  // of a normal date — this unwraps that format if it's ever encountered,
-  // so a bar doesn't show garbled text for any older rows.
-  function parseGvizCell(raw){
-    const str = String(raw == null ? '' : raw).trim();
-    const m = str.match(/^Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)$/);
-    if (!m) return str;
-    const [, y, mo, d, h, mi] = m.map(Number);
-    return { year: y, month: mo, day: d, hour: h || 0, minute: mi || 0 };
-  }
-
-  (async function loadNextMatchBar(){
-    const PLAYERS_SHEET_ID = '1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM';
-    try {
-      const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=NextMatch`;
-      const res = await fetch(url);
-      if (!res.ok) return;
-      const text = await res.text();
-      const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
-      const row = (json.table && json.table.rows && json.table.rows[0]);
-      if (!row) return;
-      const cells = row.c || [];
-      const val = i => (cells[i] ? cells[i].v : '');
-      const opponent = String(val(0) || '').trim();
-      if (!opponent) return; // nothing set — bar stays hidden
-
-      const competition = String(val(1) || '').trim();
-      const dateParsed = parseGvizCell(val(2));
-      const timeParsed = parseGvizCell(val(3));
-      const venue = String(val(4) || '').trim();
-      const opponentLogo = String(val(6) || '').trim();
-
-      const metaParts = [];
-      if (dateParsed){
-        let d = null;
-        if (typeof dateParsed === 'object') d = new Date(dateParsed.year, dateParsed.month, dateParsed.day);
-        else if (dateParsed) d = new Date(dateParsed + 'T00:00:00');
-        if (d && !isNaN(d)) metaParts.push(d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }));
-      }
-      if (timeParsed){
-        if (typeof timeParsed === 'object') {
-          metaParts.push(String(timeParsed.hour).padStart(2, '0') + ':' + String(timeParsed.minute).padStart(2, '0'));
-        } else if (timeParsed) {
-          metaParts.push(timeParsed);
-        }
-      }
-      if (venue) metaParts.push(venue);
-      if (competition) metaParts.push(competition);
-
-      // Grayscale via CSS filter (not a pre-processed image) so any logo
-      // works regardless of its original colors — our own crest right next
-      // to it stays full color, same "us vs them" treatment used on the
-      // generated player share cards.
-      const nmSection = document.getElementById('nextMatchSection');
-      if (nmSection){
-        document.getElementById('nmSectionOpponentName').textContent = opponent;
-        document.getElementById('nmSectionMeta').textContent = metaParts.join(' · ');
-        const sectionBadgeEl = document.getElementById('nmSectionOpponentBadge');
-        if (opponentLogo){
-          sectionBadgeEl.innerHTML = `<img src="${opponentLogo}" alt="">`;
-        }
-        nmSection.style.display = 'block';
-      }
-    } catch (err) {
-      console.warn('Could not load next match info — section stays hidden.', err);
-    }
-  })();
-
-  /* ---------------- COMPLETED MATCHES ---------------- */
-  // Same sheet-direct read pattern as the Next Match bar above. A row only
-  // lands in MatchHistory when admin explicitly logs a played match from
-  // the admin dashboard's "Log a played match" card — nothing publishes
-  // here automatically, so this section stays hidden until there's a real
-  // result to show. Result is optional free text like "W 3-1"; parsed
-  // just enough to color a badge, everything else displayed as typed.
-  (async function loadMatchHistory(){
-    const PLAYERS_SHEET_ID = '1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM';
-    try {
-      const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=MatchHistory`;
-      const res = await fetch(url);
-      if (!res.ok) return;
-      const text = await res.text();
-      const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
-      const rows = (json.table && json.table.rows) || [];
-      if (!rows.length) return; // nothing completed yet — section stays hidden
-
-      const val = (row, i) => (row.c && row.c[i] ? row.c[i].v : '');
-      const matches = rows
-        .map(row => ({
-          opponent: String(val(row, 0) || '').trim(),
-          competition: String(val(row, 1) || '').trim(),
-          date: parseGvizCell(val(row, 2)),
-          time: parseGvizCell(val(row, 3)),
-          venue: String(val(row, 4) || '').trim(),
-          result: String(val(row, 5) || '').trim(),
-          opponentLogo: String(val(row, 6) || '').trim()
-        }))
-        .filter(m => m.opponent)
-        .reverse() // newest first — sheet rows are appended in chronological order
-        .slice(0, 20);
-
-      if (!matches.length) return;
-
-      const list = document.getElementById('matchHistoryList');
-      list.innerHTML = matches.map(m => {
-        let dateStr = '';
-        if (m.date){
-          let d = null;
-          if (typeof m.date === 'object') d = new Date(m.date.year, m.date.month, m.date.day);
-          else d = new Date(m.date + 'T00:00:00');
-          if (d && !isNaN(d)) dateStr = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-        }
-        const metaParts = [dateStr, m.venue, m.competition].filter(Boolean);
-
-        const resultUpper = m.result.toUpperCase();
-        let tone = '', letter = '', score = '';
-        if (resultUpper.startsWith('W')) { tone = 'win'; letter = 'W'; }
-        else if (resultUpper.startsWith('L')) { tone = 'loss'; letter = 'L'; }
-        else if (resultUpper.startsWith('D')) { tone = 'draw'; letter = 'D'; }
-        if (letter) score = m.result.slice(1).trim();
-
-        const badgeInner = m.opponentLogo
-          ? `<img src="${m.opponentLogo}" alt="">`
-          : `<svg viewBox="0 0 24 24"><path d="M12 2 4 6v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6l-8-4Z"/></svg>`;
-
-        return `
-          <div class="match-history-row">
-            <div class="mh-result${tone ? ' ' + tone : ''}">${letter || '—'}</div>
-            <div class="mh-badge">${badgeInner}</div>
-            <div class="mh-info">
-              <div class="mh-opponent">vs ${escapeHtml_(m.opponent)}</div>
-              <div class="mh-meta">${escapeHtml_(metaParts.join(' · '))}</div>
-            </div>
-            ${score ? `<div class="mh-score">${escapeHtml_(score)}</div>` : ''}
-          </div>`;
-      }).join('');
-
-      document.getElementById('matchHistorySection').style.display = 'block';
-    } catch (err) {
-      console.warn('Could not load match history — section stays hidden.', err);
-    }
-  })();
-
-  /* ---------------- SQUAD TEASER (homepage hint of the Players page) ---------------- */
-  function placeholderSquadImg(number, name){
-    const initials = String(name || '').trim().split(/\s+/).map(w => w[0]).slice(0,2).join('').toUpperCase();
-    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="400"><rect width="100%" height="100%" fill="#1a1d22"/><text x="50%" y="55%" font-family="Oswald, sans-serif" font-size="64" fill="#3a3d42" text-anchor="middle">${initials || number}</text></svg>`;
-    return 'data:image/svg+xml;base64,' + btoa(svg);
-  }
-
-  (async function loadSquadTeaser(){
-    const PLAYERS_SHEET_ID = '1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM';
-    const PLAYER_IMAGE_BASE = '/images/players/';
-    const teaserSection = document.getElementById('squad-teaser');
-    const grid = document.getElementById('squadTeaserGrid');
-    if (!grid) return;
-
-    function resolvePlayerImage(raw){
-      const v = String(raw || '').trim();
-      if (!v) return '';
-      if (/^https?:\/\//i.test(v)) return v;
-      return PLAYER_IMAGE_BASE + v;
-    }
-
-    try {
-      const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=Players`;
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Sheet request failed: ' + res.status);
-      const text = await res.text();
-      const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
-      const cols = (json.table && json.table.cols) || [];
-      const rows = (json.table && json.table.rows) || [];
-      const colIndex = {};
-      cols.forEach((c, i) => { if (c.label) colIndex[c.label.trim()] = i; });
-      const idx = (label, fallback) => colIndex[label] !== undefined ? colIndex[label] : fallback;
-      const iNumber = idx('Number', 0), iName = idx('Name', 1), iPosition = idx('Position', 2), iPhoto = idx('Photo', 3);
-
-      const players = rows.map(r => {
-        const cells = r.c || [];
-        const val = i => (i >= 0 && cells[i]) ? cells[i].v : '';
-        return {
-          number: Number(val(iNumber)),
-          name: String(val(iName) || '').trim(),
-          position: String(val(iPosition) || '').trim(),
-          photo: resolvePlayerImage(val(iPhoto))
-        };
-      }).filter(p => p.number && p.name && p.position);
-
-      if (!players.length) { teaserSection.style.display = 'none'; return; }
-
-      // A small hint of the squad, not the full roster — picks up to 6
-      // players spaced evenly through the sheet so it isn't just
-      // whoever happens to be listed first.
-      const count = Math.min(6, players.length);
-      const step = players.length / count;
-      const featured = [];
-      for (let i = 0; i < count; i++) featured.push(players[Math.floor(i * step)]);
-
-      grid.innerHTML = featured.map(p => {
-        const fallback = placeholderSquadImg(p.number, p.name);
-        return `
-          <a class="squad-teaser-card" href="/players/">
-            <img src="${p.photo || fallback}" alt="${escapeHtml_(p.name)}" loading="lazy"
-                 onerror="this.onerror=null; this.src='${fallback}';">
-            <div class="squad-teaser-overlay">
-              <div class="squad-teaser-number mono">${p.number}</div>
-              <div class="squad-teaser-name">${escapeHtml_(p.name)}</div>
-            </div>
-          </a>`;
-      }).join('');
-    } catch (err) {
-      console.warn('Could not load squad teaser — section stays hidden.', err);
-      if (teaserSection) teaserSection.style.display = 'none';
-    }
-  })();
-
-  function escapeHtml_(str){
-    return String(str || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
-  }
-
-  /* ---------------- THEME TOGGLE ---------------- */
   const root = document.documentElement;
   const themeToggle = document.getElementById('themeToggle');
   const savedTheme = localStorage.getItem('kit-theme');
@@ -1620,451 +375,363 @@
     root.setAttribute('data-theme', next);
     localStorage.setItem('kit-theme', next);
   });
+  document.getElementById('brandHome').addEventListener('click', () => { window.location.href = '../'; });
 
-  /* ---------------- MOBILE TOPBAR MENU (hamburger / slide-in drawer) ---------------- */
-  const menuToggleBtn = document.getElementById('menuToggleBtn');
-  const menuCloseBtn = document.getElementById('menuCloseBtn');
-  const topbarMenu = document.getElementById('topbarMenu');
-  const menuOverlay = document.getElementById('menuOverlay');
+  // ---- CONFIG: replace with your deployed Apps Script Web App URL ----
+  const API_URL = 'https://kbfc-api-live.aliffhakeem8.workers.dev';
+  const STORAGE_KEY = 'kbfc_session_token';
 
-  // Compensates for the scrollbar disappearing when body scroll locks, so
-  // page content (and the fixed topbar) doesn't visibly jump sideways —
-  // only matters on desktop browsers with a reserved-space scrollbar.
-  function lockBodyScroll(){
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    document.body.style.overflow = 'hidden';
-    if(scrollbarWidth > 0) document.body.style.paddingRight = scrollbarWidth + 'px';
-  }
-  function unlockBodyScroll(){
-    document.body.style.overflow = '';
-    document.body.style.paddingRight = '';
+  function redirectAfterLogin(data){
+    window.location.href = data.isAdmin ? '../panel-x7k9/' : '../dashboard/';
   }
 
-  function closeTopbarMenu(){
-    topbarMenu.classList.remove('active');
-    menuOverlay.classList.remove('active');
-    menuToggleBtn.setAttribute('aria-expanded', 'false');
-    unlockBodyScroll();
+  // ---- Login hero background: uses the image the admin uploaded via
+  // Site Media, if one exists. Falls back to the placeholder pattern
+  // already set in CSS if nothing's been uploaded yet, or if this fails.
+  const SITE_ASSETS_SHEET_ID = '1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM';
+  (async function applyLoginHero(){
+    try {
+      const url = `https://docs.google.com/spreadsheets/d/${SITE_ASSETS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=SiteAssets`;
+      const text = await (await fetch(url)).text();
+      const json = JSON.parse(text.substring(text.indexOf('{'), text.lastIndexOf('}') + 1));
+      const rows = json.table.rows || [];
+      const heroRow = rows.find(r => r.c[0] && r.c[0].v === 'login-hero');
+      const imageUrl = heroRow && heroRow.c[1] ? heroRow.c[1].v : '';
+      if (imageUrl){
+        const panel = document.getElementById('visualPanel');
+        panel.style.backgroundImage =
+          `linear-gradient(180deg, rgba(10,10,10,.15), rgba(10,10,10,.88) 90%), url('${imageUrl}')`;
+        panel.style.backgroundSize = 'cover';
+        panel.style.backgroundPosition = 'center';
+      }
+    } catch (err){
+      // Silently keep the CSS placeholder pattern if this fails for any reason.
+    }
+  })();
+
+  // Must match CLIENT_PASSWORD_SALT in the Apps Script backend exactly.
+  const PASSWORD_SALT = 'kbfc-club-salt-v1';
+
+  async function hashPassword(password){
+    const enc = new TextEncoder().encode(password + PASSWORD_SALT);
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
   }
-  function toggleTopbarMenu(){
-    const nowOpen = topbarMenu.classList.toggle('active');
-    menuOverlay.classList.toggle('active', nowOpen);
-    menuToggleBtn.setAttribute('aria-expanded', String(nowOpen));
-    if(nowOpen) lockBodyScroll(); else unlockBodyScroll();
-  }
 
-  menuToggleBtn.addEventListener('click', (e)=>{
-    e.stopPropagation();
-    toggleTopbarMenu();
-  });
-  menuCloseBtn.addEventListener('click', closeTopbarMenu);
-  menuOverlay.addEventListener('click', closeTopbarMenu);
-  // Any tap on a menu item closes the drawer, whether it navigates away,
-  // scrolls the page, or opens a modal (e.g. Check order) on top of it.
-  topbarMenu.addEventListener('click', (e)=>{
-    if(e.target.closest('.btn-mini')) closeTopbarMenu();
-  });
-  document.addEventListener('keydown', (e)=>{
-    if(e.key === 'Escape') closeTopbarMenu();
-  });
-
-  /* ---------------- VIEW SWITCH ---------------- */
-  const landing = document.getElementById('view-landing');
-  const order = document.getElementById('view-order');
-  document.getElementById('checkOrderBtnTop').addEventListener('click', ()=>{
-    window.location.href = '/checker/';
-  });
-  document.getElementById('preorderBtn').addEventListener('click', ()=>{
-    window.location.href = '/checker/';
-  });
-  document.getElementById('backBtn').addEventListener('click', ()=>{
-    order.classList.remove('active'); landing.classList.add('active');
-    window.scrollTo(0,0);
-  });
-
-  const brandHome = document.getElementById('brandHome');
-  const goHome = ()=>{
-    order.classList.remove('active'); landing.classList.add('active');
-    window.scrollTo({top:0, behavior:'smooth'});
+  const els = {
+    loginCard: document.getElementById('loginCard'),
+    resetCard: document.getElementById('resetCard'),
+    accountView: document.getElementById('accountView'),
+    formTitle: document.getElementById('formTitle'),
+    formSub: document.getElementById('formSub'),
+    tabLogin: document.getElementById('tabLogin'),
+    tabSignup: document.getElementById('tabSignup'),
+    authMsg: document.getElementById('authMsg'),
+    emailInput: document.getElementById('emailInput'),
+    passwordInput: document.getElementById('passwordInput'),
+    signupHint: document.getElementById('signupHint'),
+    authSubmitBtn: document.getElementById('authSubmitBtn'),
+    forgotLink: document.getElementById('forgotLink'),
+    resetMsg: document.getElementById('resetMsg'),
+    resetStepRequest: document.getElementById('resetStepRequest'),
+    resetStepConfirm: document.getElementById('resetStepConfirm'),
+    resetEmailInput: document.getElementById('resetEmailInput'),
+    requestResetBtn: document.getElementById('requestResetBtn'),
+    resetCodeInput: document.getElementById('resetCodeInput'),
+    newPasswordInput: document.getElementById('newPasswordInput'),
+    confirmResetBtn: document.getElementById('confirmResetBtn'),
+    backToLoginLink: document.getElementById('backToLoginLink'),
+    avatarInitials: document.getElementById('avatarInitials'),
+    accountEmail: document.getElementById('accountEmail'),
+    premiumBadge: document.getElementById('premiumBadge'),
+    ordersList: document.getElementById('ordersList'),
+    logoutBtn: document.getElementById('logoutBtn')
   };
-  brandHome.addEventListener('click', goHome);
-  brandHome.addEventListener('keydown', (e)=>{
-    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); goHome(); }
-  });
 
-  document.getElementById('dupModalClose').addEventListener('click', ()=>{
-    document.getElementById('dupModalOverlay').classList.remove('active');
-  });
-  document.getElementById('dupModalOverlay').addEventListener('click', (e)=>{
-    if(e.target.id === 'dupModalOverlay') e.currentTarget.classList.remove('active');
-  });
+  let mode = 'login';
 
-  /* ---------------- QUANTITY & JERSEY ENTRIES ---------------- */
-  const MIN_QTY = 1, MAX_QTY = 10;
-  let qty = 1;
-  const qtyValueEl = document.getElementById('qtyValue');
-  const jerseyEntriesEl = document.getElementById('jerseyEntries');
-
-  const SET_PRICES = { 'Jersey Only': 55, 'Jersey + Shorts': 85 };
-
-  function renderJerseyEntries(){
-    // preserve values already typed when qty changes
-    const prevValues = Array.from(jerseyEntriesEl.querySelectorAll('.jersey-entry')).map(entry => ({
-      number: entry.querySelector('.jersey-number-input').value,
-      name: entry.querySelector('.jersey-name-input').value,
-      size: entry.querySelector('.jersey-size-input').value,
-      set: entry.querySelector('.jersey-set-input').value
-    }));
-
-    jerseyEntriesEl.innerHTML = '';
-    for(let i=0; i<qty; i++){
-      const wrap = document.createElement('div');
-      wrap.className = 'jersey-entry';
-      wrap.innerHTML = `
-        <div class="jersey-entry-label mono">Jersey ${String(i+1).padStart(2,'0')}</div>
-        <div class="field">
-          <label class="mono">Set <span class="req">*</span></label>
-          <select class="jersey-set-input" required>
-            <option value="" disabled selected>Select set</option>
-            <option value="Jersey Only">Jersey Only — RM 55</option>
-            <option value="Jersey + Shorts">Jersey + Shorts — RM 85</option>
-          </select>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label class="mono">Jersey number <span class="req">*</span></label>
-            <input type="text" class="jersey-number-input" placeholder="e.g. 10" required>
-          </div>
-          <div class="field">
-            <label class="mono">Name on jersey <span class="req">*</span></label>
-            <input type="text" class="jersey-name-input" placeholder="e.g. DANISH, 8 at max" required>
-          </div>
-        </div>
-        <div class="field">
-          <label class="mono">Size <span class="req">*</span></label>
-          <select class="jersey-size-input" required>
-            <option value="" disabled selected>Select size</option>
-            <option value="XS">XS</option>
-            <option value="S">S</option>
-            <option value="M">M</option>
-            <option value="L">L</option>
-            <option value="XL">XL</option>
-            <option value="2XL">2XL</option>
-            <option value="3XL">3XL</option>
-            <option value="4XL">4XL</option>
-          </select>
-        </div>
-        <p class="jersey-error mono"></p>
-      `;
-      jerseyEntriesEl.appendChild(wrap);
-      if(prevValues[i]){
-        wrap.querySelector('.jersey-number-input').value = prevValues[i].number;
-        wrap.querySelector('.jersey-name-input').value = prevValues[i].name;
-        if(prevValues[i].size) wrap.querySelector('.jersey-size-input').value = prevValues[i].size;
-        if(prevValues[i].set) wrap.querySelector('.jersey-set-input').value = prevValues[i].set;
-      }
-    }
-    updateTotal();
-  }
-  renderJerseyEntries();
-
-  function updateTotal(){
-    const sets = Array.from(jerseyEntriesEl.querySelectorAll('.jersey-set-input')).map(el => el.value);
-    const total = sets.reduce((sum, s) => sum + (SET_PRICES[s] || 0), 0);
-    document.getElementById('totalAmount').textContent = 'RM ' + total;
-  }
-  jerseyEntriesEl.addEventListener('change', (e)=>{
-    if(e.target.classList.contains('jersey-set-input')) updateTotal();
-  });
-
-  document.getElementById('qtyMinus').addEventListener('click', ()=>{
-    if(qty > MIN_QTY){ qty--; qtyValueEl.textContent = qty; renderJerseyEntries(); }
-  });
-  document.getElementById('qtyPlus').addEventListener('click', ()=>{
-    if(qty < MAX_QTY){ qty++; qtyValueEl.textContent = qty; renderJerseyEntries(); }
-  });
-
-  /* ---------------- FORM SUBMIT -> GOOGLE SHEET ---------------- */
-  // 1. Deploy the Apps Script web app (see chat instructions).
-  // 2. Paste the deployment URL below.
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbybJZrAIPleUv6BqVbuwk8oiDcuhGKUW1t2wjDwh2J0ZB4oSuYa2l-dY3t9N3WrXz_V/exec";
-
-  const form = document.getElementById('orderForm');
-  const submitBtn = document.getElementById('submitBtn');
-
-  // Pull the list of jersey numbers already taken, so we can check before submitting.
-  // Loaded via JSONP (a <script> tag) rather than fetch(), because fetch() to an
-  // Apps Script URL gets blocked by the browser after Google's internal redirect —
-  // script tags aren't subject to that restriction, so this loads reliably.
-  let takenNumbers = new Set();
-  let currentOrderId = '';
-
-  // Simple, human-writable order ID: name initials + last 4 digits of phone
-  // (e.g. "ALI-1968"). Easy for a customer to jot down as a bank transfer remark.
-  function generateOrderId(name, phone){
-    const initials = (name || '').trim().split(/\s+/).filter(Boolean)
-      .map(w => w[0]).join('').toUpperCase().slice(0, 3) || 'ORD';
-    const digits = (phone || '').replace(/\D/g, '').slice(-4);
-    const fallback = Math.floor(1000 + Math.random() * 9000).toString();
-    return `${initials}-${digits || fallback}`;
-  }
-  function jsonpRequest(url, timeoutMs = 8000){
-    return new Promise((resolve, reject) => {
-      const cbName = 'jsonp_cb_' + Date.now() + '_' + Math.floor(Math.random()*100000);
-      const script = document.createElement('script');
-      const cleanup = () => { delete window[cbName]; script.remove(); };
-      const timer = setTimeout(() => { cleanup(); reject(new Error('JSONP request timed out')); }, timeoutMs);
-      window[cbName] = (data) => { clearTimeout(timer); cleanup(); resolve(data); };
-      script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cbName;
-      script.onerror = () => { clearTimeout(timer); cleanup(); reject(new Error('JSONP request failed')); };
-      document.body.appendChild(script);
+  // ---- Password show/hide toggles ----
+  function wireEyeToggle(inputId, btnId){
+    const input = document.getElementById(inputId);
+    const btn = document.getElementById(btnId);
+    const eyeOpen = btn.querySelector('.eye-open');
+    const eyeClosed = btn.querySelector('.eye-closed');
+    btn.addEventListener('click', () => {
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      eyeOpen.style.display = isPassword ? 'none' : 'block';
+      eyeClosed.style.display = isPassword ? 'block' : 'none';
+      btn.setAttribute('aria-label', isPassword ? 'Hide password' : 'Show password');
     });
   }
-  async function refreshTakenNumbers(){
-    try{
-      const data = await jsonpRequest(SCRIPT_URL);
-      takenNumbers = new Set((data.taken || []).map(n => String(n).trim()));
-    }catch(err){
-      console.warn('Could not refresh taken jersey numbers — duplicate check will be limited to this order only.', err);
+  wireEyeToggle('passwordInput', 'passwordEyeBtn');
+  wireEyeToggle('newPasswordInput', 'newPasswordEyeBtn');
+
+  function showMsg(text, type){
+    els.authMsg.innerHTML = text ? `<p class="msg ${type}">${text}</p>` : '';
+  }
+
+  function setMode(next){
+    mode = next;
+    els.tabLogin.classList.toggle('active', mode === 'login');
+    els.tabSignup.classList.toggle('active', mode === 'signup');
+    els.signupHint.classList.toggle('hidden', mode !== 'signup');
+    els.formTitle.textContent = mode === 'login' ? 'Log in' : 'Create account';
+    els.formSub.textContent = mode === 'login'
+      ? "Use the email and password you set up, or sign up if you haven't yet."
+      : "If you've ordered with us before, use that email for automatic premium access.";
+    els.authSubmitBtn.textContent = mode === 'login' ? 'Log in' : 'Create account';
+    els.passwordInput.setAttribute('autocomplete', mode === 'login' ? 'current-password' : 'new-password');
+    showMsg('', '');
+  }
+
+  function showAccount(email, premium, orders){
+    els.loginCard.classList.add('hidden');
+    els.accountView.classList.remove('hidden');
+
+    els.accountEmail.textContent = email;
+    els.avatarInitials.textContent = email.split('@')[0].slice(0,2).toUpperCase();
+    els.premiumBadge.classList.toggle('hidden', !premium);
+
+    if (!orders || orders.length === 0){
+      els.ordersList.innerHTML = '<p class="empty">No orders found for this email.</p>';
+    } else {
+      els.ordersList.innerHTML = orders.map(o => {
+        const s = (o.status || '').toLowerCase().replace(/\s+/g, '-');
+        const cls = s === 'paid' ? 'paid' : (s === 'pay-later' ? 'pay-later' : 'pending');
+        return `
+        <div class="order">
+          <div class="left">
+            <b>${o.orderId || '—'}</b>
+            <span>#${o.jerseyNumber || '—'} · ${o.size || '—'} · ${o.set || ''}</span>
+          </div>
+          <span class="status ${cls}">${o.status || 'Pending'}</span>
+        </div>`;
+      }).join('');
     }
   }
-  refreshTakenNumbers();
-  ['preorderBtn'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.addEventListener('click', refreshTakenNumbers);
-  });
 
-  function clearJerseyErrors(){
-    jerseyEntriesEl.querySelectorAll('.jersey-error').forEach(el => { el.textContent=''; el.classList.remove('active'); });
+  async function tryResumeSession(){
+    const token = localStorage.getItem(STORAGE_KEY);
+    if (!token) return;
+    try {
+      const data = await (await fetch(`${API_URL}?action=checkSession&token=${encodeURIComponent(token)}`)).json();
+      if (data.ok) redirectAfterLogin(data);
+      else localStorage.removeItem(STORAGE_KEY);
+    } catch (err){}
   }
 
-  form.addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    clearJerseyErrors();
+  els.tabLogin.addEventListener('click', () => setMode('login'));
+  els.tabSignup.addEventListener('click', () => setMode('signup'));
 
-    const jerseyRows = Array.from(jerseyEntriesEl.querySelectorAll('.jersey-entry'));
-    const jerseys = jerseyRows.map(row => ({
-      Number: row.querySelector('.jersey-number-input').value.trim(),
-      Name: row.querySelector('.jersey-name-input').value.trim(),
-      Size: row.querySelector('.jersey-size-input').value.trim(),
-      Set: row.querySelector('.jersey-set-input').value.trim()
-    }));
+  function showResetMsg(text, type){
+    els.resetMsg.innerHTML = text ? `<p class="msg ${type}">${text}</p>` : '';
+  }
 
-    // check 1: no duplicate numbers within this same order
-    const seen = new Map();
-    let hasLocalDupe = false;
-    jerseys.forEach((j, i) => {
-      if(seen.has(j.Number)){
-        hasLocalDupe = true;
-        const errEl = jerseyRows[i].querySelector('.jersey-error');
-        errEl.textContent = `No. ${j.Number} is already used earlier in this same order.`;
-        errEl.classList.add('active');
-      }
-      seen.set(j.Number, i);
-    });
+  function openReset(){
+    els.loginCard.classList.add('hidden');
+    els.resetCard.classList.remove('hidden');
+    els.resetStepRequest.classList.remove('hidden');
+    els.resetStepConfirm.classList.add('hidden');
+    els.resetEmailInput.value = els.emailInput.value.trim();
+    showResetMsg('', '');
+  }
 
-    // check 2: against numbers already recorded in the sheet
-    const clashes = [];
-    jerseys.forEach((j, i) => {
-      if(takenNumbers.has(j.Number)){
-        clashes.push(j.Number);
-        const errEl = jerseyRows[i].querySelector('.jersey-error');
-        errEl.textContent = `No. ${j.Number} has already been claimed by another order.`;
-        errEl.classList.add('active');
-      }
-    });
+  function closeReset(){
+    els.resetCard.classList.add('hidden');
+    els.loginCard.classList.remove('hidden');
+    els.resetCodeInput.value = '';
+    els.newPasswordInput.value = '';
+    setMode('login');
+  }
 
-    if(hasLocalDupe) return;
-    if(clashes.length){
-      document.getElementById('dupModalMsg').textContent =
-        `No. ${clashes.join(', ')} ${clashes.length > 1 ? 'have' : 'has'} already been claimed by another order.`;
-      document.getElementById('dupModalOverlay').classList.add('active');
+  els.forgotLink.addEventListener('click', openReset);
+  els.backToLoginLink.addEventListener('click', closeReset);
+
+  let resetEmail = '';
+
+  els.requestResetBtn.addEventListener('click', async () => {
+    const email = els.resetEmailInput.value.trim();
+    if (!email || email.indexOf('@') === -1){
+      showResetMsg('Please enter a valid email address.', 'error');
       return;
     }
 
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Sending...';
+    els.requestResetBtn.disabled = true;
+    els.requestResetBtn.textContent = 'Sending…';
+    showResetMsg('', '');
 
-    const nameVal = form.querySelector('[name="Name"]').value;
-    const emailVal = form.querySelector('[name="Email"]').value;
-    const phoneVal = form.querySelector('[name="Phone Number"]').value;
-    currentOrderId = generateOrderId(nameVal, phoneVal);
-
-    const payload = {
-      Name: nameVal,
-      Email: emailVal,
-      "Phone Number": phoneVal,
-      "Order ID": currentOrderId,
-      Jerseys: jerseys
-    };
-
-    try{
-      await fetch(SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors', // Apps Script POST responses aren't reliably readable cross-origin
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(payload)
-      });
-
-      // optimistically mark these numbers as taken locally, so a second
-      // submission in the same session is caught immediately
-      jerseys.forEach(j => takenNumbers.add(j.Number));
-
-      // Calculate total amount
-      const total = jerseys.reduce((sum, j) => sum + (SET_PRICES[j.Set] || 0), 0);
-      const paymentAmountEl = document.getElementById('paymentAmount');
-      const paymentOrderIdEl = document.getElementById('paymentOrderId');
-      const paymentOverlay = document.getElementById('paymentModalOverlay');
-
-      if(paymentAmountEl) paymentAmountEl.textContent = 'RM ' + total;
-      if(paymentOrderIdEl) paymentOrderIdEl.textContent = currentOrderId;
-
-      const waLink = document.getElementById('whatsappSendReceipt');
-      if(waLink){
-        const waMsg = `Hi Alep, I've completed my payment for Order ${currentOrderId} (RM ${total}). Please find the receipt screenshot attached.`;
-        waLink.href = 'https://wa.me/601135594075?text=' + encodeURIComponent(waMsg);
+    try {
+      const data = await (await fetch(`${API_URL}?action=requestReset&email=${encodeURIComponent(email)}`)).json();
+      if (data.ok){
+        resetEmail = email;
+        els.resetStepRequest.classList.add('hidden');
+        els.resetStepConfirm.classList.remove('hidden');
+        showResetMsg("If an account exists for this email, a reset code is on its way. Check your inbox.", 'success');
+      } else {
+        showResetMsg(data.error || 'Something went wrong. Please try again.', 'error');
       }
-
-      // Show payment modal instead of success box immediately
-      document.getElementById('formBox').style.display = 'none';
-      if(paymentOverlay) paymentOverlay.classList.add('active');
-    }catch(err){
-      alert('Something went wrong sending your order. Please try again.');
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Confirm pre-order';
+    } catch (err){
+      showResetMsg('Could not reach the server. Please try again.', 'error');
     }
+
+    els.requestResetBtn.disabled = false;
+    els.requestResetBtn.textContent = 'Send reset code';
   });
 
-  // Payment modal close handler - record payment status, then show success message
-  const paymentCloseBtn = document.getElementById('paymentModalClose');
-  const paymentModalOverlay = document.getElementById('paymentModalOverlay');
-  const payLaterCheckbox = document.getElementById('payLaterCheckbox');
-  const successMsgEl = document.getElementById('successMsg');
-  const DEFAULT_SUCCESS_MSG = successMsgEl ? successMsgEl.textContent : '';
-  const PAY_LATER_SUCCESS_MSG = "Thanks — your pre-order has been recorded. No rush on payment — we'll follow up with you on WhatsApp when you're ready to pay.";
+  els.confirmResetBtn.addEventListener('click', async () => {
+    const code = els.resetCodeInput.value.trim();
+    const newPassword = els.newPasswordInput.value;
 
-  async function finalizePaymentModal(){
-    const wantsPayLater = !!(payLaterCheckbox && payLaterCheckbox.checked);
+    if (!code){
+      showResetMsg('Please enter the code from your email.', 'error');
+      return;
+    }
+    if (!newPassword || newPassword.length < 6){
+      showResetMsg('New password must be at least 6 characters.', 'error');
+      return;
+    }
 
-    // Record the payment decision against this order in the sheet.
-    if(currentOrderId){
-      try{
-        await fetch(SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors', // Apps Script POST responses aren't reliably readable cross-origin
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify({
-            "Order ID": currentOrderId,
-            "Payment Status": wantsPayLater ? 'Pay Later' : 'Paid'
-          })
-        });
-      }catch(err){
-        console.warn('Could not record payment status for this order.', err);
+    els.confirmResetBtn.disabled = true;
+    els.confirmResetBtn.textContent = 'Resetting…';
+    showResetMsg('', '');
+
+    try {
+      const newPasswordHash = await hashPassword(newPassword);
+      const data = await (await fetch(`${API_URL}?action=resetPassword&email=${encodeURIComponent(resetEmail)}&code=${encodeURIComponent(code)}&newPasswordHash=${encodeURIComponent(newPasswordHash)}`)).json();
+      if (data.ok){
+        els.resetCard.classList.add('hidden');
+        localStorage.setItem(STORAGE_KEY, data.token);
+        redirectAfterLogin(data);
+      } else {
+        showResetMsg(data.error || 'Something went wrong. Please try again.', 'error');
       }
+    } catch (err){
+      showResetMsg('Could not reach the server. Please try again.', 'error');
     }
 
-    if(successMsgEl) successMsgEl.textContent = wantsPayLater ? PAY_LATER_SUCCESS_MSG : DEFAULT_SUCCESS_MSG;
+    els.confirmResetBtn.disabled = false;
+    els.confirmResetBtn.textContent = 'Reset password';
+  });
 
-    paymentModalOverlay.classList.remove('active');
-    document.getElementById('successBox').classList.add('active');
+  els.authSubmitBtn.addEventListener('click', async () => {
+    const email = els.emailInput.value.trim();
+    const password = els.passwordInput.value;
+
+    if (!email || email.indexOf('@') === -1){
+      showMsg('Please enter a valid email address.', 'error');
+      return;
+    }
+    if (!password){
+      showMsg('Please enter your password.', 'error');
+      return;
+    }
+    if (mode === 'signup' && password.length < 6){
+      showMsg('Password must be at least 6 characters.', 'error');
+      return;
+    }
+
+    els.authSubmitBtn.disabled = true;
+    els.authSubmitBtn.textContent = mode === 'login' ? 'Logging in…' : 'Creating account…';
+    showMsg('', '');
+
+    try {
+      const passwordHash = await hashPassword(password);
+      const data = await (await fetch(`${API_URL}?action=${mode}&email=${encodeURIComponent(email)}&passwordHash=${encodeURIComponent(passwordHash)}`)).json();
+      if (data.ok){
+        localStorage.setItem(STORAGE_KEY, data.token);
+        redirectAfterLogin(data);
+      } else {
+        showMsg(data.error || 'Something went wrong. Please try again.', 'error');
+      }
+    } catch (err){
+      showMsg('Could not reach the server. Please try again.', 'error');
+    }
+
+    els.authSubmitBtn.disabled = false;
+    els.authSubmitBtn.textContent = mode === 'login' ? 'Log in' : 'Create account';
+  });
+
+  els.logoutBtn.addEventListener('click', () => {
+    localStorage.removeItem(STORAGE_KEY);
+    els.emailInput.value = '';
+    els.passwordInput.value = '';
+    els.accountView.classList.add('hidden');
+    els.resetCard.classList.add('hidden');
+    els.loginCard.classList.remove('hidden');
+    setMode('login');
+  });
+
+  // ---- Google Sign-In ----
+  // Paste the same Client ID you used in the backend script here.
+  const GOOGLE_CLIENT_ID = '225342743611-g7lb9rnbdb0139gufv1u7k242ukjao53.apps.googleusercontent.com';
+
+  function showGoogleMsg(text, type){
+    const el = document.getElementById('googleMsg');
+    el.innerHTML = text ? `<p class="msg ${type}">${text}</p>` : '';
   }
 
-  if(paymentCloseBtn && paymentModalOverlay){
-    paymentCloseBtn.addEventListener('click', finalizePaymentModal);
+  let googleCredentialInFlight = false; // guards against a double-fire of the Google callback
 
-    // Also close payment modal if they click outside
-    paymentModalOverlay.addEventListener('click', (e)=>{
-      if(e.target.id === 'paymentModalOverlay') finalizePaymentModal();
-    });
+  // Small helper: retries once after a short delay if the first attempt
+  // fails outright (network error) or comes back non-OK/non-JSON — this
+  // covers the intermittent Apps Script "cold start" case, where the very
+  // first request after a period of inactivity can come back as a generic
+  // Google error page instead of running the script. A second attempt a
+  // moment later almost always succeeds once the container is warm.
+  async function postWithRetry_(url, body, attempt){
+    attempt = attempt || 1;
+    try {
+      const res = await fetch(url, { method: 'POST', body: body });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return await res.json(); // throws if the body isn't valid JSON (e.g. Google's HTML error page)
+    } catch (err) {
+      if (attempt >= 2) throw err;
+      await new Promise(r => setTimeout(r, 1200));
+      return postWithRetry_(url, body, attempt + 1);
+    }
   }
 
-  /* ---------- signup promo popup ---------- */
-  (function(){
-    var STORAGE_KEY = 'kbfc_signup_promo_dismissed_at';
-    var COOLDOWN_DAYS = 7;
-    var SHOW_DELAY_MS = 1500;
-    var SLIDE_INTERVAL_MS = 3200;
-
-    var overlay = document.getElementById('signupPromoOverlay');
-    if(!overlay) return;
-
-    function alreadyDismissedRecently(){
-      var last = localStorage.getItem(STORAGE_KEY);
-      if(!last) return false;
-      var daysSince = (Date.now() - Number(last)) / 86400000;
-      return daysSince < COOLDOWN_DAYS;
+  async function handleGoogleCredential(response){
+    if (googleCredentialInFlight) return; // ignore a second concurrent call
+    googleCredentialInFlight = true;
+    showGoogleMsg('', '');
+    const googleAction = mode === 'signup' ? 'googleSignup' : 'googleLogin';
+    try {
+      // POST, not GET — a Google idToken (JWT) is long enough that stuffing it
+      // into a query string blows past the URL-length limit the Apps Script
+      // /exec redirect layer can handle, which showed up as a 404. The
+      // backend's doPost already accepts { action, idToken } as JSON, and the
+      // Cloudflare Worker proxy already forwards POST bodies correctly — so
+      // this just needed to actually send it as a POST instead of a GET.
+      const data = await postWithRetry_(API_URL, JSON.stringify({ action: googleAction, idToken: response.credential }));
+      if (data.ok){
+        localStorage.setItem(STORAGE_KEY, data.token);
+        redirectAfterLogin(data);
+      } else {
+        showGoogleMsg(data.error || 'Could not sign in with Google. Please try again.', 'error');
+      }
+    } catch (err){
+      showGoogleMsg('Could not reach the server. Please try again.', 'error');
+    } finally {
+      googleCredentialInFlight = false;
     }
+  }
 
-    // ---- mini feature slideshow ----
-    var slides = Array.prototype.slice.call(overlay.querySelectorAll('.promo-slide'));
-    var dotsWrap = document.getElementById('promoSlideDots');
-    var slideIndex = 0;
-    var slideTimer = null;
-
-    if(slides.length && dotsWrap){
-      slides.forEach(function(_, i){
-        var dot = document.createElement('button');
-        dot.className = 'promo-slide-dot' + (i === 0 ? ' active' : '');
-        dot.setAttribute('aria-label', 'Show feature ' + (i + 1));
-        dot.addEventListener('click', function(){ goToSlide(i); restartSlideTimer(); });
-        dotsWrap.appendChild(dot);
-      });
-    }
-    var dots = dotsWrap ? Array.prototype.slice.call(dotsWrap.children) : [];
-
-    function goToSlide(i){
-      slideIndex = (i + slides.length) % slides.length;
-      slides.forEach(function(s, idx){ s.classList.toggle('active', idx === slideIndex); });
-      dots.forEach(function(d, idx){ d.classList.toggle('active', idx === slideIndex); });
-    }
-
-    function startSlideTimer(){
-      if(slides.length < 2) return;
-      stopSlideTimer();
-      slideTimer = setInterval(function(){ goToSlide(slideIndex + 1); }, SLIDE_INTERVAL_MS);
-    }
-    function stopSlideTimer(){
-      if(slideTimer){ clearInterval(slideTimer); slideTimer = null; }
-    }
-    function restartSlideTimer(){ startSlideTimer(); }
-
-    var slideshowEl = document.getElementById('signupPromoSlideshow');
-    if(slideshowEl){
-      slideshowEl.addEventListener('mouseenter', stopSlideTimer);
-      slideshowEl.addEventListener('mouseleave', startSlideTimer);
-    }
-
-    function dismiss(){
-      overlay.classList.remove('active');
-      stopSlideTimer();
-    }
-
-    // Don't show on top of another modal that's already open (e.g. mid-checkout),
-    // and don't show at all if this visitor already saw it within the cooldown
-    // window — recorded the moment it's actually SHOWN, not only if they click
-    // something. Otherwise a visitor who just closes the tab or reloads without
-    // touching the popup would see it again on every single visit.
-    if(!alreadyDismissedRecently()){
-      setTimeout(function(){
-        var anotherModalOpen = document.querySelector('.modal-overlay.active');
-        if(!anotherModalOpen){
-          localStorage.setItem(STORAGE_KEY, String(Date.now()));
-          overlay.classList.add('active');
-          goToSlide(0);
-          startSlideTimer();
-        }
-      }, SHOW_DELAY_MS);
-    }
-
-    var closeBtn = document.getElementById('signupPromoClose');
-    var laterBtn = document.getElementById('signupPromoLater');
-    if(closeBtn) closeBtn.addEventListener('click', dismiss);
-    if(laterBtn) laterBtn.addEventListener('click', dismiss);
-    overlay.addEventListener('click', function(e){
-      if(e.target.id === 'signupPromoOverlay') dismiss();
+  function initGoogleButton(){
+    if (!window.google || GOOGLE_CLIENT_ID.indexOf('PASTE_YOUR') !== -1) return;
+    google.accounts.id.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handleGoogleCredential
     });
-  })();
+    google.accounts.id.renderButton(document.getElementById('googleBtnContainer'), {
+      theme: 'filled_black', size: 'large', width: 328, text: 'continue_with', shape: 'pill'
+    });
+  }
+  window.addEventListener('load', initGoogleButton);
+
+  setMode('login');
+  tryResumeSession();
 </script>
-
 </body>
 </html>
