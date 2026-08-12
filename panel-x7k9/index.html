@@ -1827,7 +1827,7 @@
     if (!sel) return;
     const prevValue = sel.value;
     sel.innerHTML = allPlayers.length
-      ? allPlayers.map(p => `<option value="${p.rowNumber}">#${p.number || '—'} — ${(p.name || 'Unnamed').replace(/"/g,'&quot;')}</option>`).join('')
+      ? allPlayers.map(p => `<option value="${p.rowNumber}" data-name="${(p.name || '').replace(/"/g,'&quot;')}" data-number="${(p.number || '').replace(/"/g,'&quot;')}">#${p.number || '—'} — ${(p.name || 'Unnamed').replace(/"/g,'&quot;')}</option>`).join('')
       : `<option value="">No players yet — add one in Players first</option>`;
     if (prevValue && allPlayers.some(p => String(p.rowNumber) === prevValue)) sel.value = prevValue;
     updateSocialPreview();
@@ -2699,6 +2699,8 @@
       action: 'adminPostSocialUpdate', token,
       playerRowNumber: sel.value,
       playerLabel: sel.selectedOptions[0].textContent,
+      playerName: sel.selectedOptions[0].dataset.name || '',
+      playerNumber: sel.selectedOptions[0].dataset.number || '',
       eventType: document.getElementById('socialEventType').value,
       minute: document.getElementById('socialMinute').value,
       note: document.getElementById('socialNote').value.trim(),
