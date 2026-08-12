@@ -341,6 +341,31 @@
     background:var(--surface-2); border:1px solid var(--line); color:var(--ink); padding:6px 8px;
     border-radius:6px; font-size:12px; width:100%; font-family:'Inter',sans-serif; box-sizing:border-box;
   }
+  .edit-input:focus{ outline:none; border-color:var(--accent); }
+
+  /* Live Update panel — segmented toggle, platform chips, field labels */
+  .social-field{ margin-bottom:18px; }
+  .social-label{
+    font-size:10.5px; font-weight:700; letter-spacing:0.4px; text-transform:uppercase;
+    color:var(--muted); display:block; margin-bottom:6px;
+  }
+  .social-seg{
+    display:inline-flex; background:var(--surface-2); border:1px solid var(--line);
+    border-radius:9px; padding:3px; gap:2px;
+  }
+  .social-seg-btn{
+    border:none; background:transparent; color:var(--muted); font-family:'Inter',sans-serif;
+    font-size:12px; font-weight:600; padding:7px 14px; border-radius:7px; cursor:pointer;
+    transition:background .15s ease, color .15s ease;
+  }
+  .social-seg-btn.active{ background:var(--surface); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,0.08); }
+  .social-chip{
+    display:flex; align-items:center; gap:7px; padding:8px 14px; border-radius:9px;
+    border:1px solid var(--line); background:var(--surface-2); font-size:12.5px; font-weight:600;
+    color:var(--muted); cursor:pointer; transition:border-color .15s ease, color .15s ease;
+  }
+  .social-chip input{ width:14px; height:14px; accent-color:var(--accent); }
+  .social-chip.chip-active{ border-color:var(--accent); color:var(--ink); background:var(--accent-dim); }
 
   .item-edit-row{
     display:grid; gap:8px; align-items:center; padding:8px 0;
@@ -910,35 +935,30 @@
         <div class="nm-col">
           <div class="card">
             <h3>Post a live update</h3>
-            <p class="card-sub" style="margin-bottom:16px;">Match is pulled from Next Match — set it there first if it's blank below.</p>
+            <p class="card-sub" style="margin-bottom:18px;">Match is pulled from Next Match — set it there first if it's blank below.</p>
 
-            <div id="socialMatchContext" style="font-size:12.5px; color:var(--muted); background:var(--surface-2); border-radius:9px; padding:10px 12px; margin-bottom:16px;">
+            <div id="socialMatchContext" style="font-size:12.5px; font-weight:600; color:var(--ink); background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:11px 14px; margin-bottom:20px;">
               No upcoming match set — go to <b>Next Match</b> to set one.
             </div>
 
-            <div style="margin-bottom:14px;">
-              <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Player</label>
-              <div style="display:flex; gap:16px; margin-bottom:8px; font-size:12.5px;">
-                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
-                  <input type="radio" name="socialPlayerSource" id="socialSourceRoster" checked style="width:15px;height:15px;"> From our roster
-                </label>
-                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
-                  <input type="radio" name="socialPlayerSource" id="socialSourceOther" style="width:15px;height:15px;"> Other player
-                </label>
+            <div style="margin-bottom:18px;">
+              <div class="social-seg" role="tablist">
+                <button type="button" class="social-seg-btn active" id="socialSourceRoster" data-source="roster">From our roster</button>
+                <button type="button" class="social-seg-btn" id="socialSourceOther" data-source="other">Other player</button>
               </div>
-              <div id="socialRosterWrap" style="display:grid; grid-template-columns:2fr 1fr; gap:10px;">
+              <div id="socialRosterWrap" style="display:grid; grid-template-columns:2fr 1fr; gap:10px; margin-top:12px;">
                 <select id="socialPlayerSelect" class="edit-input"></select>
                 <input type="number" id="socialMinute" class="edit-input" placeholder="Minute" min="0" max="120">
               </div>
-              <div id="socialOtherWrap" style="display:none; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+              <div id="socialOtherWrap" style="display:none; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-top:12px;">
                 <input type="text" id="socialOtherName" class="edit-input" placeholder="Player name">
                 <input type="text" id="socialOtherNumber" class="edit-input" placeholder="Number">
                 <input type="number" id="socialOtherMinute" class="edit-input" placeholder="Minute" min="0" max="120">
               </div>
             </div>
 
-            <div style="margin-bottom:14px;">
-              <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">What happened</label>
+            <div class="social-field">
+              <label class="social-label">What happened</label>
               <select id="socialEventType" class="edit-input" style="width:100%;">
                 <option value="goal">⚽ Goal</option>
                 <option value="penalty_goal">⚽ Penalty scored</option>
@@ -956,43 +976,49 @@
               </select>
             </div>
 
-            <div style="margin-bottom:16px;">
-              <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Note (optional — e.g. "assisted by #7", "great strike from outside the box")</label>
+            <div class="social-field">
+              <label class="social-label">Note <span style="font-weight:400; color:var(--muted); text-transform:none; letter-spacing:0;">(optional — e.g. "assisted by #7")</span></label>
               <input type="text" id="socialNote" class="edit-input" style="width:100%;" placeholder="Optional extra detail">
             </div>
 
-            <div style="display:flex; gap:16px; margin-bottom:16px; font-size:12.5px;">
-              <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
-                <input type="checkbox" id="socialPostThreads" checked style="width:15px;height:15px;"> Post to Threads
-              </label>
-              <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
-                <input type="checkbox" id="socialPostInstagram" checked style="width:15px;height:15px;"> Post to Instagram
-              </label>
+            <div class="social-field">
+              <label class="social-label">Platforms</label>
+              <div style="display:flex; gap:10px;">
+                <label class="social-chip" id="socialThreadsChip">
+                  <input type="checkbox" id="socialPostThreads" checked> Threads
+                </label>
+                <label class="social-chip" id="socialInstagramChip">
+                  <input type="checkbox" id="socialPostInstagram" checked> Instagram
+                </label>
+              </div>
             </div>
 
-            <div style="margin-bottom:18px;">
-              <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Caption (auto-filled — edit freely before posting)</label>
+            <div class="social-field">
+              <label class="social-label">Caption <span style="font-weight:400; color:var(--muted); text-transform:none; letter-spacing:0;">(auto-filled — edit freely)</span></label>
               <textarea id="socialPreview" class="edit-input" style="width:100%; min-height:90px; font-size:13.5px; line-height:1.5; resize:vertical; font-family:inherit;"></textarea>
             </div>
 
-            <div style="margin-bottom:18px;">
-              <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Poster preview</label>
-              <div id="socialGraphicPreviewWrap" style="display:none; margin-bottom:10px; text-align:center;">
-                <img id="socialGraphicPreviewImg" style="max-width:220px; width:100%; border-radius:9px; border:1px solid var(--line);">
+            <div class="social-field">
+              <label class="social-label">Poster preview</label>
+              <div id="socialGraphicPreviewWrap" style="display:none; margin-bottom:10px; text-align:center; background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:14px;">
+                <img id="socialGraphicPreviewImg" style="max-width:200px; width:100%; border-radius:8px; display:block; margin:0 auto;">
               </div>
               <div id="socialGraphicPreviewMsg" style="font-size:12px; color:var(--muted); margin-bottom:10px;"></div>
               <button class="ghost" id="previewSocialGraphicBtn" type="button" style="width:100%;">Preview poster</button>
             </div>
 
-            <button class="action" id="postSocialUpdateBtn">Post update</button>
+            <button class="action" id="postSocialUpdateBtn" style="width:100%; margin-top:6px;">Post update</button>
             <div id="socialPostMsg" style="font-size:12px; color:var(--muted); margin-top:12px;"></div>
           </div>
         </div>
 
         <div class="nm-col">
           <div class="card">
-            <h3>Recent updates</h3>
-            <p class="card-sub" style="margin-bottom:14px;">Everything sent from this panel, newest first.</p>
+            <div style="display:flex; align-items:baseline; justify-content:space-between;">
+              <h3>Recent updates</h3>
+              <button type="button" id="socialLogToggle" class="ghost" style="padding:4px 10px; font-size:11.5px; display:none;">Show all</button>
+            </div>
+            <p class="card-sub" style="margin-bottom:14px;">Latest 5 shown by default, newest first.</p>
             <div class="table-wrap">
               <table>
                 <thead><tr><th>Player</th><th>Event</th><th>Min</th><th>When</th><th>Threads</th><th>Instagram</th></tr></thead>
@@ -2684,8 +2710,9 @@
     fulltime:        (p, min, note, opp) => `🔚 Full-time${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`
   };
 
+  let socialPlayerSource = 'roster';
   function currentSocialPlayerSource(){
-    return document.getElementById('socialSourceOther').checked ? 'other' : 'roster';
+    return socialPlayerSource;
   }
 
   function getSocialPlayerInfo(){
@@ -2709,15 +2736,33 @@
     };
   }
 
-  document.getElementById('socialSourceRoster').addEventListener('change', () => {
+  document.getElementById('socialSourceRoster').addEventListener('click', () => {
+    socialPlayerSource = 'roster';
+    document.getElementById('socialSourceRoster').classList.add('active');
+    document.getElementById('socialSourceOther').classList.remove('active');
     document.getElementById('socialRosterWrap').style.display = 'grid';
     document.getElementById('socialOtherWrap').style.display = 'none';
     updateSocialPreview();
   });
-  document.getElementById('socialSourceOther').addEventListener('change', () => {
+  document.getElementById('socialSourceOther').addEventListener('click', () => {
+    socialPlayerSource = 'other';
+    document.getElementById('socialSourceOther').classList.add('active');
+    document.getElementById('socialSourceRoster').classList.remove('active');
     document.getElementById('socialRosterWrap').style.display = 'none';
     document.getElementById('socialOtherWrap').style.display = 'grid';
     updateSocialPreview();
+  });
+
+  // Platform chips — visually highlight when checked, same idea as a toggle button.
+  function refreshSocialChip(checkboxId, chipId){
+    const cb = document.getElementById(checkboxId);
+    const chip = document.getElementById(chipId);
+    chip.classList.toggle('chip-active', cb.checked);
+  }
+  ['socialPostThreads','socialPostInstagram'].forEach(id => {
+    const chipId = id === 'socialPostThreads' ? 'socialThreadsChip' : 'socialInstagramChip';
+    refreshSocialChip(id, chipId);
+    document.getElementById(id).addEventListener('change', () => refreshSocialChip(id, chipId));
   });
 
   function buildSocialCaption(){
@@ -2856,14 +2901,31 @@
     document.getElementById('postSocialUpdateBtn').disabled = false;
   });
 
+  let socialLogFull = [];
+  let socialLogShowAll = false;
+
   async function loadSocialLog(){
     const body = document.getElementById('socialLogBody');
     if (!body) return;
     const data = await (await fetch(`${API_URL}?action=adminGetSocialLog&token=${encodeURIComponent(token)}`)).json();
     if (!data.ok || !data.log || data.log.length === 0){
       body.innerHTML = `<tr><td colspan="6" style="color:var(--muted); font-size:12.5px;">No updates posted yet.</td></tr>`;
+      document.getElementById('socialLogToggle').style.display = 'none';
       return;
     }
+    socialLogFull = data.log;
+    socialLogShowAll = false;
+    renderSocialLog();
+  }
+
+  function renderSocialLog(){
+    const body = document.getElementById('socialLogBody');
+    const toggle = document.getElementById('socialLogToggle');
+    const rows = socialLogShowAll ? socialLogFull : socialLogFull.slice(0, 5);
+
+    toggle.style.display = socialLogFull.length > 5 ? 'inline-block' : 'none';
+    toggle.textContent = socialLogShowAll ? 'Show latest 5' : `Show all (${socialLogFull.length})`;
+
     function statusPill(status){
       if (!status) return '<span style="color:var(--muted);">—</span>';
       const failed = /fail/i.test(status);
@@ -2872,7 +2934,7 @@
       const label = failed ? 'Failed' : status;
       return `<span title="${status.replace(/"/g,'&quot;')}" style="font-size:10.5px; font-weight:600; padding:2px 8px; border-radius:999px; background:${bg}; color:${color}; white-space:nowrap;">${label}</span>`;
     }
-    body.innerHTML = data.log.map(entry => `
+    body.innerHTML = rows.map(entry => `
       <tr>
         <td><b>${(entry.playerLabel || '—').replace(/</g,'&lt;')}</b></td>
         <td style="text-transform:capitalize;">${(entry.eventType || '').replace(/_/g,' ') || '—'}</td>
@@ -2883,6 +2945,11 @@
       </tr>
     `).join('');
   }
+
+  document.getElementById('socialLogToggle').addEventListener('click', () => {
+    socialLogShowAll = !socialLogShowAll;
+    renderSocialLog();
+  });
 
   // ---------------- INIT ----------------
   async function init(){
