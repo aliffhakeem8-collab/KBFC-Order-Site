@@ -474,6 +474,12 @@
     <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
     Site Media
   </button>
+
+  <div class="sidebar-group-label">Social</div>
+  <button class="nav-item" data-view="social">
+    <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="10.6" x2="15.4" y2="6.4"/><line x1="8.6" y1="13.4" x2="15.4" y2="17.6"/></svg>
+    Live Update
+  </button>
   <div class="sidebar-footer">
     <button class="icon-btn theme-toggle" id="themeToggle" aria-label="Toggle theme">
       <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="4" y1="4" x2="5.8" y2="5.8"/><line x1="18.2" y1="18.2" x2="20" y2="20"/><line x1="1.5" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22.5" y2="12"/><line x1="4" y1="20" x2="5.8" y2="18.2"/><line x1="18.2" y1="5.8" x2="20" y2="4"/></svg>
@@ -892,6 +898,85 @@
           <thead><tr><th></th><th>Slot</th><th>Uploaded</th><th>Size</th><th>Status</th><th></th></tr></thead>
           <tbody id="mediaLogTableBody"></tbody>
         </table>
+      </div>
+    </section>
+
+    <!-- SOCIAL / LIVE UPDATE -->
+    <section class="view-section" id="view-social">
+      <div class="page-title">Live Update</div>
+      <p style="font-size:12.5px;color:var(--muted);margin:-12px 0 20px;">Pick a player and what happened, and it posts a templated update to Threads and Instagram. Nothing goes out until you hit "Post update."</p>
+
+      <div class="nextmatch-grid">
+        <div class="nm-col">
+          <div class="card">
+            <h3>Post a live update</h3>
+            <p class="card-sub" style="margin-bottom:16px;">Match is pulled from Next Match — set it there first if it's blank below.</p>
+
+            <div id="socialMatchContext" style="font-size:12.5px; color:var(--muted); background:var(--surface-2); border-radius:9px; padding:10px 12px; margin-bottom:16px;">
+              No upcoming match set — go to <b>Next Match</b> to set one.
+            </div>
+
+            <div style="display:grid; grid-template-columns:2fr 1fr; gap:10px; margin-bottom:14px;">
+              <div>
+                <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Player</label>
+                <select id="socialPlayerSelect" class="edit-input"></select>
+              </div>
+              <div>
+                <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Minute</label>
+                <input type="number" id="socialMinute" class="edit-input" placeholder="62" min="0" max="120">
+              </div>
+            </div>
+
+            <div style="margin-bottom:14px;">
+              <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">What happened</label>
+              <select id="socialEventType" class="edit-input" style="width:100%;">
+                <option value="goal">⚽ Goal</option>
+                <option value="penalty_goal">⚽ Penalty scored</option>
+                <option value="penalty_missed">❌ Penalty missed</option>
+                <option value="own_goal">⚠️ Own goal</option>
+                <option value="assist">🅰️ Assist</option>
+                <option value="yellow_card">🟨 Yellow card</option>
+                <option value="red_card">🟥 Red card</option>
+                <option value="sub_on">🔄 Substituted on</option>
+                <option value="sub_off">🔄 Substituted off</option>
+                <option value="injury">🩹 Injury</option>
+                <option value="kickoff">🏁 Kick-off</option>
+                <option value="halftime">⏸️ Half-time</option>
+                <option value="fulltime">🔚 Full-time</option>
+              </select>
+            </div>
+
+            <div style="margin-bottom:16px;">
+              <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Note (optional — e.g. "assisted by #7", "great strike from outside the box")</label>
+              <input type="text" id="socialNote" class="edit-input" style="width:100%;" placeholder="Optional extra detail">
+            </div>
+
+            <div style="display:flex; gap:16px; margin-bottom:16px; font-size:12.5px;">
+              <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                <input type="checkbox" id="socialPostThreads" checked style="width:15px;height:15px;"> Post to Threads
+              </label>
+              <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                <input type="checkbox" id="socialPostInstagram" checked style="width:15px;height:15px;"> Post to Instagram
+              </label>
+            </div>
+
+            <div style="margin-bottom:18px;">
+              <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Preview</label>
+              <div id="socialPreview" style="background:var(--surface-2); border:1px solid var(--line); border-radius:9px; padding:14px; font-size:13.5px; line-height:1.5; white-space:pre-wrap; min-height:60px;"></div>
+            </div>
+
+            <button class="action" id="postSocialUpdateBtn">Post update</button>
+            <div id="socialPostMsg" style="font-size:12px; color:var(--muted); margin-top:12px;"></div>
+          </div>
+        </div>
+
+        <div class="nm-col">
+          <div class="card">
+            <h3>Recent updates</h3>
+            <p class="card-sub" style="margin-bottom:14px;">Everything sent from this panel, newest first.</p>
+            <div id="socialLogBody"></div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -1725,6 +1810,7 @@
     allPlayers = data.players;
     renderPlayersTable();
     renderPlayerPhotoSelect();
+    renderSocialPlayerSelect();
   }
 
   function renderPlayerPhotoSelect(){
@@ -1734,6 +1820,17 @@
       ? allPlayers.map(p => `<option value="${p.rowNumber}">#${p.number || '—'} — ${(p.name || 'Unnamed').replace(/"/g,'&quot;')}</option>`).join('')
       : `<option value="">No players yet — add one below first</option>`;
     if (prevValue && allPlayers.some(p => String(p.rowNumber) === prevValue)) sel.value = prevValue;
+  }
+
+  function renderSocialPlayerSelect(){
+    const sel = document.getElementById('socialPlayerSelect');
+    if (!sel) return;
+    const prevValue = sel.value;
+    sel.innerHTML = allPlayers.length
+      ? allPlayers.map(p => `<option value="${p.rowNumber}">#${p.number || '—'} — ${(p.name || 'Unnamed').replace(/"/g,'&quot;')}</option>`).join('')
+      : `<option value="">No players yet — add one in Players first</option>`;
+    if (prevValue && allPlayers.some(p => String(p.rowNumber) === prevValue)) sel.value = prevValue;
+    updateSocialPreview();
   }
   els.playerSearch.addEventListener('input', renderPlayersTable);
   document.getElementById('refreshPlayersBtn').addEventListener('click', loadPlayers);
@@ -2231,6 +2328,7 @@
   // ---------------- NEXT MATCH ----------------
   const shieldIconSvg = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--muted)" fill="none" stroke-width="1.8"><path d="M12 2 4 6v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6l-8-4Z"/></svg>`;
   let nextMatchClearLogoFlag = false;
+  let currentMatchContext = null; // { opponent, competition, date, venue } — feeds the Live Update panel
 
   async function loadNextMatch(){
     const data = await (await fetch(`${API_URL}?action=getNextMatch`)).json(); // public read, no token needed
@@ -2242,9 +2340,13 @@
       msgEl.textContent = 'No upcoming match set yet.';
       preview.innerHTML = shieldIconSvg;
       clearBtn.style.display = 'none';
+      currentMatchContext = null;
+      renderSocialMatchContext();
       return;
     }
     const m = data.match;
+    currentMatchContext = m;
+    renderSocialMatchContext();
     document.getElementById('nextMatchOpponent').value = m.opponent || '';
     document.getElementById('nextMatchCompetition').value = m.competition || '';
     document.getElementById('nextMatchDate').value = m.date || '';
@@ -2525,6 +2627,134 @@
   }
   document.getElementById('refreshChangeRequestsBtn').addEventListener('click', loadChangeRequests);
 
+  // ---------------- SOCIAL / LIVE UPDATE ----------------
+
+  function renderSocialMatchContext(){
+    const el = document.getElementById('socialMatchContext');
+    if (!el) return;
+    if (!currentMatchContext){
+      el.innerHTML = 'No upcoming match set — go to <b>Next Match</b> to set one.';
+    } else {
+      const m = currentMatchContext;
+      el.innerHTML = `vs <b>${(m.opponent || 'TBC').replace(/</g,'&lt;')}</b>${m.competition ? ' · ' + m.competition.replace(/</g,'&lt;') : ''}${m.date ? ' · ' + m.date : ''}`;
+    }
+    updateSocialPreview();
+  }
+
+  // One caption template per event type. Keep these short — Threads caps at 500 chars
+  // and Instagram captions read best short too. {player} / {minute} / {note} / {opponent}
+  // get swapped in by buildSocialCaption() below.
+  const socialTemplates = {
+    goal:            (p, min, note, opp) => `⚽ GOAL!\n\n${p} — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
+    penalty_goal:    (p, min, note, opp) => `⚽ PENALTY SCORED!\n\n${p} — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
+    penalty_missed:  (p, min, note, opp) => `❌ Penalty missed\n\n${p} — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
+    own_goal:        (p, min, note, opp) => `⚠️ Own goal\n\n${p} — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
+    assist:          (p, min, note, opp) => `🅰️ Assist\n\n${p} — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
+    yellow_card:     (p, min, note, opp) => `🟨 Yellow card\n\n${p} — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
+    red_card:        (p, min, note, opp) => `🟥 Red card\n\n${p} — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
+    sub_on:          (p, min, note, opp) => `🔄 ${p} comes on — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
+    sub_off:         (p, min, note, opp) => `🔄 ${p} comes off — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
+    injury:          (p, min, note, opp) => `🩹 ${p} down injured — ${min}'${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
+    kickoff:         (p, min, note, opp) => `🏁 Kick-off!\n\nKBFC${opp ? ' vs ' + opp : ''}${note ? '\n' + note : ''}`,
+    halftime:        (p, min, note, opp) => `⏸️ Half-time${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`,
+    fulltime:        (p, min, note, opp) => `🔚 Full-time${note ? '\n' + note : ''}\n\nKBFC${opp ? ' vs ' + opp : ''}`
+  };
+
+  function buildSocialCaption(){
+    const sel = document.getElementById('socialPlayerSelect');
+    const opt = sel && sel.selectedOptions[0];
+    const playerLabel = opt && opt.value ? opt.textContent : '—';
+    const eventType = document.getElementById('socialEventType').value;
+    const minute = document.getElementById('socialMinute').value || '—';
+    const note = document.getElementById('socialNote').value.trim();
+    const opponent = currentMatchContext ? currentMatchContext.opponent : '';
+    const tmpl = socialTemplates[eventType] || socialTemplates.goal;
+    return tmpl(playerLabel, minute, note, opponent);
+  }
+
+  function updateSocialPreview(){
+    const el = document.getElementById('socialPreview');
+    if (!el) return;
+    el.textContent = buildSocialCaption();
+  }
+
+  ['socialPlayerSelect','socialEventType','socialMinute','socialNote'].forEach(id => {
+    const node = document.getElementById(id);
+    if (node) node.addEventListener('input', updateSocialPreview);
+  });
+
+  document.getElementById('postSocialUpdateBtn').addEventListener('click', async () => {
+    const sel = document.getElementById('socialPlayerSelect');
+    const msgEl = document.getElementById('socialPostMsg');
+    const postThreads = document.getElementById('socialPostThreads').checked;
+    const postInstagram = document.getElementById('socialPostInstagram').checked;
+
+    if (!sel.value){ msgEl.textContent = 'Pick a player first.'; msgEl.style.color = 'var(--accent)'; return; }
+    if (!postThreads && !postInstagram){ msgEl.textContent = 'Pick at least one platform.'; msgEl.style.color = 'var(--accent)'; return; }
+
+    const caption = buildSocialCaption();
+    if (!(await confirmDialog(`Post this now?\n\n${caption}`, { okLabel: 'Post update' }))) return;
+
+    const payload = {
+      action: 'adminPostSocialUpdate', token,
+      playerRowNumber: sel.value,
+      playerLabel: sel.selectedOptions[0].textContent,
+      eventType: document.getElementById('socialEventType').value,
+      minute: document.getElementById('socialMinute').value,
+      note: document.getElementById('socialNote').value.trim(),
+      opponent: currentMatchContext ? currentMatchContext.opponent : '',
+      caption,
+      platforms: { threads: postThreads, instagram: postInstagram }
+    };
+
+    msgEl.textContent = 'Posting…'; msgEl.style.color = 'var(--muted)';
+    document.getElementById('postSocialUpdateBtn').disabled = true;
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight, same trick used elsewhere in this dashboard
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.ok){
+        msgEl.textContent = 'Posted.'; msgEl.style.color = 'var(--muted)';
+        document.getElementById('socialMinute').value = '';
+        document.getElementById('socialNote').value = '';
+        updateSocialPreview();
+        loadSocialLog();
+        showToast('Live update posted');
+      } else {
+        msgEl.textContent = data.error || 'Failed to post.'; msgEl.style.color = 'var(--accent)';
+      }
+    } catch (err){
+      msgEl.textContent = 'Network error — check your connection and try again.'; msgEl.style.color = 'var(--accent)';
+    }
+    document.getElementById('postSocialUpdateBtn').disabled = false;
+  });
+
+  async function loadSocialLog(){
+    const body = document.getElementById('socialLogBody');
+    if (!body) return;
+    const data = await (await fetch(`${API_URL}?action=adminGetSocialLog&token=${encodeURIComponent(token)}`)).json();
+    if (!data.ok || !data.log || data.log.length === 0){
+      body.innerHTML = `<p style="font-size:12.5px;color:var(--muted);">No updates posted yet.</p>`;
+      return;
+    }
+    body.innerHTML = data.log.map(entry => `
+      <div style="padding:10px 0; border-bottom:1px solid var(--line-soft); font-size:12.5px;">
+        <div style="display:flex; justify-content:space-between; gap:8px;">
+          <b>${(entry.playerLabel || '').replace(/</g,'&lt;')}</b>
+          <span class="mono" style="color:var(--muted);">${entry.minute ? entry.minute + "'" : ''}</span>
+        </div>
+        <div style="color:var(--muted); margin-top:2px;">${(entry.eventType || '').replace(/_/g,' ')} · ${entry.postedAt || ''}</div>
+        <div style="margin-top:4px; display:flex; gap:6px;">
+          ${entry.threadsStatus ? `<span style="font-size:10.5px; padding:2px 7px; border-radius:999px; background:var(--surface-2);">Threads: ${entry.threadsStatus}</span>` : ''}
+          ${entry.instagramStatus ? `<span style="font-size:10.5px; padding:2px 7px; border-radius:999px; background:var(--surface-2);">Instagram: ${entry.instagramStatus}</span>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
   // ---------------- INIT ----------------
   async function init(){
     token = localStorage.getItem(STORAGE_KEY);
@@ -2551,6 +2781,7 @@
     loadDrops();
     loadSiteAssets();
     loadNextMatch(); loadNextMatchLog(); loadMatchHistoryAdmin(); loadChangeRequests();
+    loadSocialLog();
   }
 
   init();
