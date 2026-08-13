@@ -1130,7 +1130,7 @@
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
       </a>
     </div>
-    <div class="club-photos-track">
+    <div class="club-photos-track" id="clubPhotosTrack">
       <div class="club-photo-item"><img src="../images/club-photo-1.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
       <div class="club-photo-item"><img src="../images/club-photo-2.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
       <div class="club-photo-item"><img src="../images/club-photo-3.jpg" alt="" loading="lazy" onerror="this.parentElement.style.display='none';"></div>
@@ -1820,6 +1820,30 @@
       document.body.appendChild(script);
     });
   }
+
+  /* ---------- live Instagram feed ("From the club" section) ---------- */
+  async function loadInstagramFeed(){
+    const track = document.getElementById('clubPhotosTrack');
+    if (!track) return;
+    try {
+      const data = await jsonpRequest(SCRIPT_URL + '?action=getInstagramFeed');
+      if (!data.ok || !data.posts || !data.posts.length) return; // leave the static placeholder photos showing — better than an empty section
+      // Duplicate the set once so the CSS marquee still loops seamlessly,
+      // same trick the original static version used.
+      const items = data.posts.concat(data.posts).map(p => `
+        <div class="club-photo-item">
+          <a href="${p.permalink}" target="_blank" rel="noopener" style="display:block; width:100%; height:100%;">
+            <img src="${p.imageUrl}" alt="" loading="lazy" onerror="this.closest('.club-photo-item').style.display='none';">
+          </a>
+        </div>
+      `).join('');
+      track.innerHTML = items;
+    } catch (err) {
+      console.warn('Could not load the Instagram feed — showing the placeholder photos instead.', err);
+    }
+  }
+  loadInstagramFeed();
+
   async function refreshTakenNumbers(){
     try{
       const data = await jsonpRequest(SCRIPT_URL);
