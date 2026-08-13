@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" href="/images/Favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#FAFAF8;
@@ -39,7 +39,7 @@
     -webkit-font-smoothing:antialiased;
     transition:background .35s ease, color .35s ease;
   }
-  .mono{font-family:'JetBrains Mono',monospace; letter-spacing:0.06em;}
+  .mono{font-family:'Inter',sans-serif; font-weight:600; letter-spacing:0.06em;}
   .display{font-family:'Oswald',sans-serif; text-transform:uppercase;}
 
   /* ---------- topbar ---------- */
@@ -62,7 +62,7 @@
     font-size:14px; font-weight:600; letter-spacing:0.08em;
   }
   .brand-logo{ width:24px; height:24px; object-fit:contain; }
-  .brand span{font-family:'JetBrains Mono',monospace;}
+  .brand span{font-family:'Inter',sans-serif; font-weight:600;}
 
   .social-row{ display:flex; align-items:center; gap:10px; padding-left:2px; }
   .social-icon{
@@ -73,66 +73,19 @@
   .social-icon svg{ width:16px; height:16px; }
 
   .topbar-actions{display:flex; align-items:center; gap:14px; position:relative;}
-  .menu-overlay{
-    position:fixed; inset:0; background:rgba(0,0,0,0.45);
-    opacity:0; pointer-events:none;
-    transition:opacity .3s ease;
-    z-index:1000;
+  .topnav{ display:flex; align-items:center; gap:26px; flex:1; justify-content:center; }
+  .topnav-link{
+    font-family:'Inter',sans-serif; font-size:13px; font-weight:600;
+    letter-spacing:0.02em; color:var(--ink); text-decoration:none;
+    background:none; border:none; cursor:pointer; padding:4px 0;
+    position:relative; white-space:nowrap;
   }
-  .menu-overlay.active{ opacity:1; pointer-events:auto; }
-  .topbar-menu{
-    position:fixed; top:0; right:0; bottom:0;
-    width:320px; max-width:82vw;
-    background:var(--surface); border-left:1px solid var(--line);
-    display:flex; flex-direction:column;
-    padding:22px 22px 28px;
-    transform:translateX(100%);
-    transition:transform .32s ease;
-    z-index:1001;
-    overflow-y:auto;
+  .topnav-link::after{
+    content:''; position:absolute; left:0; right:100%; bottom:-6px; height:2px;
+    background:var(--accent); transition:right .25s ease;
   }
-  .topbar-menu.active{ transform:translateX(0); }
-  .topbar-menu-head{
-    display:flex; align-items:center; justify-content:space-between;
-    margin-bottom:18px; padding-bottom:16px;
-    border-bottom:1px solid var(--line);
-  }
-  .topbar-menu-head span{
-    font-family:'Oswald',sans-serif; font-weight:600; font-size:14px;
-    letter-spacing:.04em; text-transform:uppercase; color:var(--muted);
-  }
-  .menu-close-btn{
-    width:34px; height:34px; border-radius:50%; border:1px solid var(--line);
-    background:transparent; color:var(--ink); cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-  }
-  .menu-close-btn svg{ width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2; }
-  .topbar-menu .btn-mini{
-    width:100%; justify-content:flex-start; gap:12px;
-    font-size:14px !important; padding:16px 4px;
-    border:none; border-radius:0;
-    border-bottom:1px solid var(--line);
-  }
-  .topbar-menu .btn-mini svg{ width:16px; height:16px; }
-  .menu-group-label{
-    font-size:10.5px; font-weight:700; letter-spacing:.08em;
-    color:var(--accent); text-transform:uppercase;
-    padding:16px 4px 6px;
-  }
-  .topbar-menu .menu-group-label:first-of-type{ padding-top:4px; }
-  .topbar-menu .btn-mini:disabled{
-    cursor:not-allowed; opacity:.5;
-  }
-  .btn-mini.is-locked{
-    cursor:not-allowed; opacity:.5; pointer-events:none;
-    filter:grayscale(1);
-  }
-  .menu-item-soon{ font-size:10px; opacity:.8; margin-left:2px; }
-  .btn-mini.menu-toggle-btn{
-    display:flex; width:40px; height:40px; padding:0;
-    align-items:center; justify-content:center; border-radius:50%;
-  }
-  .menu-toggle-btn svg{ width:16px; height:16px; }
+  .topnav-link:hover{ color:var(--accent); }
+  .topnav-link:hover::after{ right:0; }
   .btn-mini{
     display:inline-flex; align-items:center; gap:8px;
     border:1px solid var(--line);
@@ -167,11 +120,22 @@
 
   /* ================= LANDING VIEW ================= */
   .hero{
-    position:relative;
-    padding:150px 6vw 64px;
+    position:relative; overflow:hidden;
+    padding:156px 6vw 76px;
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,0.035) 0 2px, transparent 2px 26px),
+      linear-gradient(140deg, #14171C 0%, #1b1215 55%, #14171C 100%);
+    border-bottom:3px solid var(--accent);
     display:flex; justify-content:center;
   }
+  .hero-crest-bg{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:min(70vw, 620px); opacity:.05; pointer-events:none;
+    filter:brightness(6);
+  }
+  .hero-crest-bg img{ width:100%; display:block; }
   .hero-content{
+    position:relative; z-index:1;
     width:100%; max-width:720px;
     display:flex; justify-content:center;
   }
@@ -180,17 +144,26 @@
 
   .season-tag{
     display:inline-flex; align-items:center; gap:8px;
-    font-size:12px; color:var(--muted); margin-bottom:18px;
+    font-size:12px; color:rgba(255,255,255,.62); margin-bottom:18px;
     text-transform:uppercase; letter-spacing:.06em;
   }
   .season-tag::before{content:"";width:18px;height:1px;background:var(--accent);}
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:12px; color:var(--muted); margin-bottom:14px;
+    text-transform:uppercase; letter-spacing:.06em;
+  }
+  .eyebrow::before{content:"";width:18px;height:1px;background:var(--accent);}
   .hero-copy h1{
+    color:#fff;
     font-size:clamp(40px, 6vw, 78px);
     line-height:0.98;
     font-weight:600;
     margin-bottom:24px;
   }
   .hero-copy h1 em{font-style:normal;color:var(--accent);}
+  .hero .btn-primary{ background:var(--accent); color:#fff; }
+  .hero .btn-primary:hover{ background:#fff; color:var(--ink); }
   .hero-copy p{
     font-size:15.5px; color:var(--muted); max-width:420px; line-height:1.6;
     margin:0 auto 28px;
@@ -237,11 +210,23 @@
 
   /* ---------- next match section (featured card, in-page) ---------- */
   .next-match-section{
-    padding:44px 6vw; border-top:1px solid var(--line);
+    padding:40px 6vw 8px;
   }
+  .next-match-panel{
+    max-width:900px; margin:0 auto;
+    background:
+      repeating-linear-gradient(135deg, rgba(255,255,255,0.035) 0 2px, transparent 2px 26px),
+      linear-gradient(140deg, #14171C 0%, #1b1215 55%, #14171C 100%);
+    border:1px solid rgba(185,19,33,.3); border-radius:16px;
+    box-shadow:0 24px 50px rgba(20,23,28,.14);
+    padding:24px 5vw;
+  }
+  .next-match-panel .ps-header{ margin-bottom:14px; text-align:center; }
+  .next-match-panel .ps-header h2{ color:#fff; }
+  .next-match-panel .eyebrow{ color:rgba(255,255,255,.6); justify-content:center; }
   .next-match-card{
-    border:1px solid rgba(185,19,33,0.4); background:rgba(185,19,33,0.06);
-    border-radius:10px; padding:26px 28px;
+    border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.05);
+    border-radius:10px; padding:18px 24px;
     display:flex; align-items:center; justify-content:space-between; gap:16px;
     max-width:640px; margin:0 auto;
   }
@@ -249,15 +234,15 @@
   .nm-card-badge{
     width:52px; height:52px; border-radius:50%; overflow:hidden;
     display:flex; align-items:center; justify-content:center;
-    background:var(--surface); border:1px solid var(--line);
+    background:#fff; border:1px solid rgba(255,255,255,.2);
   }
   .nm-card-badge img{ width:100%; height:100%; object-fit:cover; }
   .nm-card-badge.them{ filter:grayscale(1); }
   .nm-card-badge svg{ width:22px; height:22px; stroke:var(--muted); fill:none; stroke-width:1.6; }
-  .nm-card-team span{ font-family:'Oswald',sans-serif; font-size:14px; font-weight:600; text-align:center; }
+  .nm-card-team span{ font-family:'Oswald',sans-serif; font-size:14px; font-weight:600; text-align:center; color:#fff; }
   .nm-card-mid{ text-align:center; flex:1; }
-  .nm-card-vs{ font-family:'Oswald',sans-serif; font-size:20px; font-weight:600; color:var(--muted); }
-  .nm-card-meta{ font-size:11.5px; color:var(--muted); margin-top:8px; line-height:1.5; }
+  .nm-card-vs{ font-family:'Oswald',sans-serif; font-size:20px; font-weight:600; color:var(--accent); }
+  .nm-card-meta{ font-size:11.5px; color:rgba(255,255,255,.55); margin-top:8px; line-height:1.5; }
 
   @media (max-width:600px){
     .next-match-card{ padding:20px 18px; gap:8px; }
@@ -281,7 +266,7 @@
   font-family: 'Oswald', sans-serif;
 }
   .club-photos-header a{
-    font-size:11.5px; color:var(--muted); text-decoration:none; font-family:'JetBrains Mono',monospace;
+    font-size:11.5px; color:var(--muted); text-decoration:none; font-family:'Inter',sans-serif; font-weight:600;
     display:inline-flex; align-items:center; gap:5px; white-space:nowrap;
   }
   .club-photos-header a:hover{ color:var(--accent); }
@@ -310,7 +295,7 @@
 
   /* ---------- thank-you note (merged into hero) ---------- */
   .thank-you-text{
-    font-size:14.5px; color:var(--muted); line-height:1.6;
+    font-size:14.5px; color:rgba(255,255,255,.66); line-height:1.6;
     max-width:480px; margin:0 auto 28px;
   }
 
@@ -337,29 +322,18 @@
   .login-promo-compact{
     position:relative; overflow:hidden;
     margin:56px 6vw; padding:26px 30px 26px 34px;
-    background:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E") repeat,
-      linear-gradient(115deg, #14171C 0%, #1f1215 60%, #2a1215 100%);
-    background-blend-mode:overlay;
+    background:linear-gradient(120deg, #14171C 0%, #1a1215 100%);
     border:1px solid rgba(185,19,33,.25); border-radius:0;
-    box-shadow:0 24px 60px rgba(185,19,33,.14), 0 20px 60px rgba(20,23,28,0.14);
     display:flex; align-items:center; gap:22px;
   }
   .login-promo-compact::before{
-    content:''; position:absolute; left:0; top:0; bottom:0; width:5px;
-    background:linear-gradient(180deg, var(--accent), #ff5a5a);
-  }
-  .login-promo-compact::after{
-    content:''; position:absolute; top:-40%; right:-8%;
-    width:220px; height:220px; border-radius:50%;
-    background:radial-gradient(circle, rgba(185,19,33,.28) 0%, rgba(185,19,33,0) 70%);
-    pointer-events:none;
+    content:''; position:absolute; left:0; top:0; bottom:0; width:4px;
+    background:var(--accent);
   }
   .login-promo-icon{
     position:relative; width:52px; height:52px; border-radius:50%; flex-shrink:0;
-    background:linear-gradient(135deg, var(--accent), #7a0e15);
+    background:var(--accent);
     display:flex; align-items:center; justify-content:center;
-    box-shadow:0 8px 20px rgba(185,19,33,.35);
   }
   .login-promo-icon svg{ width:24px; height:24px; stroke:#fff; fill:none; stroke-width:1.8; }
   .login-promo-text{ position:relative; flex:1; min-width:220px; }
@@ -398,23 +372,14 @@
     max-width:440px; width:100%;
     max-height:calc(100vh - 48px);
     padding:38px 34px 30px;
-    background:
-      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E") repeat,
-      linear-gradient(115deg, #14171C 0%, #1f1215 60%, #2a1215 100%);
-    background-blend-mode:overlay;
+    background:linear-gradient(120deg, #14171C 0%, #1a1215 100%);
     border:1px solid rgba(185,19,33,.25);
     box-shadow:0 30px 80px rgba(0,0,0,.5);
     text-align:left;
   }
   .signup-promo-box::before{
-    content:''; position:absolute; left:0; top:0; bottom:0; width:5px;
-    background:linear-gradient(180deg, var(--accent), #ff5a5a);
-  }
-  .signup-promo-box::after{
-    content:''; position:absolute; top:-40%; right:-15%;
-    width:260px; height:260px; border-radius:50%;
-    background:radial-gradient(circle, rgba(185,19,33,.28) 0%, rgba(185,19,33,0) 70%);
-    pointer-events:none;
+    content:''; position:absolute; left:0; top:0; bottom:0; width:4px;
+    background:var(--accent);
   }
   .signup-promo-close{
     position:absolute; top:16px; right:16px; z-index:2;
@@ -462,7 +427,7 @@
     background:linear-gradient(90deg, transparent, #d9ab3f 35%, #d9ab3f 65%, transparent); opacity:.6;
   }
   .promo-mock-card-top{ display:flex; justify-content:space-between; align-items:flex-start; }
-  .promo-mock-card-club{ font-family:'JetBrains Mono',monospace; font-size:7px; letter-spacing:.08em; color:#d9ab3f; font-weight:600; line-height:1.6; }
+  .promo-mock-card-club{ font-family:'Inter',sans-serif; font-size:7px; letter-spacing:.08em; color:#d9ab3f; font-weight:600; line-height:1.6; }
   .promo-mock-card-club span{ display:block; color:rgba(255,255,255,.4); font-weight:400; }
   .promo-mock-card-num{ font-size:20px; font-weight:800; line-height:1; color:#b91321; }
   .promo-mock-card-name{ margin-top:16px; font-size:13px; font-weight:700; color:#fff; }
@@ -473,7 +438,7 @@
     width:220px; padding:12px 14px; border-radius:6px;
     background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
   }
-  .promo-mock-order-id{ font-family:'JetBrains Mono',monospace; font-size:11px; color:#fff; }
+  .promo-mock-order-id{ font-family:'Inter',sans-serif; font-size:11px; font-weight:600; color:#fff; }
   .promo-mock-order-sub{ font-size:9px; color:rgba(255,255,255,.45); margin-top:3px; }
   .promo-mock-pill{
     background:rgba(217,171,63,.15); border:1px solid #d9ab3f; color:#d9ab3f;
@@ -507,7 +472,7 @@
     width:220px; padding:12px 14px; border-radius:6px;
     background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
   }
-  .promo-mock-match-label{ font-family:'JetBrains Mono',monospace; font-size:8px; color:#d9ab3f; text-transform:uppercase; letter-spacing:.08em; margin-bottom:5px; }
+  .promo-mock-match-label{ font-family:'Inter',sans-serif; font-size:8px; color:#d9ab3f; font-weight:600; text-transform:uppercase; letter-spacing:.08em; margin-bottom:5px; }
   .promo-mock-match-opp{ font-size:12.5px; color:#fff; font-weight:600; }
   .promo-mock-match-time{ font-size:9.5px; color:rgba(255,255,255,.5); margin-top:3px; }
 
@@ -539,7 +504,7 @@
   }
 
   footer{
-    padding:0 6vw 0; border-top:1px solid var(--line);
+    padding:0 6vw 0; border-top:3px solid var(--accent);
     font-size:12px; color:var(--muted);
   }
   .footer-top{
@@ -550,7 +515,7 @@
   .footer-col{ display:flex; flex-direction:column; gap:14px; }
   .footer-col-brand{ gap:10px; max-width:280px; }
   .footer-logo-row{ display:flex; align-items:center; gap:10px; }
-  .footer-crest{ width:26px; height:26px; object-fit:contain; }
+  .footer-crest{ width:36px; height:36px; object-fit:contain; }
   .footer-club-name{
     font-size:14px; font-weight:600; letter-spacing:0.08em; color:var(--ink);
   }
@@ -558,6 +523,12 @@
   .footer-col-label{
     text-transform:uppercase; color:var(--muted); font-size:11px;
   }
+  .footer-links{ display:flex; flex-direction:column; gap:10px; }
+  .footer-link{
+    font-size:13.5px; color:var(--ink); text-decoration:none;
+    transition:color .2s ease;
+  }
+  .footer-link:hover{ color:var(--accent); }
   .footer-credit-label{
     text-transform:uppercase;
     color:var(--muted); font-size:11px;
@@ -589,49 +560,56 @@
   }
 
   /* ---------- completed matches ---------- */
-  .match-history{ padding:64px 6vw 24px; }
+  .match-history{ padding:40px 6vw 24px; }
   .match-history .ps-header{ margin-bottom:24px; }
   .match-history-list{
-    display:flex; flex-direction:column; border-top:1px solid var(--line);
+    display:flex; flex-direction:column; gap:10px;
   }
   .match-history-row{
     display:flex; align-items:center; gap:18px;
-    padding:18px 4px; border-bottom:1px solid var(--line);
+    padding:16px 20px; background:var(--surface);
+    border:1px solid var(--line); border-radius:10px;
+    transition:border-color .2s ease, transform .2s ease, box-shadow .2s ease;
+  }
+  .match-history-row:hover{
+    border-color:var(--accent); transform:translateY(-2px);
+    box-shadow:0 10px 26px rgba(20,23,28,.08);
   }
   .mh-result{
-    flex-shrink:0; width:34px; height:34px; border-radius:50%;
+    flex-shrink:0; width:36px; height:36px; border-radius:50%;
     display:flex; align-items:center; justify-content:center;
-    font-family:'Oswald',sans-serif; font-size:13px; font-weight:600; letter-spacing:.02em;
+    font-family:'Oswald',sans-serif; font-size:14px; font-weight:700; letter-spacing:.02em;
     border:1.5px solid var(--line); color:var(--muted);
   }
   .mh-result.win{ border-color:#1fa855; color:#1fa855; background:rgba(31,168,85,.1); }
   .mh-result.loss{ border-color:var(--accent); color:var(--accent); background:rgba(185,19,33,.08); }
   .mh-result.draw{ border-color:var(--muted); color:var(--muted); }
   .mh-badge{
-    flex-shrink:0; width:26px; height:26px; border-radius:50%; overflow:hidden;
+    flex-shrink:0; width:34px; height:34px; border-radius:50%; overflow:hidden;
     display:flex; align-items:center; justify-content:center;
     background:var(--bg); border:1px solid var(--line); filter:grayscale(1);
   }
   .mh-badge img{ width:100%; height:100%; object-fit:cover; }
   .mh-badge svg{ width:12px; height:12px; stroke:var(--muted); fill:none; stroke-width:1.8; }
   .mh-info{ flex:1; min-width:0; }
-  .mh-opponent{ font-size:15px; font-weight:600; }
+  .mh-opponent{ font-family:'Oswald',sans-serif; font-size:16.5px; font-weight:600; }
   .mh-meta{ font-size:12px; color:var(--muted); margin-top:3px; }
   .mh-score{
-    flex-shrink:0; font-family:'JetBrains Mono',monospace; font-size:14px; font-weight:700;
+    flex-shrink:0; font-family:'Inter',sans-serif; font-size:14.5px; font-weight:700;
     color:var(--ink); white-space:nowrap;
+    background:var(--line-soft); padding:6px 14px; border-radius:999px;
   }
   @media (max-width:640px){
     .match-history{ padding:44px 6vw 12px; }
-    .match-history-row{ gap:12px; }
-    .mh-opponent{ font-size:13.5px; }
+    .match-history-row{ gap:12px; padding:14px 16px; }
+    .mh-opponent{ font-size:14px; }
     .mh-meta{ font-size:11px; }
   }
 
 
   /* ---------- squad teaser (homepage hint of the players page) ---------- */
   .squad-teaser{
-    padding:88px 6vw; border-top:1px solid var(--line);
+    padding:56px 6vw; border-top:1px solid var(--line);
   }
   .squad-teaser-header{
     display:flex; align-items:flex-end; justify-content:space-between;
@@ -649,18 +627,24 @@
     text-decoration:none; color:inherit; display:block;
     transition:border-color .25s ease, transform .25s ease;
   }
+  .squad-teaser-card::after{
+    content:''; position:absolute; left:0; right:0; bottom:0; height:3px;
+    background:var(--accent); transform:scaleX(0); transform-origin:left;
+    transition:transform .25s ease; z-index:1;
+  }
+  .squad-teaser-card:hover::after{ transform:scaleX(1); }
   .squad-teaser-card:hover{ border-color:var(--accent); transform:translateY(-3px); }
   .squad-teaser-card img{
     position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
   }
   .squad-teaser-overlay{
     position:absolute; left:0; right:0; bottom:0; padding:14px;
-    background:linear-gradient(180deg, transparent, rgba(0,0,0,.82));
+    background:linear-gradient(180deg, transparent, rgba(20,23,28,.9));
     color:#fff;
   }
   .squad-teaser-number{
     font-family:'Oswald',sans-serif; font-weight:700; font-size:clamp(20px,2.4vw,28px);
-    line-height:1; margin-bottom:4px;
+    line-height:1; margin-bottom:4px; color:var(--accent);
   }
   .squad-teaser-name{
     font-family:'Oswald',sans-serif; font-weight:600; font-size:12px;
@@ -812,7 +796,7 @@
     width:56px;height:56px;border-radius:50%;
     border:1px solid var(--accent); color:var(--accent);
     display:flex;align-items:center;justify-content:center;
-    margin:0 auto 22px; font-family:'JetBrains Mono',monospace; font-size:13px;
+    margin:0 auto 22px; font-family:'Inter',sans-serif; font-weight:700; font-size:13px;
   }
   .success-box h3{font-size:26px; font-weight:600; margin-bottom:10px;}
   .success-box p{color:var(--muted); font-size:14px; max-width:340px; margin:0 auto;}
@@ -909,8 +893,9 @@
 
   @media (max-width: 780px){
     .hero{
-      padding:110px 6vw 32px;
+      padding:118px 6vw 40px;
     }
+    .hero-crest-bg{ width:85vw; }
     .hero-cta-row{ gap:10px; }
     .hero-cta-row .btn-primary,
     .hero-cta-row .btn-secondary{
@@ -919,21 +904,16 @@
     }
     .hero-cta-row .btn-primary svg,
     .hero-cta-row .btn-secondary svg{ width:13px; height:13px; flex-shrink:0; }
-    .topbar-menu{
-      top:0; left:0; right:0; bottom:auto;
-      width:100%; max-width:100%;
-      max-height:85vh;
-      border-left:none; border-bottom:1px solid var(--line);
-      transform:translateY(-100%);
-      transition:transform .35s cubic-bezier(.4,0,.2,1);
-      overflow-y:auto;
-      padding:20px 20px 26px;
-    }
-    .topbar-menu.active{
-      transform:translateY(0);
-    }
     .field-row{grid-template-columns:1fr;}
-    .topbar{padding:18px 20px;}
+    .topbar{padding:14px 20px; flex-wrap:wrap; gap:10px 0;}
+    .topnav{
+      order:3; width:100%; flex:1 0 100%;
+      justify-content:flex-start; overflow-x:auto;
+      gap:20px; padding-top:12px; margin-top:2px;
+      border-top:1px solid var(--line);
+      scrollbar-width:none;
+    }
+    .topnav::-webkit-scrollbar{ display:none; }
     .footer-top{
       flex-direction:column; align-items:flex-start; gap:28px;
       padding:40px 0 32px;
@@ -967,76 +947,38 @@
 </head>
 <body>
 
-<div class="menu-overlay" id="menuOverlay"></div>
-
 <div class="topbar">
   <div class="brand-wrap">
     <div class="brand" id="brandHome" role="button" tabindex="0" aria-label="Back to home">
       <img src="../images/club-logo.png" alt="Kelapa Bali FC logo" class="brand-logo">
       <span>KELAPA BALI FC <span style="color:inherit;opacity:.7">SEASON 26/27</span></span>
     </div>
-  
   </div>
+  <nav class="topnav">
+    <a class="topnav-link" href="/about/">About</a>
+    <a class="topnav-link" href="/players/">Players</a>
+    <a class="topnav-link" href="/sponsors/">Sponsors</a>
+    <a class="topnav-link" href="/released-jerseys/">Shop</a>
+    <button class="topnav-link" id="checkOrderBtnTop">Check order</button>
+    <a class="topnav-link" href="https://instagram.com/kelapabalifc/" target="_blank" rel="noopener">Contact</a>
+  </nav>
   <div class="topbar-actions">
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark theme">
     <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="4" y1="4" x2="5.8" y2="5.8"/><line x1="18.2" y1="18.2" x2="20" y2="20"/><line x1="1.5" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22.5" y2="12"/><line x1="4" y1="20" x2="5.8" y2="18.2"/><line x1="18.2" y1="5.8" x2="20" y2="4"/></svg>
     <svg class="moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg>
   </button>
-    <button class="btn-mini menu-toggle-btn" id="menuToggleBtn" aria-label="Open menu" aria-expanded="false">
-      <svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
-    </button>
+    <a class="btn-mini" href="login/">
+      Log in
+      <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+    </a>
   </div>
-</div>
-
-<div class="topbar-menu" id="topbarMenu">
-  <div class="topbar-menu-head">
-    <span>Menu</span>
-    <button class="menu-close-btn" id="menuCloseBtn" aria-label="Close menu">
-      <svg viewBox="0 0 24 24"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
-    </button>
-  </div>
-
-  <div class="menu-group-label mono">Club</div>
-  <a class="btn-mini" href="/about/">
-    About Us
-    <svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M12 16v-4"/><circle cx="12" cy="8" r=".6" fill="currentColor" stroke="none"/></svg>
-  </a>
-  <a class="btn-mini" href="https://instagram.com/kelapabalifc/" target="_blank" rel="noopener">
-    Contact Us
-    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
-  </a>
-  <a class="btn-mini" href="/players/">
-    Players
-    <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17.5" cy="9.5" r="2.6"/><path d="M15.5 20c0-2.6 2-4.7 4.6-4.9"/></svg>
-  </a>
-  <a class="btn-mini" href="/sponsors/">
-    Sponsors
-    <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
-  </a>
-
-  <div class="menu-group-label mono">Shop</div>
-  <a class="btn-mini" href="/released-jerseys/">
-    Club Jersey
-    <svg viewBox="0 0 24 24"><path d="M20.59 13.41 12 22l-9-9V4h9z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg>
-  </a>
-
-  <div class="menu-group-label mono">Orders</div>
-  <button class="btn-mini" id="checkOrderBtnTop">
-    Check order
-    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-  </button>
-
-  <div class="menu-group-label mono">Account</div>
-  <a class="btn-mini" href="login/">
-    Log in / Sign up
-    <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-  </a>
 </div>
 
 <!-- ============ VIEW 1: LANDING ============ -->
 <section class="view active" id="view-landing">
 
   <div class="hero">
+    <div class="hero-crest-bg"><img src="../images/club-logo.png" alt=""></div>
     <div class="hero-content">
       <div class="hero-copy">
         <div class="season-tag mono">Drop 01 · Official Away Kit 26/27</div>
@@ -1055,7 +997,9 @@
   </div>
 
   <section class="next-match-section" id="nextMatchSection" style="display:none;">
+    <div class="next-match-panel">
     <div class="ps-header">
+      <div class="eyebrow mono">Fixtures</div>
       <h2>Next match</h2>
     </div>
     <div class="next-match-card">
@@ -1074,39 +1018,21 @@
         <span id="nmSectionOpponentName"></span>
       </div>
     </div>
+    </div>
   </section>
 
   <section class="match-history" id="matchHistorySection" style="display:none;">
     <div class="ps-header">
+      <div class="eyebrow mono">Results</div>
       <h2>Completed matches</h2>
     </div>
     <div class="match-history-list" id="matchHistoryList"></div>
   </section>
 
-  <div class="login-promo-compact" id="loginPromoBoard">
-    <div class="login-promo-icon">
-      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-    </div>
-    <div class="login-promo-text">
-      <span class="mono login-promo-tag">NEW</span>
-      <h2>Your club, your account.</h2>
-      <p>Log in to track your order, view your digital membership card, and get early access to future drops.</p>
-    </div>
-    <div class="login-promo-actions">
-      <a class="btn-primary" href="login/">
-        Log in / Sign up
-        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </a>
-      <span class="login-promo-google">
-        <svg width="13" height="13" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
-        or sign up instantly with Google
-      </span>
-    </div>
-  </div>
-
   <section class="squad-teaser" id="squad-teaser">
     <div class="ps-header squad-teaser-header">
       <div>
+            <div class="eyebrow mono">Squad 26/27</div>
             <h2>Meet the team</h2>
       </div>
       <a class="btn-secondary squad-teaser-link" href="/players/">
@@ -1130,7 +1056,10 @@
 
   <section class="club-photos-section" id="clubPhotosSection">
     <div class="club-photos-header">
-      <h2>From the club</h2>
+      <div>
+        <div class="eyebrow mono">Social</div>
+        <h2>From the club</h2>
+      </div>
       <a href="https://instagram.com/kelapabalifc/" target="_blank" rel="noopener">
         Follow on Instagram
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
@@ -1154,6 +1083,27 @@
     </div>
   </section>
 
+  <div class="login-promo-compact" id="loginPromoBoard">
+    <div class="login-promo-icon">
+      <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+    </div>
+    <div class="login-promo-text">
+      <span class="mono login-promo-tag">NEW</span>
+      <h2>Your club, your account.</h2>
+      <p>Log in to track your order, view your digital membership card, and get early access to future drops.</p>
+    </div>
+    <div class="login-promo-actions">
+      <a class="btn-primary" href="login/">
+        Log in / Sign up
+        <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <span class="login-promo-google">
+        <svg width="13" height="13" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.92c1.7-1.57 2.68-3.88 2.68-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.92-2.26c-.8.54-1.84.86-3.04.86-2.34 0-4.32-1.58-5.03-3.7H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.97 10.72A5.4 5.4 0 0 1 3.68 9c0-.6.1-1.18.29-1.72V4.95H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.05l3.01-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.95l3.01 2.33C4.68 5.16 6.66 3.58 9 3.58z"/></svg>
+        or sign up instantly with Google
+      </span>
+    </div>
+  </div>
+
   <footer>
     <div class="footer-top">
       <div class="footer-col footer-col-brand">
@@ -1162,6 +1112,16 @@
           <span class="mono footer-club-name">KELAPA BALI FC</span>
         </div>
         <p class="footer-tagline">Community football club · Season 26/27</p>
+      </div>
+
+      <div class="footer-col footer-col-links">
+        <span class="footer-col-label mono">Quick links</span>
+        <div class="footer-links">
+          <a class="footer-link" href="/about/">About Us</a>
+          <a class="footer-link" href="/players/">Players</a>
+          <a class="footer-link" href="/sponsors/">Sponsors</a>
+          <a class="footer-link" href="/released-jerseys/">Club Jersey</a>
+        </div>
       </div>
 
       <div class="footer-col footer-col-social">
@@ -1627,53 +1587,6 @@
     const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
     root.setAttribute('data-theme', next);
     localStorage.setItem('kit-theme', next);
-  });
-
-  /* ---------------- MOBILE TOPBAR MENU (hamburger / slide-in drawer) ---------------- */
-  const menuToggleBtn = document.getElementById('menuToggleBtn');
-  const menuCloseBtn = document.getElementById('menuCloseBtn');
-  const topbarMenu = document.getElementById('topbarMenu');
-  const menuOverlay = document.getElementById('menuOverlay');
-
-  // Compensates for the scrollbar disappearing when body scroll locks, so
-  // page content (and the fixed topbar) doesn't visibly jump sideways —
-  // only matters on desktop browsers with a reserved-space scrollbar.
-  function lockBodyScroll(){
-    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-    document.body.style.overflow = 'hidden';
-    if(scrollbarWidth > 0) document.body.style.paddingRight = scrollbarWidth + 'px';
-  }
-  function unlockBodyScroll(){
-    document.body.style.overflow = '';
-    document.body.style.paddingRight = '';
-  }
-
-  function closeTopbarMenu(){
-    topbarMenu.classList.remove('active');
-    menuOverlay.classList.remove('active');
-    menuToggleBtn.setAttribute('aria-expanded', 'false');
-    unlockBodyScroll();
-  }
-  function toggleTopbarMenu(){
-    const nowOpen = topbarMenu.classList.toggle('active');
-    menuOverlay.classList.toggle('active', nowOpen);
-    menuToggleBtn.setAttribute('aria-expanded', String(nowOpen));
-    if(nowOpen) lockBodyScroll(); else unlockBodyScroll();
-  }
-
-  menuToggleBtn.addEventListener('click', (e)=>{
-    e.stopPropagation();
-    toggleTopbarMenu();
-  });
-  menuCloseBtn.addEventListener('click', closeTopbarMenu);
-  menuOverlay.addEventListener('click', closeTopbarMenu);
-  // Any tap on a menu item closes the drawer, whether it navigates away,
-  // scrolls the page, or opens a modal (e.g. Check order) on top of it.
-  topbarMenu.addEventListener('click', (e)=>{
-    if(e.target.closest('.btn-mini')) closeTopbarMenu();
-  });
-  document.addEventListener('keydown', (e)=>{
-    if(e.key === 'Escape') closeTopbarMenu();
   });
 
   /* ---------------- VIEW SWITCH ---------------- */
