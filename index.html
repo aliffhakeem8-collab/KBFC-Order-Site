@@ -286,6 +286,7 @@
     scrollbar-width:none;
     -ms-overflow-style:none;
     padding-right:6vw;
+    will-change:scroll-position;
   }
   .club-photos-viewport::-webkit-scrollbar{ display:none; }
   .club-photos-viewport.is-dragging{ cursor:grabbing; }
@@ -1843,6 +1844,7 @@
         </div>
       `).join('');
       track.innerHTML = items;
+      if (window.recalcClubPhotosWidth) window.recalcClubPhotosWidth(); // track's width just changed — refresh the cached measurement the scroller uses
     } catch (err) {
       console.warn('Could not load the Instagram feed — showing the placeholder photos instead.', err);
     }
@@ -1855,8 +1857,8 @@
     const track = document.getElementById('clubPhotosTrack');
     if (!viewport || !track) return;
 
-    const AUTO_SPEED = 0.25;      // px per frame — steady, actually visible drift
-    const RESUME_DELAY_MS = 1500; // wait this long after any interaction before auto-scroll starts again
+    const AUTO_SPEED = 0.9;      // px per frame — steady, actually visible drift
+    const RESUME_DELAY_MS = 5000; // wait this long after any interaction before auto-scroll starts again
     const CLICK_DRAG_THRESHOLD = 6; // px of movement before a "click" is treated as a drag instead
 
     let isDragging = false;
@@ -1879,10 +1881,20 @@
     // The photo list is duplicated once (see the markup / loadInstagramFeed
     // above) purely so this can loop seamlessly — half the scrollable width
     // is exactly one full lap through the real set.
-    function loopWidth(){ return track.scrollWidth / 2; }
+    //
+    // Cached rather than read fresh every frame: track.scrollWidth forces
+    // the browser to recalculate layout the instant you read it, and doing
+    // that 60 times a second was the actual cause of the stutter — not the
+    // scrolling itself. Only re-measure when the content genuinely changes
+    // (page load, window resize, or the Instagram feed swapping photos in).
+    let cachedHalfWidth = 0;
+    function recalcHalfWidth(){ cachedHalfWidth = track.scrollWidth / 2; }
+    recalcHalfWidth();
+    window.recalcClubPhotosWidth = recalcHalfWidth; // called by loadInstagramFeed() once real photos are in
+    window.addEventListener('resize', recalcHalfWidth);
 
     function wrapValue(v){
-      const half = loopWidth();
+      const half = cachedHalfWidth;
       if (half <= 0) return v;
       if (v >= half) return v - half;
       if (v < 0) return v + half;
