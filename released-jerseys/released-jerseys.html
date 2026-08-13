@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KBFC | Released Jerseys</title>
+<link rel="icon" type="image/png" href="/images/Favicon.png">
+<link rel="apple-touch-icon" href="/images/Favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAFAF8;
+    --surface:#FFFFFF;
+    --ink:#14171C;
+    --muted:#6B7280;
+    --accent:#b91321;
+    --line: rgba(20,23,28,0.12);
+    --line-soft: rgba(20,23,28,0.06);
+    --shadow: 0 20px 60px rgba(20,23,28,0.10);
+  }
+  html[data-theme="dark"]{
+    --bg:#0D0F12;
+    --surface:#15181D;
+    --ink:#F2F1EC;
+    --muted:#9CA3AF;
+    --accent:#b91321;
+    --line: rgba(242,241,236,0.14);
+    --line-soft: rgba(242,241,236,0.07);
+    --shadow: 0 20px 60px rgba(0,0,0,0.45);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+    transition:background .35s ease, color .35s ease;
+  }
+  .mono{font-family:'JetBrains Mono',monospace; letter-spacing:0.06em;}
+
+  /* ---------- topbar (matches index.html) ---------- */
+  .topbar{
+    position:fixed; top:0; left:0; right:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 32px;
+    background:var(--bg);
+    border-bottom:1px solid var(--line);
+    color:var(--ink);
+    transition:background .35s ease, border-color .35s ease;
+  }
+  .brand-wrap{ display:flex; flex-direction:column; gap:6px; }
+  .brand{
+    cursor:pointer; display:flex; align-items:center; gap:10px;
+    font-size:14px; font-weight:600; letter-spacing:0.08em;
+  }
+  .brand:hover{ opacity:.85; }
+  .brand-logo{ width:24px; height:24px; object-fit:contain; }
+  .brand span{font-family:'JetBrains Mono',monospace;}
+
+  .social-row{ display:flex; align-items:center; gap:10px; padding-left:2px; }
+  .social-icon{
+    color:var(--muted); display:flex; opacity:.85;
+    transition:color .2s ease, opacity .2s ease;
+  }
+  .social-icon:hover{ color:var(--accent); opacity:1; }
+  .social-icon svg{ width:16px; height:16px; }
+
+  .theme-toggle{
+    width:40px;height:40px;border-radius:50%;
+    border:1px solid var(--line);
+    background:transparent;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    color:var(--ink);
+  }
+  .theme-toggle svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;}
+  .theme-toggle .moon{display:none;}
+  html[data-theme="dark"] .theme-toggle .sun{display:none;}
+  html[data-theme="dark"] .theme-toggle .moon{display:block;}
+
+  /* ---------- hamburger drawer (matches index.html) ---------- */
+  .topbar-actions{display:flex; align-items:center; gap:14px; position:relative;}
+  .menu-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.45);
+    opacity:0; pointer-events:none;
+    transition:opacity .3s ease;
+    z-index:1000;
+  }
+  .menu-overlay.active{ opacity:1; pointer-events:auto; }
+  .topbar-menu{
+    position:fixed; top:0; right:0; bottom:0;
+    width:320px; max-width:82vw;
+    background:var(--surface); border-left:1px solid var(--line);
+    display:flex; flex-direction:column;
+    padding:22px 22px 28px;
+    transform:translateX(100%);
+    transition:transform .32s ease;
+    z-index:1001;
+    overflow-y:auto;
+  }
+  .topbar-menu.active{ transform:translateX(0); }
+  .topbar-menu-head{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:18px; padding-bottom:16px;
+    border-bottom:1px solid var(--line);
+  }
+  .topbar-menu-head span{
+    font-family:'Oswald',sans-serif; font-weight:600; font-size:14px;
+    letter-spacing:.04em; text-transform:uppercase; color:var(--muted);
+  }
+  .menu-close-btn{
+    width:34px; height:34px; border-radius:50%; border:1px solid var(--line);
+    background:transparent; color:var(--ink); cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .menu-close-btn svg{ width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2; }
+  .btn-mini{
+    display:inline-flex; align-items:center; gap:8px;
+    border:1px solid var(--line);
+    background:transparent; color:var(--ink);
+    padding:9px 16px; border-radius:999px;
+    font-family:'Inter',sans-serif; font-size:12.5px; font-weight:600;
+    letter-spacing:0.01em; cursor:pointer;
+    transition:transform .2s ease, border-color .25s ease;
+    outline:none; text-decoration:none;
+  }
+  .btn-mini:hover{transform:translateY(-1px); border-color:var(--accent);}
+  .btn-mini:focus-visible{ border-color:var(--accent); }
+  .btn-mini svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.4;}
+  .topbar-menu .btn-mini{
+    width:100%; justify-content:flex-start; gap:12px;
+    font-size:14px !important; padding:16px 4px;
+    border:none; border-radius:0;
+    border-bottom:1px solid var(--line);
+  }
+  .topbar-menu .btn-mini svg{ width:16px; height:16px; }
+  .menu-group-label{
+    font-size:10.5px; font-weight:700; letter-spacing:.08em;
+    color:var(--accent); text-transform:uppercase;
+    padding:16px 4px 6px;
+  }
+  .topbar-menu .menu-group-label:first-of-type{ padding-top:4px; }
+  .topbar-menu .btn-mini:disabled{
+    cursor:not-allowed; opacity:.5;
+  }
+  .topbar-menu .btn-mini.is-locked{
+    cursor:not-allowed; opacity:.5;
+  }
+  .topbar-menu .btn-mini.is-current{
+    color:var(--accent); border-color:var(--accent);
+  }
+  .menu-item-current{ font-size:10px; opacity:.85; margin-left:2px; }
+  .menu-item-soon{ font-size:10px; opacity:.8; margin-left:2px; }
+  .btn-mini.menu-toggle-btn{
+    display:flex; width:40px; height:40px; padding:0;
+    align-items:center; justify-content:center; border-radius:50%;
+  }
+  .menu-toggle-btn svg{ width:16px; height:16px; }
+
+  /* ---------- page header ---------- */
+  .jerseys-hero{
+    padding:150px 6vw 48px; text-align:center;
+  }
+  .jerseys-hero .season-tag{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:12px; color:var(--muted); margin-bottom:18px;
+    text-transform:uppercase; letter-spacing:.06em;
+  }
+  .jerseys-hero .season-tag::before{content:"";width:18px;height:1px;background:var(--accent);}
+  .jerseys-hero h1{
+    font-family:'Oswald',sans-serif; font-weight:600;
+    font-size:clamp(34px, 5vw, 58px); line-height:1.02;
+    margin-bottom:14px;
+  }
+  .jerseys-hero p{
+    color:var(--muted); font-size:14.5px; max-width:480px; margin:0 auto; line-height:1.6;
+  }
+
+  /* ---------- jersey gallery: clickable expandable cards ---------- */
+  .jersey-gallery{
+    max-width:900px; margin:0 auto;
+    padding:16px 6vw 88px;
+    display:flex; flex-direction:column; gap:18px;
+  }
+  .jersey-card{
+    border:1px solid var(--line); background:var(--surface);
+    overflow:hidden; transition:border-color .25s ease;
+  }
+  .jersey-card:hover{ border-color:var(--accent); }
+  .jersey-card.open{ border-color:var(--accent); }
+  .jersey-card-summary{
+    display:flex; align-items:center; gap:20px;
+    padding:20px 22px; cursor:pointer; user-select:none;
+    background:none; border:none; width:100%; text-align:left;
+    font-family:'Inter',sans-serif; color:inherit;
+  }
+  .jersey-card-thumb{
+    flex-shrink:0; width:64px; height:64px; border-radius:8px;
+    overflow:hidden; background:var(--bg); border:1px solid var(--line);
+  }
+  .jersey-card-thumb img{ width:100%; height:100%; object-fit:cover; }
+  .jersey-card-info{ flex:1; min-width:0; }
+  .jersey-card-name{ font-family:'Oswald',sans-serif; font-size:19px; font-weight:600; }
+  .jersey-card-season{ font-size:11.5px; color:var(--muted); margin-top:2px; }
+  .jersey-card-hint{
+    display:flex; align-items:center; gap:8px; flex-shrink:0;
+    font-size:12px; color:var(--muted);
+  }
+  .jersey-card-chevron{
+    width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2;
+    transition:transform .3s ease; flex-shrink:0;
+  }
+  .jersey-card.open .jersey-card-chevron{ transform:rotate(180deg); }
+  .jersey-card-detail{
+    max-height:0; overflow:hidden;
+    transition:max-height .45s cubic-bezier(.4,0,.2,1);
+    border-top:1px solid var(--line);
+  }
+  .jersey-card-detail-inner{ padding:32px 22px 40px; }
+
+  .designer-block{
+    display:flex; align-items:center; gap:20px;
+    margin-bottom:36px; padding-bottom:32px;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .designer-avatar{
+    flex-shrink:0; width:60px; height:60px; border-radius:50%;
+    background:var(--bg); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Oswald',sans-serif; font-size:20px; font-weight:600;
+    color:var(--accent);
+    background-size:cover; background-position:center; overflow:hidden;
+  }
+  .designer-name{ font-size:16px; font-weight:600; }
+  .designer-role{ font-size:11px; color:var(--muted); margin:2px 0 8px; }
+  .designer-copy p{ font-size:13.5px; color:var(--muted); max-width:600px; line-height:1.6; }
+  .designer-follow{
+    display:inline-flex; align-items:center; gap:6px;
+    margin-top:12px; font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--muted); text-decoration:none; font-family:'JetBrains Mono',monospace;
+    border:1px solid var(--line); border-radius:999px; padding:6px 12px;
+    transition:border-color .2s ease, color .2s ease;
+  }
+  .designer-follow:hover{ border-color:var(--accent); color:var(--accent); }
+  .designer-follow svg{ width:12px; height:12px; }
+
+  .story-grid{
+    display:grid; grid-template-columns:repeat(2,1fr); gap:18px;
+  }
+  .story-card{
+    position:relative; overflow:hidden;
+    border:1px solid var(--line); padding:22px 20px;
+  }
+  .story-card::before{
+    content:""; position:absolute; inset:0;
+    background-size:cover; background-position:center;
+    opacity:.14; z-index:0; pointer-events:none;
+  }
+  .story-card > *{ position:relative; z-index:1; }
+  .story-card .story-icon{
+    width:28px; height:28px; margin-bottom:12px;
+    stroke:var(--accent); fill:none; stroke-width:1.5;
+  }
+  .story-card h3{ font-size:14px; font-weight:600; margin-bottom:6px; }
+  .story-card p{ font-size:12.5px; color:var(--muted); line-height:1.6; }
+
+  .story-card.fabric::before{ background-image:url(../images/story-fabric.jpeg); }
+  .story-card.colour::before{ background-image:url(../images/story-colour.jpeg); }
+  .story-card.pattern::before{ background-image:url(../images/story_pattern.jpeg); }
+  .story-card.slogan::before{ background-image:url(../images/story-slogan.jpeg); }
+
+  .story-card.placeholder p{ font-style:italic; opacity:.7; }
+  .jersey-card-placeholder-note{
+    display:flex; align-items:center; gap:8px;
+    margin-bottom:20px; padding:12px 14px;
+    border:1px dashed var(--line); font-size:12px; color:var(--muted);
+  }
+  .jersey-card-placeholder-note svg{ width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:1.8; flex-shrink:0; }
+
+  @media (max-width: 780px){
+    .jerseys-hero{ padding:110px 6vw 32px; }
+    .jersey-card-summary{ gap:14px; padding:16px; }
+    .jersey-card-thumb{ width:52px; height:52px; }
+    .jersey-card-name{ font-size:16px; }
+    .jersey-card-hint span{ display:none; }
+    .designer-block{ flex-direction:column; align-items:flex-start; text-align:left; }
+    .story-grid{ grid-template-columns:1fr; }
+  }
+
+  /* ---------- footer (matches index.html) ---------- */
+  footer{
+    padding:0 6vw 0; border-top:1px solid var(--line);
+    font-size:12px; color:var(--muted);
+  }
+  .footer-top{
+    display:flex; align-items:flex-start; justify-content:space-between;
+    gap:40px; flex-wrap:wrap;
+    padding:52px 0 40px;
+  }
+  .footer-col{ display:flex; flex-direction:column; gap:14px; }
+  .footer-col-brand{ gap:10px; max-width:280px; }
+  .footer-logo-row{ display:flex; align-items:center; gap:10px; }
+  .footer-crest{ width:26px; height:26px; object-fit:contain; }
+  .footer-club-name{
+    font-size:14px; font-weight:600; letter-spacing:0.08em; color:var(--ink);
+  }
+  .footer-tagline{ font-size:12.5px; color:var(--muted); line-height:1.5; }
+  .footer-col-label{
+    text-transform:uppercase; color:var(--muted); font-size:11px;
+  }
+  .footer-credit-label{
+    text-transform:uppercase;
+    color:var(--muted); font-size:11px;
+  }
+  .footer-logos{ display:flex; align-items:center; gap:18px; }
+  .footer-logos a{ display:inline-flex; line-height:0; }
+  .footer-logos img{
+    height:22px; width:auto; object-fit:contain;
+    filter:grayscale(1) invert(1); opacity:.75;
+    transition:filter .25s ease, opacity .25s ease, transform .25s ease;
+  }
+  html[data-theme="dark"] .footer-logos img{
+    filter:grayscale(1) brightness(1.6); opacity:.85;
+  }
+  .footer-logos a:hover img{
+    filter:none; opacity:1; transform:translateY(-1px);
+  }
+  .footer-bottom{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    padding:18px 0; border-top:1px solid var(--line-soft);
+    font-size:11px; color:var(--muted);
+  }
+  .footer-bottom-sep{ opacity:.5; }
+
+  @media (max-width:780px){
+    .footer-top{
+      flex-direction:column; align-items:flex-start; gap:28px;
+      padding:40px 0 32px;
+    }
+    .footer-col-brand{ max-width:none; }
+    .footer-bottom{ padding:16px 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{transition:none !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="menu-overlay" id="menuOverlay"></div>
+
+<div class="topbar">
+  <div class="brand-wrap">
+    <div class="brand" id="brandHome" role="button" tabindex="0" aria-label="Back to home">
+      <img src="../images/club-logo.png" alt="Kelapa Bali FC logo" class="brand-logo">
+      <span>KELAPA BALI FC <span style="color:inherit;opacity:.7">SEASON 26/27</span></span>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark theme">
+      <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="4" y1="4" x2="5.8" y2="5.8"/><line x1="18.2" y1="18.2" x2="20" y2="20"/><line x1="1.5" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22.5" y2="12"/><line x1="4" y1="20" x2="5.8" y2="18.2"/><line x1="18.2" y1="5.8" x2="20" y2="4"/></svg>
+      <svg class="moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg>
+    </button>
+    <button class="btn-mini menu-toggle-btn" id="menuToggleBtn" aria-label="Open menu" aria-expanded="false">
+      <svg viewBox="0 0 24 24"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="topbar-menu" id="topbarMenu">
+  <div class="topbar-menu-head">
+    <span>Menu</span>
+    <button class="menu-close-btn" id="menuCloseBtn" aria-label="Close menu">
+      <svg viewBox="0 0 24 24"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
+    </button>
+  </div>
+
+  <div class="menu-group-label mono">Club</div>
+  <a class="btn-mini" href="/about/">
+    About Us
+    <svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M12 16v-4"/><circle cx="12" cy="8" r=".6" fill="currentColor" stroke="none"/></svg>
+  </a>
+  <a class="btn-mini" href="https://instagram.com/kelapabalifc/" target="_blank" rel="noopener">
+    Contact Us
+    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
+  </a>
+  <a class="btn-mini" href="/players/">
+    Players
+    <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17.5" cy="9.5" r="2.6"/><path d="M15.5 20c0-2.6 2-4.7 4.6-4.9"/></svg>
+  </a>
+  <a class="btn-mini" href="/sponsors/">
+    Sponsors
+    <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+  </a>
+
+  <div class="menu-group-label mono">Shop</div>
+  <button class="btn-mini is-current" disabled title="You're here">
+    Club Jersey <span class="menu-item-current">· current page</span>
+    <svg viewBox="0 0 24 24"><path d="M20.59 13.41 12 22l-9-9V4h9z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg>
+  </button>
+
+  <div class="menu-group-label mono">Orders</div>
+  <a class="btn-mini" href="/checker/">
+    Check order
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+  </a>
+
+  <div class="menu-group-label mono">Account</div>
+  <a class="btn-mini" href="/login/">
+    Log in / Sign up
+    <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+  </a>
+</div>
+
+<div class="jerseys-hero">
+  <div class="season-tag mono">The archive</div>
+  <h1>Released Jerseys</h1>
+  <p>Every kit KBFC has ever put on the pitch — tap a jersey to read its full story.</p>
+</div>
+
+<div class="jersey-gallery" id="jerseyGallery">
+
+  <!-- ============ JERSEY 1: Away Kit 26/27 ============ -->
+  <div class="jersey-card" data-jersey="away-2627">
+    <button class="jersey-card-summary" aria-expanded="false">
+      <div class="jersey-card-thumb">
+        <img src="../images/kit-front.png" alt="Away Kit 26/27" loading="lazy"
+             onerror="this.style.display='none';">
+      </div>
+      <div class="jersey-card-info">
+        <div class="jersey-card-name">Away Kit 26/27</div>
+        <div class="jersey-card-season mono">Season 26/27 · Drop 01</div>
+      </div>
+      <div class="jersey-card-hint">
+        <span>View the story</span>
+        <svg class="jersey-card-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </button>
+    <div class="jersey-card-detail">
+      <div class="jersey-card-detail-inner">
+        <div class="designer-block">
+          <div class="designer-avatar mono" style="background-image:url(../images/designer-avatar.jpg)"></div>
+          <div class="designer-copy">
+            <div class="designer-name">Freshphysics a.k.a Nenok</div>
+            <div class="designer-role mono">Kit Designer</div>
+            <p>Nenok, a talented Shah Alam street artist and well known circa 2008. His enthusiast and skill in designing arts, grafitti and even this kit is made from that passion. Every kit he designs for Kelapa Bali FC ended up as a masterpiece.</p>
+            <a href="https://www.instagram.com/freshphysics/" target="_blank" rel="noopener" class="designer-follow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
+              Follow designer
+            </a>
+          </div>
+        </div>
+
+        <div class="story-grid">
+          <div class="story-card fabric">
+            <svg class="story-icon" viewBox="0 0 24 24"><path d="M4 8c0-2.2 3.6-4 8-4s8 1.8 8 4-3.6 4-8 4-8-1.8-8-4Z"/><path d="M4 8v8c0 2.2 3.6 4 8 4s8-1.8 8-4V8"/><path d="M4 12c0 2.2 3.6 4 8 4s8-1.8 8-4"/></svg>
+            <h3>The Fabric</h3>
+            <p>Jacquard, 140gsm patterned polyester mediumweight, breathable, and built to move sweat away from the skin during a specific football match. Raglan-cut sleeves for a freer range of motion that suits for a long match. On a side note, this fabric was recommended by Nenok.</p>
+          </div>
+          <div class="story-card colour">
+            <svg class="story-icon" viewBox="0 0 24 24"><path d="M12 3 3 8v8l9 5 9-5V8l-9-5Z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg>
+            <h3>The Colours</h3>
+            <p>Different jersey, different story. As our home kit already striking with red and yellow (Inspired from Selangor FC), White and Deep navy was our choice to depict that we strikes in silent when we are on an opponent ground.</p>
+          </div>
+          <div class="story-card pattern">
+            <svg class="story-icon" viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M5 7c1.5 2 1.5 4 0 6s-1.5 4 0 6"/><path d="M19 7c-1.5 2-1.5 4 0 6s1.5 4 0 6"/></svg>
+            <h3>The Pattern</h3>
+            <p>The diagonal lines running across the body are a nod to France's World Cup 2026 campaign, the same restless, forward-leaning stripe language seen on Les Bleus' kits, reworked here in Kelapa Bali FC's navy to carry that same energy onto our friendly match.</p>
+          </div>
+          <div class="story-card slogan">
+            <svg class="story-icon" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+            <h3>The Slogan</h3>
+            <p>40200, where it all started. It's the postcode of the field this club calls home, and it carries more than an address: the love for football, the friendships built on it, and everything that's grown out of both.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ JERSEY 2: Home Kit — placeholder, needs real content ============ -->
+  <div class="jersey-card" data-jersey="home-placeholder">
+    <button class="jersey-card-summary" aria-expanded="false">
+      <div class="jersey-card-thumb">
+        <img src="../images/kit-home.png" alt="Home Kit" loading="lazy"
+             onerror="this.style.display='none';">
+      </div>
+      <div class="jersey-card-info">
+        <div class="jersey-card-name">Home Kit</div>
+        <div class="jersey-card-season mono">Season · TBC</div>
+      </div>
+      <div class="jersey-card-hint">
+        <span>View the story</span>
+        <svg class="jersey-card-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+    </button>
+    <div class="jersey-card-detail">
+      <div class="jersey-card-detail-inner">
+        <div class="jersey-card-placeholder-note">
+          <svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M12 8v4"/><circle cx="12" cy="16" r=".5" fill="currentColor" stroke="none"/></svg>
+          This kit's story hasn't been filled in yet — placeholder content below.
+        </div>
+        <div class="designer-block">
+          <div class="designer-avatar mono"></div>
+          <div class="designer-copy">
+            <div class="designer-name">Designer name to be added</div>
+            <div class="designer-role mono">Kit Designer</div>
+            <p style="font-style:italic; opacity:.7;">Designer bio to be added.</p>
+          </div>
+        </div>
+
+        <div class="story-grid">
+          <div class="story-card placeholder">
+            <svg class="story-icon" viewBox="0 0 24 24"><path d="M4 8c0-2.2 3.6-4 8-4s8 1.8 8 4-3.6 4-8 4-8-1.8-8-4Z"/><path d="M4 8v8c0 2.2 3.6 4 8 4s8-1.8 8-4V8"/><path d="M4 12c0 2.2 3.6 4 8 4s8-1.8 8-4"/></svg>
+            <h3>The Fabric</h3>
+            <p>Fabric details to be added.</p>
+          </div>
+          <div class="story-card placeholder">
+            <svg class="story-icon" viewBox="0 0 24 24"><path d="M12 3 3 8v8l9 5 9-5V8l-9-5Z"/><path d="M3 8l9 5 9-5"/><path d="M12 13v8"/></svg>
+            <h3>The Colours</h3>
+            <p>Colour meaning to be added.</p>
+          </div>
+          <div class="story-card placeholder">
+            <svg class="story-icon" viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M5 7c1.5 2 1.5 4 0 6s-1.5 4 0 6"/><path d="M19 7c-1.5 2-1.5 4 0 6s1.5 4 0 6"/></svg>
+            <h3>The Pattern</h3>
+            <p>Pattern story to be added.</p>
+          </div>
+          <div class="story-card placeholder">
+            <svg class="story-icon" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
+            <h3>The Slogan</h3>
+            <p>Slogan meaning to be added.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-top">
+    <div class="footer-col footer-col-brand">
+      <div class="footer-logo-row">
+        <img src="../images/club-logo.png" alt="Kelapa Bali FC logo" class="footer-crest">
+        <span class="mono footer-club-name">KELAPA BALI FC</span>
+      </div>
+      <p class="footer-tagline">Community football club · Season 26/27</p>
+    </div>
+
+    <div class="footer-col footer-col-social">
+      <span class="footer-col-label mono">Follow us</span>
+      <div class="social-row">
+        <a href="https://instagram.com/kelapabalifc/" target="_blank" rel="noopener" aria-label="Instagram" class="social-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
+        </a>
+        <a href="https://www.threads.com/kelapabalifc/" target="_blank" rel="noopener" aria-label="Threads" class="social-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9.5"/><text x="12" y="16" text-anchor="middle" font-size="12" font-family="Georgia, serif" fill="currentColor" stroke="none">@</text></svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="footer-col footer-col-credit">
+      <span class="footer-credit-label mono">Brought to you by</span>
+      <div class="footer-logos">
+        <a href="https://shopee.com.my/shop.eclipse" target="_blank" rel="noopener" aria-label="ES on Shopee"><img src="../images/footer-logo-shopee.png" alt="ES logo"></a>
+        <a href="https://www.instagram.com/cilimerahrestaurant/" target="_blank" rel="noopener" aria-label="Cili Merah on Instagram"><img src="../images/footer-logo-cilimerah.png" alt="Cilmer logo"></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span class="mono">© 2026 Kelapa Bali FC</span>
+    <span class="footer-bottom-sep mono">·</span>
+    <span class="mono">All rights reserved</span>
+  </div>
+</footer>
+
+<script>
+  /* ---------------- THEME TOGGLE (matches index.html) ---------------- */
+  const root = document.documentElement;
+  const themeToggle = document.getElementById('themeToggle');
+  const savedTheme = localStorage.getItem('kit-theme');
+  if(savedTheme){ root.setAttribute('data-theme', savedTheme); }
+  themeToggle.addEventListener('click', () => {
+    const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('kit-theme', next);
+  });
+
+  document.getElementById('brandHome').addEventListener('click', () => { window.location.href = '/'; });
+
+  /* ---------------- MOBILE TOPBAR MENU (hamburger / slide-in drawer) ---------------- */
+  const menuToggleBtn = document.getElementById('menuToggleBtn');
+  const menuCloseBtn = document.getElementById('menuCloseBtn');
+  const topbarMenu = document.getElementById('topbarMenu');
+  const menuOverlay = document.getElementById('menuOverlay');
+
+  function lockBodyScroll(){
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = 'hidden';
+    if(scrollbarWidth > 0) document.body.style.paddingRight = scrollbarWidth + 'px';
+  }
+  function unlockBodyScroll(){
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+  }
+
+  function closeTopbarMenu(){
+    topbarMenu.classList.remove('active');
+    menuOverlay.classList.remove('active');
+    menuToggleBtn.setAttribute('aria-expanded', 'false');
+    unlockBodyScroll();
+  }
+  function toggleTopbarMenu(){
+    const nowOpen = topbarMenu.classList.toggle('active');
+    menuOverlay.classList.toggle('active', nowOpen);
+    menuToggleBtn.setAttribute('aria-expanded', String(nowOpen));
+    if(nowOpen) lockBodyScroll(); else unlockBodyScroll();
+  }
+
+  menuToggleBtn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    toggleTopbarMenu();
+  });
+  menuCloseBtn.addEventListener('click', closeTopbarMenu);
+  menuOverlay.addEventListener('click', closeTopbarMenu);
+  topbarMenu.addEventListener('click', (e)=>{
+    if(e.target.closest('.btn-mini')) closeTopbarMenu();
+  });
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape') closeTopbarMenu();
+  });
+
+  /* ---------------- EXPANDABLE JERSEY CARDS ---------------- */
+  document.querySelectorAll('.jersey-card').forEach(card => {
+    const summaryBtn = card.querySelector('.jersey-card-summary');
+    const detail = card.querySelector('.jersey-card-detail');
+
+    summaryBtn.addEventListener('click', () => {
+      const isOpen = card.classList.contains('open');
+
+      if (isOpen) {
+        detail.style.maxHeight = detail.scrollHeight + 'px'; // lock current height first
+        requestAnimationFrame(() => { detail.style.maxHeight = '0px'; });
+        card.classList.remove('open');
+        summaryBtn.setAttribute('aria-expanded', 'false');
+      } else {
+        card.classList.add('open');
+        summaryBtn.setAttribute('aria-expanded', 'true');
+        detail.style.maxHeight = detail.scrollHeight + 'px';
+      }
+    });
+
+    // Recalculate an open card's max-height on resize (e.g. text reflow
+    // when the viewport width changes), so it doesn't clip content.
+    window.addEventListener('resize', () => {
+      if (card.classList.contains('open')) {
+        detail.style.maxHeight = detail.scrollHeight + 'px';
+      }
+    });
+  });
+</script>
+</body>
+</html>
