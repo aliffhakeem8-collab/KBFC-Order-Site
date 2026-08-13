@@ -639,6 +639,7 @@
   .squad-teaser-card{
     position:relative; aspect-ratio:3/4; overflow:hidden;
     background:var(--surface); border:1px solid var(--line);
+    border-radius:8px;
     text-decoration:none; color:inherit; display:block;
     transition:border-color .25s ease, transform .25s ease;
   }
@@ -1854,11 +1855,16 @@
     const track = document.getElementById('clubPhotosTrack');
     if (!viewport || !track) return;
 
-    const AUTO_SPEED = 0.35; // px per frame — slow, steady drift
+    const AUTO_SPEED = 0.9;      // px per frame — steady, actually visible drift
+    const RESUME_DELAY_MS = 5000; // wait this long after any interaction before auto-scroll starts again
+    const CLICK_DRAG_THRESHOLD = 6; // px of movement before a "click" is treated as a drag instead
+
     let isDragging = false;
-    let autoPaused = false;
+    let dragMoved = false;       // did this drag move enough to count as a real drag, not a click?
     let startX = 0;
     let startScrollLeft = 0;
+    let paused = false;          // true while hovering, mid-drag, or in the 5s settle window
+    let resumeTimer = null;
 
     // The photo list is duplicated once (see the markup / loadInstagramFeed
     // above) purely so this can loop seamlessly — half the scrollable width
@@ -1873,7 +1879,7 @@
     }
 
     function tick(){
-      if (!isDragging && !autoPaused) {
+      if (!isDragging && !paused) {
         viewport.scrollLeft += AUTO_SPEED;
         wrapScroll();
       }
@@ -1881,36 +1887,59 @@
     }
     requestAnimationFrame(tick);
 
-    viewport.addEventListener('mouseenter', () => { autoPaused = true; });
+    function cancelResumeTimer(){
+      if (resumeTimer) { clearTimeout(resumeTimer); resumeTimer = null; }
+    }
+    function scheduleResume(){
+      cancelResumeTimer();
+      resumeTimer = setTimeout(() => { paused = false; resumeTimer = null; }, RESUME_DELAY_MS);
+    }
+
+    // Hovering pauses immediately (so it's easy to aim a click), and once
+    // the pointer leaves, it waits the same settle delay before drifting
+    // again rather than snapping straight back into motion.
+    viewport.addEventListener('mouseenter', () => { paused = true; cancelResumeTimer(); });
     viewport.addEventListener('mouseleave', () => {
-      autoPaused = false;
-      isDragging = false;
-      viewport.classList.remove('is-dragging');
+      if (!isDragging) scheduleResume();
     });
 
     function dragStart(x){
       isDragging = true;
+      dragMoved = false;
+      paused = true;
+      cancelResumeTimer();
       startX = x;
       startScrollLeft = viewport.scrollLeft;
       viewport.classList.add('is-dragging');
     }
     function dragMove(x){
       if (!isDragging) return;
-      viewport.scrollLeft = startScrollLeft - (x - startX);
+      const delta = x - startX;
+      if (Math.abs(delta) > CLICK_DRAG_THRESHOLD) dragMoved = true;
+      viewport.scrollLeft = startScrollLeft - delta;
       wrapScroll();
     }
     function dragEnd(){
       isDragging = false;
       viewport.classList.remove('is-dragging');
+      scheduleResume();
     }
+
+    // A click only navigates when nothing was actually dragged — otherwise
+    // "drag then release over a photo" would also fire a click and send
+    // the visitor to Instagram by accident. Captured on the track so it
+    // runs before the <a> tag's own navigation.
+    track.addEventListener('click', e => {
+      if (dragMoved) { e.preventDefault(); e.stopPropagation(); }
+      dragMoved = false;
+    }, true);
 
     // Mouse (desktop) — can drag either direction freely.
     viewport.addEventListener('mousedown', e => { dragStart(e.pageX); e.preventDefault(); });
     window.addEventListener('mousemove', e => dragMove(e.pageX));
-    window.addEventListener('mouseup', dragEnd);
+    window.addEventListener('mouseup', () => { if (isDragging) dragEnd(); });
 
-    // Touch (mobile) — native swipe already scrolls the container; this
-    // just keeps the loop-wrap and auto-scroll pause in sync with it.
+    // Touch (mobile) — same drag/click distinction, driven by touch points.
     viewport.addEventListener('touchstart', e => dragStart(e.touches[0].pageX), { passive: true });
     viewport.addEventListener('touchmove', e => dragMove(e.touches[0].pageX), { passive: true });
     viewport.addEventListener('touchend', dragEnd);
