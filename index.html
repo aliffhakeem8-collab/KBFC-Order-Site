@@ -1857,8 +1857,8 @@
     const track = document.getElementById('clubPhotosTrack');
     if (!viewport || !track) return;
 
-    const AUTO_SPEED = 0.9;      // px per frame — steady, actually visible drift
-    const RESUME_DELAY_MS = 5000; // wait this long after any interaction before auto-scroll starts again
+    const AUTO_SPEED = 0.45;      // px per frame — steady, actually visible drift
+    const RESUME_DELAY_MS = 1000; // wait this long after any interaction before auto-scroll starts again
     const CLICK_DRAG_THRESHOLD = 6; // px of movement before a "click" is treated as a drag instead
 
     let isDragging = false;
