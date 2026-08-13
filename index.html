@@ -1868,25 +1868,35 @@
     let paused = false;          // true while hovering, mid-drag, or in the 5s settle window
     let resumeTimer = null;
 
+    // Auto-scroll position tracked here as a plain JS number, separate
+    // from viewport.scrollLeft — some browsers round scrollLeft to whole
+    // pixels, which would silently throw away the fractional part of a
+    // slow AUTO_SPEED every frame and could make it look frozen. Keeping
+    // the real (fractional) position here means any speed, however slow,
+    // still accumulates correctly and eventually moves a pixel.
+    let scrollPos = 0;
+
     // The photo list is duplicated once (see the markup / loadInstagramFeed
     // above) purely so this can loop seamlessly — half the scrollable width
     // is exactly one full lap through the real set.
     function loopWidth(){ return track.scrollWidth / 2; }
 
-    function wrapScroll(){
+    function wrapValue(v){
       const half = loopWidth();
-      if (half <= 0) return;
-      if (viewport.scrollLeft >= half) viewport.scrollLeft -= half;
-      else if (viewport.scrollLeft < 0) viewport.scrollLeft += half;
+      if (half <= 0) return v;
+      if (v >= half) return v - half;
+      if (v < 0) return v + half;
+      return v;
     }
 
     function tick(){
       if (!isDragging && !paused) {
-        viewport.scrollLeft += AUTO_SPEED * autoDirection;
-        wrapScroll();
+        scrollPos = wrapValue(scrollPos + AUTO_SPEED * autoDirection);
+        viewport.scrollLeft = scrollPos;
       }
       requestAnimationFrame(tick);
     }
+    scrollPos = viewport.scrollLeft;
     requestAnimationFrame(tick);
 
     function cancelResumeTimer(){
@@ -1919,8 +1929,8 @@
       if (!isDragging) return;
       const delta = x - startX;
       if (Math.abs(delta) > CLICK_DRAG_THRESHOLD) dragMoved = true;
-      viewport.scrollLeft = startScrollLeft - delta;
-      wrapScroll();
+      viewport.scrollLeft = wrapValue(startScrollLeft - delta);
+      scrollPos = viewport.scrollLeft; // keep the auto-scroll accumulator in sync while dragging
 
       // Direction the visible content is moving THIS frame, not the whole
       // drag — a pointer moving right feeds content back in (direction -1),
@@ -1933,6 +1943,7 @@
     function dragEnd(){
       isDragging = false;
       viewport.classList.remove('is-dragging');
+      scrollPos = viewport.scrollLeft; // resync so the resumed drift continues from exactly where the drag left off
       scheduleResume();
     }
 
