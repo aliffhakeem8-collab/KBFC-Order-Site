@@ -2754,12 +2754,15 @@
   // Assist selector only makes sense for events where someone actually
   // scored — shown/hidden as the event type changes. Substitution swaps
   // out the normal player field group entirely for the off/on pair.
+  // Kickoff/half-time/full-time need no player at all.
   const ASSIST_ELIGIBLE_EVENTS = ['goal', 'penalty_goal'];
+  const NO_PLAYER_EVENTS = ['kickoff', 'halftime', 'fulltime'];
   document.getElementById('socialEventType').addEventListener('change', () => {
     const eventType = document.getElementById('socialEventType').value;
     document.getElementById('socialAssistWrap').style.display = ASSIST_ELIGIBLE_EVENTS.includes(eventType) ? 'block' : 'none';
     const isSub = eventType === 'sub';
-    document.getElementById('socialPlayerFieldGroup').style.display = isSub ? 'none' : 'block';
+    const noPlayer = NO_PLAYER_EVENTS.includes(eventType);
+    document.getElementById('socialPlayerFieldGroup').style.display = (isSub || noPlayer) ? 'none' : 'block';
     document.getElementById('socialSubWrap').style.display = isSub ? 'block' : 'none';
     updateSocialPreview();
   });
@@ -2888,8 +2891,10 @@
   // submit time (see caption below), without being overwritten by the
   // auto-template unless one of the other fields changes.
 
-  // Builds the fields sent to the backend for image generation — branches
-  // for substitution (two players) vs. every other event (one player).
+  // Builds the fields sent to the backend for image generation (matched
+  // against your Google Slides template's {{NAME}} / {{NUMBER}} / etc.
+  // placeholders) — branches for substitution (two players) vs. every
+  // other event (one player).
   function buildSocialGraphicFields(){
     const eventType = document.getElementById('socialEventType').value;
     if (eventType === 'sub'){
@@ -2909,7 +2914,7 @@
     if (eventType === 'sub'){
       const sub = getSocialSubInfo();
       if (!sub.offRowNumber || !sub.onRowNumber){ previewMsg.textContent = 'Pick both players first.'; previewMsg.style.color = 'var(--accent)'; return; }
-    } else {
+    } else if (!NO_PLAYER_EVENTS.includes(eventType)) {
       const player = getSocialPlayerInfo();
       if (currentSocialPlayerSource() === 'roster' && !player.rowNumber){ previewMsg.textContent = 'Pick a player first.'; previewMsg.style.color = 'var(--accent)'; return; }
       if (currentSocialPlayerSource() === 'other' && !player.name){ previewMsg.textContent = 'Enter the player\'s name.'; previewMsg.style.color = 'var(--accent)'; return; }
@@ -2951,29 +2956,30 @@
     const postInstagram = document.getElementById('socialPostInstagram').checked;
     const eventType = document.getElementById('socialEventType').value;
     const isSub = eventType === 'sub';
-    const player = isSub ? null : getSocialPlayerInfo();
+    const noPlayer = NO_PLAYER_EVENTS.includes(eventType);
+    const player = (isSub || noPlayer) ? null : getSocialPlayerInfo();
     const sub = isSub ? getSocialSubInfo() : null;
 
     if (isSub && (!sub.offRowNumber || !sub.onRowNumber)){ msgEl.textContent = 'Pick both players for the substitution.'; msgEl.style.color = 'var(--accent)'; return; }
-    if (!isSub && currentSocialPlayerSource() === 'roster' && !player.rowNumber){ msgEl.textContent = 'Pick a player first.'; msgEl.style.color = 'var(--accent)'; return; }
-    if (!isSub && currentSocialPlayerSource() === 'other' && !player.name){ msgEl.textContent = 'Enter the player\'s name.'; msgEl.style.color = 'var(--accent)'; return; }
+    if (!isSub && !noPlayer && currentSocialPlayerSource() === 'roster' && !player.rowNumber){ msgEl.textContent = 'Pick a player first.'; msgEl.style.color = 'var(--accent)'; return; }
+    if (!isSub && !noPlayer && currentSocialPlayerSource() === 'other' && !player.name){ msgEl.textContent = 'Enter the player\'s name.'; msgEl.style.color = 'var(--accent)'; return; }
     if (!postThreads && !postInstagram){ msgEl.textContent = 'Pick at least one platform.'; msgEl.style.color = 'var(--accent)'; return; }
 
     const caption = document.getElementById('socialPreview').value.trim() || buildSocialCaption();
     if (!(await confirmDialog(`Post this now?\n\n${caption}`, { okLabel: 'Post update' }))) return;
 
-    const assist = isSub ? null : getSocialAssistInfo();
+    const assist = (isSub || noPlayer) ? null : getSocialAssistInfo();
     const fields = buildSocialGraphicFields();
 
     const payload = Object.assign({
       action: 'adminPostSocialUpdate', token,
-      playerRowNumber: isSub ? '' : player.rowNumber, // blank for "other player" or substitution — backend skips roster stat updates then
-      playerLabel: isSub ? (sub.offLabel + ' → ' + sub.onLabel) : player.label,
+      playerRowNumber: (isSub || noPlayer) ? '' : player.rowNumber, // blank for "other player", substitution, or no-player events — backend skips roster stat updates then
+      playerLabel: isSub ? (sub.offLabel + ' → ' + sub.onLabel) : (noPlayer ? '' : player.label),
       subOffRowNumber: isSub ? sub.offRowNumber : '',
       subOnRowNumber: isSub ? sub.onRowNumber : '',
       assistRowNumber: assist ? assist.rowNumber : '', // present only when an assist was picked from our roster
       eventType,
-      minute: isSub ? sub.minute : player.minute,
+      minute: isSub ? sub.minute : (noPlayer ? '' : player.minute),
       note: document.getElementById('socialNote').value.trim(),
       opponent: currentMatchContext ? currentMatchContext.opponent : '',
       caption,
