@@ -2905,6 +2905,20 @@
     return { name: player.name, number: player.number, nameOff: '', numberOff: '', nameOn: '', numberOn: '', minute: player.minute };
   }
 
+  // Shared by the preview and post payloads — everything the poster's
+  // {{MATCH}} / {{DATE}} / {{TIME}} / {{VENUE}} / {{COMPETITION}} tokens
+  // can draw from, pulled from whatever's set in Next Match.
+  function socialMatchInfoPayload(){
+    if (!currentMatchContext) return { opponent: '', competition: '', date: '', time: '', venue: '' };
+    return {
+      opponent: currentMatchContext.opponent || '',
+      competition: currentMatchContext.competition || '',
+      date: currentMatchContext.date || '',
+      time: currentMatchContext.time || '',
+      venue: currentMatchContext.venue || ''
+    };
+  }
+
   document.getElementById('previewSocialGraphicBtn').addEventListener('click', async () => {
     const previewMsg = document.getElementById('socialGraphicPreviewMsg');
     const previewWrap = document.getElementById('socialGraphicPreviewWrap');
@@ -2930,9 +2944,8 @@
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(Object.assign({
           action: 'adminPreviewSocialGraphic', token,
-          eventType,
-          opponent: currentMatchContext ? currentMatchContext.opponent : ''
-        }, fields))
+          eventType
+        }, fields, socialMatchInfoPayload()))
       });
       const data = await res.json();
       if (data.ok && data.url){
@@ -2981,11 +2994,10 @@
       eventType,
       minute: isSub ? sub.minute : (noPlayer ? '' : player.minute),
       note: document.getElementById('socialNote').value.trim(),
-      opponent: currentMatchContext ? currentMatchContext.opponent : '',
       caption,
       imageUrl: socialPreviewedImageUrl, // reuse the previewed graphic if one's still fresh, instead of regenerating
       platforms: { threads: postThreads, instagram: postInstagram }
-    }, fields);
+    }, fields, socialMatchInfoPayload());
 
     msgEl.textContent = 'Posting…'; msgEl.style.color = 'var(--muted)';
     document.getElementById('postSocialUpdateBtn').disabled = true;
