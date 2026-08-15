@@ -982,12 +982,8 @@
             </div>
 
             <div id="socialResultWrap" class="social-field" style="display:none;">
-              <label class="social-label">Result <span style="font-weight:400; color:var(--muted); text-transform:none; letter-spacing:0;">(picks the matching poster design)</span></label>
-              <div class="social-seg" role="tablist" style="width:100%;">
-                <button type="button" class="social-seg-btn" id="socialResultWin" data-result="win" style="flex:1;">Win</button>
-                <button type="button" class="social-seg-btn" id="socialResultDraw" data-result="draw" style="flex:1;">Draw</button>
-                <button type="button" class="social-seg-btn" id="socialResultLoss" data-result="loss" style="flex:1;">Loss</button>
-              </div>
+              <label class="social-label">Result <span style="font-weight:400; color:var(--muted); text-transform:none; letter-spacing:0;">(detected from the score above — picks the matching poster design)</span></label>
+              <div id="socialResultAuto" style="font-size:13px; font-weight:700; color:var(--muted); background:var(--surface-2); border:1px solid var(--line); border-radius:9px; padding:10px 14px;">Enter the score above to detect the result</div>
             </div>
 
             <div class="social-field">
@@ -2796,25 +2792,30 @@
     return { kbfc: kbfc || '0', opponent: opponent || '0' };
   }
   ['socialScoreKbfc','socialScoreOpponent'].forEach(id => {
-    document.getElementById(id).addEventListener('input', updateSocialPreview);
+    document.getElementById(id).addEventListener('input', () => { refreshSocialResultAuto(); updateSocialPreview(); });
   });
 
-  // Result (Full-time only) — picks which slide variant to use, e.g.
+  // Result (Full-time only) — detected automatically from the score, not
+  // picked by hand. Picks which slide variant to use, e.g.
   // {{EVENT:fulltime_win}} vs {{EVENT:fulltime_loss}}, so you can design a
-  // different poster for each outcome. Blank/unselected falls back to a
-  // plain {{EVENT:fulltime}} slide if you don't need separate designs.
-  let socialResult = '';
-  function setSocialResult(value){
-    socialResult = socialResult === value ? '' : value; // clicking the active one again clears it
-    ['socialResultWin','socialResultDraw','socialResultLoss'].forEach(id => {
-      document.getElementById(id).classList.toggle('active', document.getElementById(id).dataset.result === socialResult);
-    });
-    updateSocialPreview();
+  // different poster for each outcome. Blank score falls back to a plain
+  // {{EVENT:fulltime}} slide if you don't need separate designs.
+  function computeSocialResult(){
+    const score = getSocialScoreInfo();
+    if (!score) return '';
+    const kbfc = Number(score.kbfc), opp = Number(score.opponent);
+    if (kbfc > opp) return 'win';
+    if (kbfc < opp) return 'loss';
+    return 'draw';
   }
-  document.getElementById('socialResultWin').addEventListener('click', () => setSocialResult('win'));
-  document.getElementById('socialResultDraw').addEventListener('click', () => setSocialResult('draw'));
-  document.getElementById('socialResultLoss').addEventListener('click', () => setSocialResult('loss'));
-
+  function refreshSocialResultAuto(){
+    const el = document.getElementById('socialResultAuto');
+    if (!el) return;
+    const result = computeSocialResult();
+    if (!result){ el.textContent = 'Enter the score above to detect the result'; el.style.color = 'var(--muted)'; return; }
+    el.textContent = result.toUpperCase();
+    el.style.color = result === 'win' ? '#4caf7d' : (result === 'loss' ? 'var(--accent)' : 'var(--muted)');
+  }
 
   function getSocialAssistInfo(){
     const sel = document.getElementById('socialAssistSelect');
@@ -2915,7 +2916,7 @@
     if (eventType === 'halftime' || eventType === 'fulltime'){
       const score = getSocialScoreInfo();
       const scoreLine = score ? `KBFC ${score.kbfc} – ${score.opponent}${opponent ? ' ' + opponent : ''}` : ('KBFC' + (opponent ? ' vs ' + opponent : ''));
-      const resultLabel = (eventType === 'fulltime' && socialResult) ? (' — ' + socialResult.toUpperCase()) : '';
+      const autoResult = eventType === 'fulltime' ? computeSocialResult() : ''; const resultLabel = autoResult ? (' — ' + autoResult.toUpperCase()) : '';
       const icon = eventType === 'halftime' ? '⏸️ HALF-TIME' : ('🔚 FULL-TIME' + resultLabel);
       return `${icon}\n\n${scoreLine}${note ? '\n' + note : ''}`;
     }
@@ -3003,7 +3004,7 @@
         body: JSON.stringify(Object.assign({
           action: 'adminPreviewSocialGraphic', token,
           eventType,
-          result: eventType === 'fulltime' ? socialResult : '',
+          result: eventType === 'fulltime' ? computeSocialResult() : '',
           scoreKbfc: score ? score.kbfc : '',
           scoreOpponent: score ? score.opponent : ''
         }, fields, socialMatchInfoPayload()))
@@ -3054,7 +3055,7 @@
       subOnRowNumber: isSub ? sub.onRowNumber : '',
       assistRowNumber: assist ? assist.rowNumber : '', // present only when an assist was picked from our roster
       eventType,
-      result: eventType === 'fulltime' ? socialResult : '',
+      result: eventType === 'fulltime' ? computeSocialResult() : '',
       minute: isSub ? sub.minute : (noPlayer ? '' : player.minute),
       note: document.getElementById('socialNote').value.trim(),
       scoreKbfc: score ? score.kbfc : '',
@@ -3089,7 +3090,7 @@
         document.getElementById('socialSubMinute').value = '';
         document.getElementById('socialScoreKbfc').value = '';
         document.getElementById('socialScoreOpponent').value = '';
-        setSocialResult(socialResult); // toggling clears it since it's already active — resets the selector after posting
+        refreshSocialResultAuto(); // score fields just cleared, so this resets back to "enter the score" state
         document.getElementById('socialNote').value = '';
         document.getElementById('socialAssistSelect').value = '';
         document.getElementById('socialGraphicPreviewWrap').style.display = 'none';
