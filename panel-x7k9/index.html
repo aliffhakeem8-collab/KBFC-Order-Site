@@ -981,6 +981,15 @@
               </div>
             </div>
 
+            <div id="socialResultWrap" class="social-field" style="display:none;">
+              <label class="social-label">Result <span style="font-weight:400; color:var(--muted); text-transform:none; letter-spacing:0;">(picks the matching poster design)</span></label>
+              <div class="social-seg" role="tablist" style="width:100%;">
+                <button type="button" class="social-seg-btn" id="socialResultWin" data-result="win" style="flex:1;">Win</button>
+                <button type="button" class="social-seg-btn" id="socialResultDraw" data-result="draw" style="flex:1;">Draw</button>
+                <button type="button" class="social-seg-btn" id="socialResultLoss" data-result="loss" style="flex:1;">Loss</button>
+              </div>
+            </div>
+
             <div class="social-field">
               <label class="social-label">What happened</label>
               <select id="socialEventType" class="edit-input" style="width:100%;">
@@ -2767,6 +2776,7 @@
   const ASSIST_ELIGIBLE_EVENTS = ['goal', 'penalty_goal'];
   const NO_PLAYER_EVENTS = ['kickoff', 'halftime', 'fulltime'];
   const SCORE_EVENTS = ['halftime', 'fulltime'];
+  const RESULT_EVENTS = ['fulltime'];
   document.getElementById('socialEventType').addEventListener('change', () => {
     const eventType = document.getElementById('socialEventType').value;
     document.getElementById('socialAssistWrap').style.display = ASSIST_ELIGIBLE_EVENTS.includes(eventType) ? 'block' : 'none';
@@ -2775,6 +2785,7 @@
     document.getElementById('socialPlayerFieldGroup').style.display = (isSub || noPlayer) ? 'none' : 'block';
     document.getElementById('socialSubWrap').style.display = isSub ? 'block' : 'none';
     document.getElementById('socialScoreWrap').style.display = SCORE_EVENTS.includes(eventType) ? 'block' : 'none';
+    document.getElementById('socialResultWrap').style.display = RESULT_EVENTS.includes(eventType) ? 'block' : 'none';
     updateSocialPreview();
   });
 
@@ -2787,6 +2798,22 @@
   ['socialScoreKbfc','socialScoreOpponent'].forEach(id => {
     document.getElementById(id).addEventListener('input', updateSocialPreview);
   });
+
+  // Result (Full-time only) — picks which slide variant to use, e.g.
+  // {{EVENT:fulltime_win}} vs {{EVENT:fulltime_loss}}, so you can design a
+  // different poster for each outcome. Blank/unselected falls back to a
+  // plain {{EVENT:fulltime}} slide if you don't need separate designs.
+  let socialResult = '';
+  function setSocialResult(value){
+    socialResult = socialResult === value ? '' : value; // clicking the active one again clears it
+    ['socialResultWin','socialResultDraw','socialResultLoss'].forEach(id => {
+      document.getElementById(id).classList.toggle('active', document.getElementById(id).dataset.result === socialResult);
+    });
+    updateSocialPreview();
+  }
+  document.getElementById('socialResultWin').addEventListener('click', () => setSocialResult('win'));
+  document.getElementById('socialResultDraw').addEventListener('click', () => setSocialResult('draw'));
+  document.getElementById('socialResultLoss').addEventListener('click', () => setSocialResult('loss'));
 
 
   function getSocialAssistInfo(){
@@ -2888,7 +2915,8 @@
     if (eventType === 'halftime' || eventType === 'fulltime'){
       const score = getSocialScoreInfo();
       const scoreLine = score ? `KBFC ${score.kbfc} – ${score.opponent}${opponent ? ' ' + opponent : ''}` : ('KBFC' + (opponent ? ' vs ' + opponent : ''));
-      const icon = eventType === 'halftime' ? '⏸️ HALF-TIME' : '🔚 FULL-TIME';
+      const resultLabel = (eventType === 'fulltime' && socialResult) ? (' — ' + socialResult.toUpperCase()) : '';
+      const icon = eventType === 'halftime' ? '⏸️ HALF-TIME' : ('🔚 FULL-TIME' + resultLabel);
       return `${icon}\n\n${scoreLine}${note ? '\n' + note : ''}`;
     }
 
@@ -2975,6 +3003,7 @@
         body: JSON.stringify(Object.assign({
           action: 'adminPreviewSocialGraphic', token,
           eventType,
+          result: eventType === 'fulltime' ? socialResult : '',
           scoreKbfc: score ? score.kbfc : '',
           scoreOpponent: score ? score.opponent : ''
         }, fields, socialMatchInfoPayload()))
@@ -3025,6 +3054,7 @@
       subOnRowNumber: isSub ? sub.onRowNumber : '',
       assistRowNumber: assist ? assist.rowNumber : '', // present only when an assist was picked from our roster
       eventType,
+      result: eventType === 'fulltime' ? socialResult : '',
       minute: isSub ? sub.minute : (noPlayer ? '' : player.minute),
       note: document.getElementById('socialNote').value.trim(),
       scoreKbfc: score ? score.kbfc : '',
@@ -3059,6 +3089,7 @@
         document.getElementById('socialSubMinute').value = '';
         document.getElementById('socialScoreKbfc').value = '';
         document.getElementById('socialScoreOpponent').value = '';
+        setSocialResult(socialResult); // toggling clears it since it's already active — resets the selector after posting
         document.getElementById('socialNote').value = '';
         document.getElementById('socialAssistSelect').value = '';
         document.getElementById('socialGraphicPreviewWrap').style.display = 'none';
