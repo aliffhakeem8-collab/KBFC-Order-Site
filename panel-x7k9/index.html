@@ -972,6 +972,15 @@
               <input type="number" id="socialSubMinute" class="edit-input" placeholder="Minute" min="0" max="120" style="width:100%;">
             </div>
 
+            <div id="socialScoreWrap" class="social-field" style="display:none;">
+              <label class="social-label">Score</label>
+              <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center;">
+                <input type="number" id="socialScoreKbfc" class="edit-input" placeholder="KBFC" min="0" style="text-align:center;">
+                <span style="color:var(--muted); font-weight:700;">–</span>
+                <input type="number" id="socialScoreOpponent" class="edit-input" placeholder="Opponent" min="0" style="text-align:center;">
+              </div>
+            </div>
+
             <div class="social-field">
               <label class="social-label">What happened</label>
               <select id="socialEventType" class="edit-input" style="width:100%;">
@@ -2757,6 +2766,7 @@
   // Kickoff/half-time/full-time need no player at all.
   const ASSIST_ELIGIBLE_EVENTS = ['goal', 'penalty_goal'];
   const NO_PLAYER_EVENTS = ['kickoff', 'halftime', 'fulltime'];
+  const SCORE_EVENTS = ['halftime', 'fulltime'];
   document.getElementById('socialEventType').addEventListener('change', () => {
     const eventType = document.getElementById('socialEventType').value;
     document.getElementById('socialAssistWrap').style.display = ASSIST_ELIGIBLE_EVENTS.includes(eventType) ? 'block' : 'none';
@@ -2764,8 +2774,20 @@
     const noPlayer = NO_PLAYER_EVENTS.includes(eventType);
     document.getElementById('socialPlayerFieldGroup').style.display = (isSub || noPlayer) ? 'none' : 'block';
     document.getElementById('socialSubWrap').style.display = isSub ? 'block' : 'none';
+    document.getElementById('socialScoreWrap').style.display = SCORE_EVENTS.includes(eventType) ? 'block' : 'none';
     updateSocialPreview();
   });
+
+  function getSocialScoreInfo(){
+    const kbfc = document.getElementById('socialScoreKbfc').value;
+    const opponent = document.getElementById('socialScoreOpponent').value;
+    if (kbfc === '' && opponent === '') return null;
+    return { kbfc: kbfc || '0', opponent: opponent || '0' };
+  }
+  ['socialScoreKbfc','socialScoreOpponent'].forEach(id => {
+    document.getElementById(id).addEventListener('input', updateSocialPreview);
+  });
+
 
   function getSocialAssistInfo(){
     const sel = document.getElementById('socialAssistSelect');
@@ -2863,6 +2885,13 @@
       return `🔄 SUBSTITUTION\n\n${sub.offLabel} OFF\n${sub.onLabel} ON\n\n${minute}'${note ? '\n' + note : ''}\n\nKBFC${opponent ? ' vs ' + opponent : ''}`;
     }
 
+    if (eventType === 'halftime' || eventType === 'fulltime'){
+      const score = getSocialScoreInfo();
+      const scoreLine = score ? `KBFC ${score.kbfc} – ${score.opponent}${opponent ? ' ' + opponent : ''}` : ('KBFC' + (opponent ? ' vs ' + opponent : ''));
+      const icon = eventType === 'halftime' ? '⏸️ HALF-TIME' : '🔚 FULL-TIME';
+      return `${icon}\n\n${scoreLine}${note ? '\n' + note : ''}`;
+    }
+
     const player = getSocialPlayerInfo();
     const minute = player.minute || '—';
     const assist = getSocialAssistInfo();
@@ -2939,12 +2968,15 @@
     document.getElementById('previewSocialGraphicBtn').disabled = true;
     try {
       const fields = buildSocialGraphicFields();
+      const score = getSocialScoreInfo();
       const res = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(Object.assign({
           action: 'adminPreviewSocialGraphic', token,
-          eventType
+          eventType,
+          scoreKbfc: score ? score.kbfc : '',
+          scoreOpponent: score ? score.opponent : ''
         }, fields, socialMatchInfoPayload()))
       });
       const data = await res.json();
@@ -2983,6 +3015,7 @@
 
     const assist = (isSub || noPlayer) ? null : getSocialAssistInfo();
     const fields = buildSocialGraphicFields();
+    const score = getSocialScoreInfo();
 
     const payload = Object.assign({
       action: 'adminPostSocialUpdate', token,
@@ -2994,6 +3027,8 @@
       eventType,
       minute: isSub ? sub.minute : (noPlayer ? '' : player.minute),
       note: document.getElementById('socialNote').value.trim(),
+      scoreKbfc: score ? score.kbfc : '',
+      scoreOpponent: score ? score.opponent : '',
       caption,
       imageUrl: socialPreviewedImageUrl, // reuse the previewed graphic if one's still fresh, instead of regenerating
       platforms: { threads: postThreads, instagram: postInstagram }
@@ -3022,6 +3057,8 @@
         document.getElementById('socialOtherNumber').value = '';
         document.getElementById('socialOtherMinute').value = '';
         document.getElementById('socialSubMinute').value = '';
+        document.getElementById('socialScoreKbfc').value = '';
+        document.getElementById('socialScoreOpponent').value = '';
         document.getElementById('socialNote').value = '';
         document.getElementById('socialAssistSelect').value = '';
         document.getElementById('socialGraphicPreviewWrap').style.display = 'none';
