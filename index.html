@@ -2347,10 +2347,12 @@
   /* ---------------- VIEW SWITCH ---------------- */
   const landing = document.getElementById('view-landing');
   const order = document.getElementById('view-order');
-  document.getElementById('checkOrderBtnNav').addEventListener('click', ()=>{
+  const checkOrderBtnNav = document.getElementById('checkOrderBtnNav');
+  if (checkOrderBtnNav) checkOrderBtnNav.addEventListener('click', ()=>{
     window.location.href = '/checker/';
   });
-  document.getElementById('backBtn').addEventListener('click', ()=>{
+  const backBtn = document.getElementById('backBtn');
+  if (backBtn) backBtn.addEventListener('click', ()=>{
     order.classList.remove('active'); landing.classList.add('active');
     window.scrollTo(0,0);
   });
@@ -2360,15 +2362,19 @@
     order.classList.remove('active'); landing.classList.add('active');
     window.scrollTo({top:0, behavior:'smooth'});
   };
-  brandHome.addEventListener('click', goHome);
-  brandHome.addEventListener('keydown', (e)=>{
-    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); goHome(); }
-  });
+  if (brandHome) {
+    brandHome.addEventListener('click', goHome);
+    brandHome.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); goHome(); }
+    });
+  }
 
-  document.getElementById('dupModalClose').addEventListener('click', ()=>{
-    document.getElementById('dupModalOverlay').classList.remove('active');
+  const dupModalClose = document.getElementById('dupModalClose');
+  const dupModalOverlay = document.getElementById('dupModalOverlay');
+  if (dupModalClose) dupModalClose.addEventListener('click', ()=>{
+    if (dupModalOverlay) dupModalOverlay.classList.remove('active');
   });
-  document.getElementById('dupModalOverlay').addEventListener('click', (e)=>{
+  if (dupModalOverlay) dupModalOverlay.addEventListener('click', (e)=>{
     if(e.target.id === 'dupModalOverlay') e.currentTarget.classList.remove('active');
   });
 
@@ -2450,10 +2456,12 @@
     if(e.target.classList.contains('jersey-set-input')) updateTotal();
   });
 
-  document.getElementById('qtyMinus').addEventListener('click', ()=>{
+  const qtyMinusBtn = document.getElementById('qtyMinus');
+  if (qtyMinusBtn) qtyMinusBtn.addEventListener('click', ()=>{
     if(qty > MIN_QTY){ qty--; qtyValueEl.textContent = qty; renderJerseyEntries(); }
   });
-  document.getElementById('qtyPlus').addEventListener('click', ()=>{
+  const qtyPlusBtn = document.getElementById('qtyPlus');
+  if (qtyPlusBtn) qtyPlusBtn.addEventListener('click', ()=>{
     if(qty < MAX_QTY){ qty++; qtyValueEl.textContent = qty; renderJerseyEntries(); }
   });
 
@@ -2500,7 +2508,15 @@
     if (!track) return;
     try {
       const data = await jsonpRequest(SCRIPT_URL + '?action=getInstagramFeed');
-      if (!data.ok || !data.posts || !data.posts.length) return; // leave the static placeholder photos showing — better than an empty section
+      if (!data.ok || !data.posts || !data.posts.length) {
+        // Leave the static placeholder photos showing — better than an
+        // empty section — but log WHY, since this used to fail completely
+        // silently (no console output at all when data.ok was false),
+        // making it impossible to tell "not configured yet" apart from
+        // "briefly no posts" apart from "this code never even ran."
+        console.warn('Instagram feed not showing live photos:', data.error || 'no posts returned', data);
+        return;
+      }
       // Duplicate the set once so the CSS marquee still loops seamlessly,
       // same trick the original static version used.
       const items = data.posts.concat(data.posts).map(p => `
@@ -2655,7 +2671,8 @@
     }
   }
   refreshTakenNumbers();
-  document.getElementById('heroCtaRow').addEventListener('click', (e)=>{
+  const heroCtaRowEl = document.getElementById('heroCtaRow');
+  if (heroCtaRowEl) heroCtaRowEl.addEventListener('click', (e)=>{
     if(e.target.closest('[data-cta="check-order"]')) refreshTakenNumbers();
   });
 
