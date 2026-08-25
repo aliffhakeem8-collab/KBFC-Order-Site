@@ -305,7 +305,7 @@
   }
   .ticker-track{
     display:inline-flex; align-items:center; gap:22px;
-    animation:tickerScroll 28s linear infinite;
+    animation:tickerScroll 25s linear infinite;
     will-change:transform;
   }
   .ticker-item{
@@ -1168,7 +1168,7 @@
   
   </div>
   <nav class="topbar-nav" aria-label="Primary">
-    <a href="/about/">About Us</a>
+    <a href="#aboutSection">About Us</a>
     <a href="/players/">Players</a>
     <a href="/sponsors/">Sponsors</a>
     <a href="#fixturesResultsSection">Fixtures</a>
@@ -1178,8 +1178,7 @@
     <a href="https://instagram.com/kelapabalifc/" target="_blank" rel="noopener">Contact Us</a>
   </nav>
   <div class="topbar-right">
-    <a class="topbar-login-link" href="login/">Log in / Sign up</a>
-    <button class="btn-pill-cta" id="checkOrderBtnNav">Check order</button>
+    <button class="btn-pill-cta" "topbar-login-link" href="login/">Log in / Sign up</button>
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark theme">
       <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="4" y1="4" x2="5.8" y2="5.8"/><line x1="18.2" y1="18.2" x2="20" y2="20"/><line x1="1.5" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22.5" y2="12"/><line x1="4" y1="20" x2="5.8" y2="18.2"/><line x1="18.2" y1="5.8" x2="20" y2="4"/></svg>
       <svg class="moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg>
@@ -1197,7 +1196,7 @@
       <svg viewBox="0 0 24 24"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
     </button>
   </div>
-  <a class="drawer-link" href="/about/">About Us</a>
+  <a class="drawer-link" href="#aboutSection">About Us</a>
   <a class="drawer-link" href="/players/">Players</a>
   <a class="drawer-link" href="/sponsors/">Sponsors</a>
   <a class="drawer-link" href="#fixturesResultsSection">Fixtures</a>
@@ -1390,7 +1389,7 @@
       <div class="join-us-copy">
         <div class="season-tag mono">Join Us</div>
         <h2>The club needs <span class="accent-shimmer">new faces.</span></h2>
-        <p>Players, members, volunteers, sponsors — however you want to be part of the next chapter, it starts with a message.</p>
+        <p>Players, members, volunteers, sponsors: you want to be part of us for the next chapter? it only starts with a message!</p>
         <div class="join-us-info">
           <div class="join-us-info-row">
             <svg viewBox="0 0 24 24"><path d="M12 22s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.4"/></svg>
@@ -1398,7 +1397,7 @@
           </div>
           <div class="join-us-info-row">
             <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7 10-7"/></svg>
-            <a href="mailto:hello@kelapabalifc.example">support@kbfc.my</a>
+            <a href="mailto:support@kbfc.my">support@kbfc.my</a>
           </div>
         </div>
       </div>
@@ -1432,7 +1431,7 @@
           <span id="joinUsSubmitBtnLabel">Send Enquiry</span>
           <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </button>
-        <div class="join-us-success" id="joinUsSuccess">Thanks, we've got your message and will be in touch soon #ForzaForzaBali.</div>
+        <div class="join-us-success" id="joinUsSuccess">Thanks you, we've got your message and will be in touch soon #ForzaForzaBali.</div>
       </form>
     </div>
   </section>
@@ -1711,7 +1710,7 @@
       if (!res.ok) return;
       const text = await res.text();
       const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
-      const row = (json.table && json.table.rows && json.table.rows[0]);
+      const row = gvizRows_(json)[0];
       if (!row) return;
       const cells = row.c || [];
       const val = i => (cells[i] ? cells[i].v : '');
@@ -1775,7 +1774,7 @@
       if (!res.ok) return;
       const text = await res.text();
       const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
-      const rows = (json.table && json.table.rows) || [];
+      const rows = gvizRows_(json);
       if (!rows.length) return; // nothing completed yet — section stays hidden
 
       const val = (row, i) => (row.c && row.c[i] ? row.c[i].v : '');
@@ -1848,7 +1847,7 @@
       if (!res.ok) return;
       const text = await res.text();
       const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
-      const rows = (json.table && json.table.rows) || [];
+      const rows = gvizRows_(json);
       if (!rows.length) return; // no posts yet — section stays hidden
 
       const val = (row, i) => (row.c && row.c[i] ? row.c[i].v : '');
@@ -1920,7 +1919,7 @@
       if (!res.ok) return;
       const text = await res.text();
       const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
-      const rows = (json.table && json.table.rows) || [];
+      const rows = gvizRows_(json);
       if (!rows.length) return;
 
       const val = (row, i) => (row.c && row.c[i] ? row.c[i].v : '');
@@ -2001,7 +2000,7 @@
           Club News
           <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>
-        <a class="btn-secondary" href="/about/">
+        <a class="btn-secondary" href="#aboutSection">
           About Us
           <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>`
@@ -2031,7 +2030,7 @@
           else { titleEl.style.display = 'none'; }
         }
         if (captionEl){
-          if (slide.caption) { captionEl.textContent = slide.caption.replace(/\s+/g, ' ').trim(); captionEl.style.display = ''; }
+          if (slide.caption) { captionEl.textContent = slide.caption; captionEl.style.display = ''; }
           else { captionEl.style.display = 'none'; }
         }
         [titleEl, captionEl].forEach(el => { if (el) el.style.opacity = '1'; });
@@ -2100,7 +2099,7 @@
         if (!res.ok) throw new Error('fetch failed');
         const text = await res.text();
         const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
-        const rows = (json.table && json.table.rows) || [];
+        const rows = gvizRows_(json);
 
         const val = (row, i) => (row.c && row.c[i] ? row.c[i].v : '');
         // Columns per getSiteAssetsSheet_: Slot, Image URL, Size (KB),
@@ -2164,7 +2163,7 @@
       const text = await res.text();
       const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
       const cols = (json.table && json.table.cols) || [];
-      const rows = (json.table && json.table.rows) || [];
+      const rows = gvizRows_(json);
       const colIndex = {};
       cols.forEach((c, i) => { if (c.label) colIndex[c.label.trim()] = i; });
       const idx = (label, fallback) => colIndex[label] !== undefined ? colIndex[label] : fallback;
@@ -2212,6 +2211,28 @@
 
   function escapeHtml_(str){
     return String(str || '').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  }
+
+  /**
+   * Every gviz-based reader below (Fixtures, Match History, News, About
+   * Us, Hero carousel, Squad) calls this instead of reading
+   * json.table.rows directly. Google's gviz endpoint is supposed to
+   * auto-strip the header row, but its detection relies on spotting a
+   * data-type change between row 1 and the rows after it — and several
+   * of these sheets store EVERY column as plain text (Date/Time columns
+   * are deliberately forced to text format elsewhere in this codebase,
+   * to dodge a separate auto-conversion bug), which makes every row look
+   * type-identical to gviz. When that happens it reports
+   * parsedNumHeaders: 0 and hands back the header row as if it were real
+   * data — which is exactly what was showing up as a phantom
+   * "Category / Title / Blurb" post on the News section. Every sheet
+   * these readers touch always has exactly one header row, so if gviz
+   * didn't already strip one, this strips it instead.
+   */
+  function gvizRows_(json){
+    const table = json.table || {};
+    const rows = table.rows || [];
+    return (table.parsedNumHeaders || 0) > 0 ? rows : rows.slice(1);
   }
 
   /* ---------------- TICKER STRIP (endless, screen-width-aware) ---------------- */
