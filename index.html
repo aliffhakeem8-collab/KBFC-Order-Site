@@ -2031,7 +2031,7 @@
           else { titleEl.style.display = 'none'; }
         }
         if (captionEl){
-          if (slide.caption) { captionEl.textContent = slide.caption; captionEl.style.display = ''; }
+          if (slide.caption) { captionEl.textContent = slide.caption.replace(/\s+/g, ' ').trim(); captionEl.style.display = ''; }
           else { captionEl.style.display = 'none'; }
         }
         [titleEl, captionEl].forEach(el => { if (el) el.style.opacity = '1'; });
