@@ -1168,7 +1168,7 @@
   
   </div>
   <nav class="topbar-nav" aria-label="Primary">
-    <a href="/about/">About Us</a>
+    <a href="#aboutSection">About Us</a>
     <a href="/players/">Players</a>
     <a href="/sponsors/">Sponsors</a>
     <a href="#fixturesResultsSection">Fixtures</a>
@@ -1221,16 +1221,7 @@
 
         <p class="thank-you-text" id="heroSlideCaption" style="display:none;"></p>
 
-        <div class="hero-cta-row">
-          <button class="btn-primary" id="preorderBtn">
-            Check my order
-            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          </button>
-          <a class="btn-secondary" href="#squad-teaser">
-            Meet the squad
-            <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-          </a>
-        </div>
+        <div class="hero-cta-row" id="heroCtaRow"></div>
       </div>
 
       <div class="hero-nav-row" id="heroNavRow" style="display:none;">
@@ -1399,15 +1390,15 @@
       <div class="join-us-copy">
         <div class="season-tag mono">Join Us</div>
         <h2>The club needs <span class="accent-shimmer">new faces.</span></h2>
-        <p>Players, members, volunteers, sponsors: be part of our next chapter. It starts with a message.</p>
+        <p>Players, members, volunteers, sponsors — however you want to be part of the next chapter, it starts with a message.</p>
         <div class="join-us-info">
           <div class="join-us-info-row">
             <svg viewBox="0 0 24 24"><path d="M12 22s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12Z"/><circle cx="12" cy="10" r="2.4"/></svg>
-            <span>Shah Alam, Selangor, Malaysia</span>
+            <span>Bukit Mertajam, Penang, Malaysia</span>
           </div>
           <div class="join-us-info-row">
             <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 6 10 7 10-7"/></svg>
-            <a href="mailto:hello@kelapabalifc.example">support@kbfc.my</a>
+            <a href="mailto:hello@kelapabalifc.example">hello@kelapabalifc.example</a>
           </div>
         </div>
       </div>
@@ -1441,7 +1432,7 @@
           <span id="joinUsSubmitBtnLabel">Send Enquiry</span>
           <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </button>
-        <div class="join-us-success" id="joinUsSuccess">Thanks, we've got your message and will be in touch soon #ForzaForzaBali.</div>
+        <div class="join-us-success" id="joinUsSuccess">Thanks — we've got your message and will be in touch soon.</div>
       </form>
     </div>
   </section>
@@ -1979,10 +1970,42 @@
     const countEl = document.getElementById('heroSlideCount');
     const titleEl = document.getElementById('slideTitle');
     const captionEl = document.getElementById('heroSlideCaption');
+    const ctaRow = document.getElementById('heroCtaRow');
     const prevBtn = document.getElementById('heroPrevBtn');
     const nextBtn = document.getElementById('heroNextBtn');
     const heroEl = document.getElementById('heroSlideshow');
     if (!track) return;
+
+    // Admin-typed text (especially pasted from Instagram captions) can
+    // carry non-breaking spaces (\u00A0) instead of regular ones — those
+    // don't collapse under normal CSS the way repeated regular spaces do,
+    // which is what was showing up as odd extra gaps between words. \s in
+    // a JS regex already matches \u00A0, so this collapses ALL whitespace
+    // variants down to single regular spaces.
+    function cleanText_(str){
+      return String(str || '').replace(/\s+/g, ' ').trim();
+    }
+
+    const CTA_TEMPLATES = {
+      order: `
+        <a class="btn-primary" href="/checker/" data-cta="check-order">
+          Check my order
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </a>
+        <a class="btn-secondary" href="#squad-teaser">
+          Meet the squad
+          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>`,
+      news: `
+        <a class="btn-primary" href="#newsSection">
+          Club News
+          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <a class="btn-secondary" href="#aboutSection">
+          About Us
+          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>`
+    };
 
     let slides = [];
     let current = 0;
@@ -2013,6 +2036,12 @@
         }
         [titleEl, captionEl].forEach(el => { if (el) el.style.opacity = '1'; });
       }, 220);
+      // CTA buttons swap per-slide (e.g. "Check my order" only makes sense
+      // on a slide actually about ordering — an achievement/news slide gets
+      // News + About Us links instead). Defaults to 'news' when a slide
+      // doesn't specify, since that's the safer default for a general
+      // photo/announcement slide.
+      if (ctaRow) ctaRow.innerHTML = CTA_TEMPLATES[slide.cta] || CTA_TEMPLATES.news;
     }
 
     function goTo(index){
@@ -2075,15 +2104,17 @@
 
         const val = (row, i) => (row.c && row.c[i] ? row.c[i].v : '');
         // Columns per getSiteAssetsSheet_: Slot, Image URL, Size (KB),
-        // Uploaded At, Title, Caption. Oldest-uploaded first.
+        // Uploaded At, Title, Caption, CTA. Oldest-uploaded first.
         rows.forEach(row => {
           const slot = String(val(row, 0) || '').trim();
           const imageUrl = String(val(row, 1) || '').trim();
           if (slot !== 'homepage-hero' || !imageUrl) return;
+          const cta = String(val(row, 6) || '').trim().toLowerCase();
           slides.push({
             imageUrl: imageUrl,
-            title: String(val(row, 4) || '').trim(),
-            caption: String(val(row, 5) || '').trim()
+            title: cleanText_(val(row, 4)),
+            caption: cleanText_(val(row, 5)),
+            cta: cta === 'order' ? 'order' : 'news'
           });
         });
       } catch (err) {
@@ -2092,7 +2123,7 @@
 
       if (slides.length === 0) {
         // Nothing uploaded yet — plain photo, no text overlay at all.
-        slides = [{ imageUrl: FALLBACK_IMAGE, title: '', caption: '' }];
+        slides = [{ imageUrl: FALLBACK_IMAGE, title: '', caption: '', cta: 'news' }];
       }
 
       renderSlideLayers();
@@ -2298,9 +2329,6 @@
   document.getElementById('checkOrderBtnNav').addEventListener('click', ()=>{
     window.location.href = '/checker/';
   });
-  document.getElementById('preorderBtn').addEventListener('click', ()=>{
-    window.location.href = '/checker/';
-  });
   document.getElementById('backBtn').addEventListener('click', ()=>{
     order.classList.remove('active'); landing.classList.add('active');
     window.scrollTo(0,0);
@@ -2475,8 +2503,8 @@
     const track = document.getElementById('clubPhotosTrack');
     if (!viewport || !track) return;
 
-    const AUTO_SPEED = 0.3;      // px per frame — steady, actually visible drift
-    const RESUME_DELAY_MS = 0500; // wait this long after any interaction before auto-scroll starts again
+    const AUTO_SPEED = 0.9;      // px per frame — steady, actually visible drift
+    const RESUME_DELAY_MS = 5000; // wait this long after any interaction before auto-scroll starts again
     const CLICK_DRAG_THRESHOLD = 6; // px of movement before a "click" is treated as a drag instead
 
     let isDragging = false;
@@ -2606,9 +2634,8 @@
     }
   }
   refreshTakenNumbers();
-  ['preorderBtn'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) el.addEventListener('click', refreshTakenNumbers);
+  document.getElementById('heroCtaRow').addEventListener('click', (e)=>{
+    if(e.target.closest('[data-cta="check-order"]')) refreshTakenNumbers();
   });
 
   function clearJerseyErrors(){
