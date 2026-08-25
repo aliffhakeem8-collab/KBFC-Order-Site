@@ -902,6 +902,13 @@
         <p class="card-sub" style="margin-bottom:16px;">Choose where it lands, then select or drag a file.</p>
         <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:6px;">Upload to</label>
         <select id="mediaSlotSelect" class="edit-input" style="margin-bottom:14px; max-width:320px;"></select>
+        <div id="mediaHeroFields" style="display:none; margin-bottom:14px;">
+          <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:6px;">Slide title (optional — leave blank to just show the photo)</label>
+          <input type="text" id="mediaTitleInput" class="edit-input" placeholder="e.g. New Away Kit Drop" style="margin-bottom:10px; max-width:320px;">
+          <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:6px;">Slide caption (optional)</label>
+          <input type="text" id="mediaCaptionInput" class="edit-input" placeholder="e.g. Available now in the shop." style="max-width:320px;">
+          <p style="font-size:11px; color:var(--muted); margin:8px 0 0;">Every photo uploaded to Homepage Hero becomes its own slide in the carousel — this doesn't replace the previous one. Delete a row below to remove it from the rotation.</p>
+        </div>
         <label class="media-upload-zone" id="mediaUploadZone">
           <input type="file" accept="image/*" id="mediaFileInput">
           <svg class="upload-icon" viewBox="0 0 24 24"><path d="M12 16V4M12 4l-4 4M12 4l4 4"/><path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3"/></svg>
@@ -1128,6 +1135,9 @@
     productionScope: document.getElementById('productionScope'),
     dropsTableBody: document.getElementById('dropsTableBody'),
     mediaSlotSelect: document.getElementById('mediaSlotSelect'),
+    mediaHeroFields: document.getElementById('mediaHeroFields'),
+    mediaTitleInput: document.getElementById('mediaTitleInput'),
+    mediaCaptionInput: document.getElementById('mediaCaptionInput'),
     mediaUploadZone: document.getElementById('mediaUploadZone'),
     mediaFileInput: document.getElementById('mediaFileInput'),
     mediaPreviewRow: document.getElementById('mediaPreviewRow'),
@@ -2283,6 +2293,12 @@
 
   els.mediaSlotSelect.innerHTML = SITE_MEDIA_SLOTS.map(s => `<option value="${s.key}">${s.label}</option>`).join('');
 
+  function updateMediaHeroFieldsVisibility(){
+    els.mediaHeroFields.style.display = els.mediaSlotSelect.value === 'homepage-hero' ? 'block' : 'none';
+  }
+  updateMediaHeroFieldsVisibility();
+  els.mediaSlotSelect.addEventListener('change', updateMediaHeroFieldsVisibility);
+
   let mediaSelectedFile = null;
   let mediaLog = [];
 
@@ -2358,6 +2374,8 @@
   els.mediaUploadBtn.addEventListener('click', async () => {
     if (!mediaSelectedFile) return;
     const slot = els.mediaSlotSelect.value;
+    const title = slot === 'homepage-hero' ? els.mediaTitleInput.value.trim() : '';
+    const caption = slot === 'homepage-hero' ? els.mediaCaptionInput.value.trim() : '';
     els.mediaUploadBtn.disabled = true;
     els.mediaUploadBtn.textContent = 'Uploading…';
     showMediaMsg('', '');
@@ -2366,13 +2384,15 @@
       const base64 = await fileToBase64(compressed);
       const res = await fetch(API_URL, {
         method: 'POST',
-        body: JSON.stringify({ action: 'adminUploadSiteImage', token, slot, mimeType: compressed.type, imageBase64: base64 })
+        body: JSON.stringify({ action: 'adminUploadSiteImage', token, slot, title, caption, mimeType: compressed.type, imageBase64: base64 })
       });
       const data = await res.json();
       if (data.ok){
         showMediaMsg(`Uploaded to "${SITE_MEDIA_SLOTS.find(s => s.key === slot).label}" (${data.sizeKb} KB).`, 'success');
         mediaSelectedFile = null;
         els.mediaFileInput.value = '';
+        els.mediaTitleInput.value = '';
+        els.mediaCaptionInput.value = '';
         els.mediaPreviewRow.style.display = 'none';
         els.mediaUploadBtn.disabled = true;
         loadSiteAssets();
@@ -2395,9 +2415,16 @@
       els.mediaLogTableBody.innerHTML = `<tr><td colspan="6" class="empty">No uploads yet.</td></tr>`;
       return;
     }
-    // Only the newest entry per slot counts as "Live".
+    // Only the newest entry per slot counts as "Live" — EXCEPT
+    // homepage-hero, where every entry is its own carousel slide on the
+    // live site (not just the newest one), so every row for that slot is
+    // marked Live instead of just the top one.
     const liveRowNumbers = new Set();
     SITE_MEDIA_SLOTS.forEach(s => {
+      if (s.key === 'homepage-hero') {
+        mediaLog.filter(e => e.slot === s.key).forEach(e => liveRowNumbers.add(e.rowNumber));
+        return;
+      }
       const newest = mediaLog.find(e => e.slot === s.key); // mediaLog is newest-first
       if (newest) liveRowNumbers.add(newest.rowNumber);
     });
@@ -2405,7 +2432,7 @@
     els.mediaLogTableBody.innerHTML = mediaLog.map(entry => `
       <tr>
         <td><img class="img-thumb" src="${entry.url}" onerror="this.style.display='none'"></td>
-        <td>${slotLabel(entry.slot)}</td>
+        <td>${slotLabel(entry.slot)}${entry.title ? `<div style="font-size:11px;color:var(--muted);margin-top:2px;">${entry.title}</div>` : ''}</td>
         <td class="mono">${entry.uploadedAt ? entry.uploadedAt.split('T')[0] : '—'}</td>
         <td class="mono">${entry.sizeKb} KB</td>
         <td>${liveRowNumbers.has(entry.rowNumber) ? '<span style="color:var(--success); font-weight:600; font-size:11.5px;">● Live</span>' : '<span style="color:var(--muted); font-size:11.5px;">Archived</span>'}</td>
