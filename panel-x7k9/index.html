@@ -487,6 +487,14 @@
     <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
     Players
   </button>
+  <button class="nav-item" data-view="about">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><circle cx="12" cy="8" r=".6" fill="currentColor" stroke="none"/></svg>
+    About Us
+  </button>
+  <button class="nav-item" data-view="news">
+    <svg viewBox="0 0 24 24"><path d="M4 4h13a3 3 0 0 1 3 3v13H7a3 3 0 0 1-3-3V4Z"/><line x1="8" y1="8" x2="15" y2="8"/><line x1="8" y1="12" x2="15" y2="12"/></svg>
+    Club News
+  </button>
   <button class="nav-item" data-view="nextmatch">
     <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
     Next Match
@@ -770,6 +778,92 @@
     </section>
 
     <!-- NEXT MATCH -->
+    <!-- ABOUT US -->
+    <section class="view-section" id="view-about">
+      <div class="page-title">About Us</div>
+      <p style="font-size:12.5px;color:var(--muted);margin:-12px 0 20px;">Shown as its own section on the homepage. Stays hidden on the public site until you save a title or body here.</p>
+
+      <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; max-width:640px;">
+        <div style="margin-bottom:14px;">
+          <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Title</label>
+          <input type="text" id="aboutTitleInput" class="edit-input" placeholder="e.g. Our Story">
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Body</label>
+          <textarea id="aboutBodyInput" class="edit-input" rows="6" placeholder="Tell people who you are..."></textarea>
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:6px;">Photo (optional)</label>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div id="aboutPhotoPreview" style="width:64px; height:64px; border:1px solid var(--line); background:var(--bg); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="var(--muted)" fill="none" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            </div>
+            <input type="file" id="aboutPhotoInput" accept="image/*" style="font-size:12px;">
+            <button type="button" class="ghost" id="aboutPhotoClearBtn" style="padding:4px 10px; font-size:11.5px; display:none;">Remove</button>
+          </div>
+        </div>
+        <button class="action" id="saveAboutBtn">Save</button>
+        <div id="aboutMsg" style="font-size:12px; color:var(--muted); margin-top:12px;"></div>
+      </div>
+    </section>
+
+    <!-- CLUB NEWS -->
+    <section class="view-section" id="view-news">
+      <div class="page-title">Club News</div>
+      <p style="font-size:12.5px;color:var(--muted);margin:-12px 0 20px;">Shown on the homepage, newest first. Add a post below — image is optional, everything else too except a title.</p>
+
+      <div class="card" style="background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:20px; margin-bottom:20px;">
+        <h3 id="newsFormHeading">Add a post</h3>
+        <input type="hidden" id="newsEditingRow" value="">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px;">
+          <div>
+            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Date</label>
+            <input type="date" id="newsDateInput" class="edit-input">
+          </div>
+          <div>
+            <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Category</label>
+            <input type="text" id="newsCategoryInput" class="edit-input" placeholder="e.g. Club, Academy, Ground">
+          </div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Title *</label>
+          <input type="text" id="newsTitleInput" class="edit-input" placeholder="e.g. Aliff signs new one-year extension">
+        </div>
+        <div style="margin-bottom:14px;">
+          <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Blurb</label>
+          <input type="text" id="newsBlurbInput" class="edit-input" placeholder="One line summary">
+        </div>
+        <div style="margin-bottom:14px;">
+          <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:4px;">Link (optional — makes the post clickable)</label>
+          <input type="text" id="newsLinkInput" class="edit-input" placeholder="https://...">
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:6px;">Image (optional)</label>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div id="newsPhotoPreview" style="width:64px; height:64px; border:1px solid var(--line); background:var(--bg); display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;">
+              <svg viewBox="0 0 24 24" width="20" height="20" stroke="var(--muted)" fill="none" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            </div>
+            <input type="file" id="newsPhotoInput" accept="image/*" style="font-size:12px;">
+            <button type="button" class="ghost" id="newsPhotoClearBtn" style="padding:4px 10px; font-size:11.5px; display:none;">Remove</button>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <button class="action" id="saveNewsBtn">Add post</button>
+          <button class="ghost" id="cancelNewsEditBtn" style="display:none;">Cancel edit</button>
+        </div>
+        <div id="newsMsg" style="font-size:12px; color:var(--muted); margin-top:12px;"></div>
+      </div>
+
+      <h3 style="font-family:'Oswald',sans-serif; font-size:15px; font-weight:600; margin:0 0 4px;">All posts</h3>
+      <p style="font-size:12.5px;color:var(--muted);margin:0 0 14px;">Newest first.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th></th><th>Date</th><th>Category</th><th>Title</th><th></th></tr></thead>
+          <tbody id="newsTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
     <section class="view-section" id="view-nextmatch">
       <div class="page-title">Next Match</div>
       <p style="font-size:12.5px;color:var(--muted);margin:-12px 0 20px;">Shown on the homepage and included on every player's generated share card. There's only ever one upcoming match — saving here replaces whatever was there before.</p>
@@ -2458,6 +2552,206 @@
     renderMediaLog();
   }
 
+  // ---------------- ABOUT US ----------------
+  let aboutClearPhotoFlag = false;
+
+  async function loadAboutContent(){
+    const data = await (await fetch(`${API_URL}?action=adminGetAboutContent&token=${encodeURIComponent(token)}`)).json();
+    const preview = document.getElementById('aboutPhotoPreview');
+    const clearBtn = document.getElementById('aboutPhotoClearBtn');
+    const placeholderSvg = preview.innerHTML;
+    aboutClearPhotoFlag = false;
+    if (!data.ok || !data.content) return;
+    document.getElementById('aboutTitleInput').value = data.content.title || '';
+    document.getElementById('aboutBodyInput').value = data.content.body || '';
+    if (data.content.image){
+      preview.innerHTML = `<img src="${data.content.image}" style="width:100%;height:100%;object-fit:cover;">`;
+      clearBtn.style.display = 'inline-block';
+      preview.dataset.placeholder = placeholderSvg;
+    }
+  }
+
+  document.getElementById('aboutPhotoInput').addEventListener('change', () => {
+    const file = document.getElementById('aboutPhotoInput').files[0];
+    if (!file) return;
+    aboutClearPhotoFlag = false;
+    const preview = document.getElementById('aboutPhotoPreview');
+    const reader = new FileReader();
+    reader.onload = () => { preview.innerHTML = `<img src="${reader.result}" style="width:100%;height:100%;object-fit:cover;">`; };
+    reader.readAsDataURL(file);
+    document.getElementById('aboutPhotoClearBtn').style.display = 'inline-block';
+  });
+
+  document.getElementById('aboutPhotoClearBtn').addEventListener('click', () => {
+    aboutClearPhotoFlag = true;
+    const preview = document.getElementById('aboutPhotoPreview');
+    document.getElementById('aboutPhotoInput').value = '';
+    preview.innerHTML = preview.dataset.placeholder || preview.innerHTML;
+    document.getElementById('aboutPhotoClearBtn').style.display = 'none';
+  });
+
+  document.getElementById('saveAboutBtn').addEventListener('click', async () => {
+    const msgEl = document.getElementById('aboutMsg');
+    const payload = {
+      action: 'adminUpdateAboutContent', token,
+      title: document.getElementById('aboutTitleInput').value.trim(),
+      body: document.getElementById('aboutBodyInput').value.trim()
+    };
+    const photoFile = document.getElementById('aboutPhotoInput').files[0];
+    if (photoFile){
+      payload.imageBase64 = await fileToBase64(photoFile);
+      payload.mimeType = photoFile.type || 'image/jpeg';
+    } else if (aboutClearPhotoFlag){
+      payload.clearImage = 'true';
+    }
+    msgEl.textContent = 'Saving…'; msgEl.style.color = 'var(--muted)';
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.ok){
+      msgEl.textContent = 'Saved.'; msgEl.style.color = 'var(--muted)';
+      document.getElementById('aboutPhotoInput').value = '';
+      loadAboutContent();
+    } else {
+      msgEl.textContent = data.error || 'Save failed.'; msgEl.style.color = 'var(--accent)';
+    }
+  });
+
+  // ---------------- CLUB NEWS ----------------
+  let newsClearPhotoFlag = false;
+
+  function resetNewsForm(){
+    document.getElementById('newsEditingRow').value = '';
+    document.getElementById('newsDateInput').value = '';
+    document.getElementById('newsCategoryInput').value = '';
+    document.getElementById('newsTitleInput').value = '';
+    document.getElementById('newsBlurbInput').value = '';
+    document.getElementById('newsLinkInput').value = '';
+    document.getElementById('newsPhotoInput').value = '';
+    document.getElementById('newsPhotoPreview').innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" stroke="var(--muted)" fill="none" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>`;
+    document.getElementById('newsPhotoClearBtn').style.display = 'none';
+    document.getElementById('newsFormHeading').textContent = 'Add a post';
+    document.getElementById('saveNewsBtn').textContent = 'Add post';
+    document.getElementById('cancelNewsEditBtn').style.display = 'none';
+    newsClearPhotoFlag = false;
+  }
+
+  async function loadNewsAdmin(){
+    const data = await (await fetch(`${API_URL}?action=adminGetNews&token=${encodeURIComponent(token)}`)).json();
+    const body = document.getElementById('newsTableBody');
+    if (!data.ok){ showToast(data.error || 'Failed to load news'); return; }
+    if (data.posts.length === 0){
+      body.innerHTML = `<tr><td colspan="5" class="empty">No posts yet.</td></tr>`;
+      return;
+    }
+    body.innerHTML = data.posts.map(p => `
+      <tr>
+        <td>${p.image ? `<img class="img-thumb" src="${p.image}" onerror="this.style.display='none'">` : '—'}</td>
+        <td class="mono">${p.date || '—'}</td>
+        <td>${p.category || '—'}</td>
+        <td>${p.title}</td>
+        <td style="white-space:nowrap;">
+          <button class="ghost edit-news-btn" data-row="${p.rowNumber}" style="padding:4px 10px; font-size:11.5px;">Edit</button>
+          <button class="ghost delete-news-btn" data-row="${p.rowNumber}" style="padding:4px 10px; font-size:11.5px;">Delete</button>
+        </td>
+      </tr>
+    `).join('');
+
+    body.querySelectorAll('.edit-news-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const p = data.posts.find(x => String(x.rowNumber) === btn.dataset.row);
+        if (!p) return;
+        document.getElementById('newsEditingRow').value = p.rowNumber;
+        document.getElementById('newsDateInput').value = p.date || '';
+        document.getElementById('newsCategoryInput').value = p.category || '';
+        document.getElementById('newsTitleInput').value = p.title || '';
+        document.getElementById('newsBlurbInput').value = p.blurb || '';
+        document.getElementById('newsLinkInput').value = p.link || '';
+        if (p.image){
+          document.getElementById('newsPhotoPreview').innerHTML = `<img src="${p.image}" style="width:100%;height:100%;object-fit:cover;">`;
+          document.getElementById('newsPhotoClearBtn').style.display = 'inline-block';
+        }
+        document.getElementById('newsFormHeading').textContent = 'Edit post';
+        document.getElementById('saveNewsBtn').textContent = 'Save changes';
+        document.getElementById('cancelNewsEditBtn').style.display = 'inline-block';
+        document.getElementById('view-news').scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+
+    body.querySelectorAll('.delete-news-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!(await confirmDialog('Delete this post? It will disappear from the homepage too.', { okLabel: 'Delete post', danger: true }))) return;
+        const params = new URLSearchParams({ action: 'adminDeleteNews', token, rowNumber: btn.dataset.row });
+        const res = await fetch(`${API_URL}?${params.toString()}`);
+        const resData = await res.json();
+        if (resData.ok){ showToast('Post deleted'); loadNewsAdmin(); }
+        else showToast(resData.error || 'Failed to delete.');
+      });
+    });
+  }
+
+  document.getElementById('newsPhotoInput').addEventListener('change', () => {
+    const file = document.getElementById('newsPhotoInput').files[0];
+    if (!file) return;
+    newsClearPhotoFlag = false;
+    const reader = new FileReader();
+    reader.onload = () => { document.getElementById('newsPhotoPreview').innerHTML = `<img src="${reader.result}" style="width:100%;height:100%;object-fit:cover;">`; };
+    reader.readAsDataURL(file);
+    document.getElementById('newsPhotoClearBtn').style.display = 'inline-block';
+  });
+
+  document.getElementById('newsPhotoClearBtn').addEventListener('click', () => {
+    newsClearPhotoFlag = true;
+    document.getElementById('newsPhotoInput').value = '';
+    document.getElementById('newsPhotoPreview').innerHTML = `<svg viewBox="0 0 24 24" width="20" height="20" stroke="var(--muted)" fill="none" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>`;
+    document.getElementById('newsPhotoClearBtn').style.display = 'none';
+  });
+
+  document.getElementById('cancelNewsEditBtn').addEventListener('click', resetNewsForm);
+
+  document.getElementById('saveNewsBtn').addEventListener('click', async () => {
+    const msgEl = document.getElementById('newsMsg');
+    const title = document.getElementById('newsTitleInput').value.trim();
+    if (!title){ msgEl.textContent = 'Title is required.'; msgEl.style.color = 'var(--accent)'; return; }
+
+    const editingRow = document.getElementById('newsEditingRow').value;
+    const payload = {
+      action: editingRow ? 'adminUpdateNews' : 'adminAddNews', token,
+      date: document.getElementById('newsDateInput').value,
+      category: document.getElementById('newsCategoryInput').value.trim(),
+      title,
+      blurb: document.getElementById('newsBlurbInput').value.trim(),
+      link: document.getElementById('newsLinkInput').value.trim()
+    };
+    if (editingRow) payload.rowNumber = editingRow;
+
+    const photoFile = document.getElementById('newsPhotoInput').files[0];
+    if (photoFile){
+      payload.imageBase64 = await fileToBase64(photoFile);
+      payload.mimeType = photoFile.type || 'image/jpeg';
+    } else if (newsClearPhotoFlag){
+      payload.clearImage = 'true';
+    }
+
+    msgEl.textContent = 'Saving…'; msgEl.style.color = 'var(--muted)';
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.ok){
+      msgEl.textContent = editingRow ? 'Post updated.' : 'Post added.'; msgEl.style.color = 'var(--muted)';
+      resetNewsForm();
+      loadNewsAdmin();
+    } else {
+      msgEl.textContent = data.error || 'Save failed.'; msgEl.style.color = 'var(--accent)';
+    }
+  });
+
   // ---------------- NEXT MATCH ----------------
   const shieldIconSvg = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="var(--muted)" fill="none" stroke-width="1.8"><path d="M12 2 4 6v6c0 5 3.4 8.7 8 10 4.6-1.3 8-5 8-10V6l-8-4Z"/></svg>`;
   let nextMatchClearLogoFlag = false;
@@ -3210,6 +3504,8 @@
     loadProduction();
     loadDrops();
     loadSiteAssets();
+    loadAboutContent();
+    loadNewsAdmin();
     loadNextMatch(); loadNextMatchLog(); loadMatchHistoryAdmin(); loadChangeRequests();
     loadSocialLog();
   }
