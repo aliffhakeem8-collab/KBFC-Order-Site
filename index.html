@@ -1715,8 +1715,8 @@
   (async function loadNextMatchBar(){
     const PLAYERS_SHEET_ID = '1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM';
     try {
-      const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=NextMatch`;
-      const res = await fetch(url);
+      const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=NextMatch&_ts=${Date.now()}`;
+      const res = await fetch(url, { cache: 'no-store' });
       if (!res.ok) return;
       const text = await res.text();
       const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
@@ -1779,8 +1779,8 @@
   (async function loadMatchHistory(){
     const PLAYERS_SHEET_ID = '1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM';
     try {
-      const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=MatchHistory`;
-      const res = await fetch(url);
+      const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=MatchHistory&_ts=${Date.now()}`;
+      const res = await fetch(url, { cache: 'no-store' });
       if (!res.ok) return;
       const text = await res.text();
       const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
@@ -1852,8 +1852,8 @@
   (async function loadNewsSection(){
     const PLAYERS_SHEET_ID = '1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM';
     try {
-      const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=News`;
-      const res = await fetch(url);
+      const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=News&_ts=${Date.now()}`;
+      const res = await fetch(url, { cache: 'no-store' });
       if (!res.ok) return;
       const text = await res.text();
       const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
@@ -1924,8 +1924,8 @@
   (async function loadAboutSection(){
     const PLAYERS_SHEET_ID = '1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM';
     try {
-      const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=PageContent`;
-      const res = await fetch(url);
+      const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=PageContent&_ts=${Date.now()}`;
+      const res = await fetch(url, { cache: 'no-store' });
       if (!res.ok) return;
       const text = await res.text();
       const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
@@ -2066,8 +2066,8 @@
 
     (async function loadSlides(){
       try {
-        const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=SiteAssets`;
-        const res = await fetch(url);
+        const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=SiteAssets&_ts=${Date.now()}`;
+        const res = await fetch(url, { cache: 'no-store' });
         if (!res.ok) throw new Error('fetch failed');
         const text = await res.text();
         const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
@@ -2127,8 +2127,8 @@
     }
 
     try {
-      const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=Players`;
-      const res = await fetch(url);
+      const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=Players&_ts=${Date.now()}`;
+      const res = await fetch(url, { cache: 'no-store' });
       if (!res.ok) throw new Error('Sheet request failed: ' + res.status);
       const text = await res.text();
       const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
