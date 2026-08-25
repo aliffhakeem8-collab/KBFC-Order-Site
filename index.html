@@ -485,6 +485,25 @@
     .join-us-grid{ grid-template-columns:1fr; gap:40px; }
   }
 
+  /* ---------- about us ---------- */
+  .about-section{ padding:80px 6vw; border-top:1px solid var(--line); }
+  .about-grid{
+    display:grid; grid-template-columns:1fr 1.15fr; gap:64px; align-items:center;
+  }
+  .about-photo{
+    aspect-ratio:4/3; overflow:hidden; border:1px solid var(--line); background:var(--surface);
+  }
+  .about-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .about-copy h2{
+    font-size:clamp(28px,3.6vw,38px); font-weight:600; line-height:1.15; margin:0 0 18px;
+  }
+  .about-copy p{
+    font-size:14.5px; color:var(--muted); line-height:1.7; max-width:520px; white-space:pre-line;
+  }
+  @media (max-width:860px){
+    .about-grid{ grid-template-columns:1fr; gap:32px; }
+  }
+
   /* ---------- thank-you note (merged into hero) ---------- */
   .thank-you-text{
     font-size:14.5px; color:var(--muted); line-height:1.6;
@@ -1149,11 +1168,10 @@
   
   </div>
   <nav class="topbar-nav" aria-label="Primary">
-    <a href="/about/">About Us</a>
+    <a href="#aboutSection">About Us</a>
     <a href="/players/">Players</a>
     <a href="/sponsors/">Sponsors</a>
     <a href="#fixturesResultsSection">Fixtures</a>
-    <a href="#clubPhotosSection">Gallery</a>
     <a href="#newsSection">News</a>
     <a href="/released-jerseys/">Club Jersey</a>
     <a href="#joinUsSection">Join Us</a>
@@ -1179,11 +1197,10 @@
       <svg viewBox="0 0 24 24"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
     </button>
   </div>
-  <a class="drawer-link" href="/about/">About Us</a>
+  <a class="drawer-link" href="#aboutSection">About Us</a>
   <a class="drawer-link" href="/players/">Players</a>
   <a class="drawer-link" href="/sponsors/">Sponsors</a>
   <a class="drawer-link" href="#fixturesResultsSection">Fixtures</a>
-  <a class="drawer-link" href="#clubPhotosSection">Gallery</a>
   <a class="drawer-link" href="#newsSection">News</a>
   <a class="drawer-link" href="/released-jerseys/">Club Jersey</a>
   <a class="drawer-link" href="#joinUsSection">Join Us</a>
@@ -1197,17 +1214,12 @@
 <section class="view active" id="view-landing">
 
   <div class="hero" id="heroSlideshow">
-    <div class="hero-bg-track" id="heroBgTrack">
-      <div class="hero-bg active" data-slide="0">
-        <img src="../images/club-photo-1.jpg" alt="" onerror="this.parentElement.style.display='none';">
-      </div>
-    </div>
+    <div class="hero-bg-track" id="heroBgTrack"></div>
     <div class="hero-content">
       <div class="hero-copy">
-        <div class="season-tag mono" id="heroSlideTag">Drop 01 · Official Away Kit 26/27</div>
-        <h1 id="slideTitle">Thank you, <em class="accent-shimmer">KBFC!</em></h1>
+        <h1 id="slideTitle" style="display:none;"></h1>
 
-        <p class="thank-you-text" id="heroSlideCaption">Order period closed. We would like to announce that the order period has closed. Thank you for your support — please stay tuned for any updates.</p>
+        <p class="thank-you-text" id="heroSlideCaption" style="display:none;"></p>
 
         <div class="hero-cta-row">
           <button class="btn-primary" id="preorderBtn">
@@ -1249,6 +1261,19 @@
       <span class="ticker-item">Community Football Club</span><span class="ticker-dot"></span>
     </div>
   </div>
+
+  <section class="about-section" id="aboutSection" style="display:none;">
+    <div class="about-grid">
+      <div class="about-photo" id="aboutPhotoWrap" style="display:none;">
+        <img id="aboutPhotoImg" src="" alt="" onerror="this.closest('.about-photo').style.display='none';">
+      </div>
+      <div class="about-copy">
+        <div class="season-tag mono">About Us</div>
+        <h2 id="aboutTitle"></h2>
+        <p id="aboutBody"></p>
+      </div>
+    </div>
+  </section>
 
   <section class="fixtures-results" id="fixturesResultsSection">
     <div class="ps-header">
@@ -1890,38 +1915,76 @@
     }
   })();
 
+  /* ---------------- ABOUT US ---------------- */
+  // Reads the "PageContent" tab — one row per section key, always
+  // overwritten in place by the admin dashboard rather than appended
+  // (same single-record pattern as NextMatch). Looks for the row whose
+  // Section column is "about-us". Stays hidden until admin has actually
+  // saved something — no placeholder copy shown in the meantime.
+  (async function loadAboutSection(){
+    const PLAYERS_SHEET_ID = '1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM';
+    try {
+      const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=PageContent`;
+      const res = await fetch(url);
+      if (!res.ok) return;
+      const text = await res.text();
+      const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
+      const rows = (json.table && json.table.rows) || [];
+      if (!rows.length) return;
+
+      const val = (row, i) => (row.c && row.c[i] ? row.c[i].v : '');
+      // Columns: Section, Title, Body, Image URL, UpdatedAt.
+      let content = null;
+      rows.forEach(row => {
+        if (String(val(row, 0) || '').trim() === 'about-us') {
+          content = {
+            title: String(val(row, 1) || '').trim(),
+            body: String(val(row, 2) || '').trim(),
+            image: String(val(row, 3) || '').trim()
+          };
+        }
+      });
+      if (!content || (!content.title && !content.body)) return; // nothing saved yet
+
+      if (content.title) document.getElementById('aboutTitle').textContent = content.title;
+      if (content.body) document.getElementById('aboutBody').textContent = content.body;
+      if (content.image) {
+        document.getElementById('aboutPhotoImg').src = content.image;
+        document.getElementById('aboutPhotoWrap').style.display = '';
+      }
+      document.getElementById('aboutSection').style.display = 'block';
+    } catch (err) {
+      console.warn('Could not load About Us content — section stays hidden.', err);
+    }
+  })();
+
   /* ---------------- HOMEPAGE HERO CAROUSEL ---------------- */
   // Slide 0 is always the built-in "Thank you, KBFC!" content already in
   // the HTML (photo + title + caption + Check my order / Meet the squad —
   // those buttons stay on screen across every slide, not just this one).
   // Slides 1+ come from the "SiteAssets" tab — the same append-only log
   // your admin dashboard's Site Media panel writes to for the
-  // "homepage-hero" slot. Each of THOSE rows can now also carry a Title
-  // and Caption (columns E/F) set from the dashboard's upload form; a
-  // slide with no title/caption just falls back to the photo alone with
-  // the default copy staying put. Every row for that slot becomes its own
-  // slide here (not just the newest, unlike the other single-image slots
-  // like login-hero) — delete unwanted uploads from the admin dashboard's
-  // upload log to remove a slide.
+  // "homepage-hero" slot. Every row is its own slide — Title and Caption
+  // (columns E/F, set from the dashboard's upload form) are what actually
+  // show as text over the photo. Nothing here is hardcoded: a slide with
+  // no title just shows the photo with no headline, and if there are no
+  // uploads at all yet, the hero falls back to a plain default photo with
+  // no text overlay at all — "Check my order" / "Meet the squad" stay put
+  // either way since they're navigation, not curated content.
   (function initHeroCarousel(){
     const PLAYERS_SHEET_ID = '1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM';
+    const FALLBACK_IMAGE = '../images/club-photo-1.jpg';
     const track = document.getElementById('heroBgTrack');
     const navRow = document.getElementById('heroNavRow');
     const countEl = document.getElementById('heroSlideCount');
-    const tagEl = document.getElementById('heroSlideTag');
     const titleEl = document.getElementById('slideTitle');
     const captionEl = document.getElementById('heroSlideCaption');
     const prevBtn = document.getElementById('heroPrevBtn');
     const nextBtn = document.getElementById('heroNextBtn');
+    const heroEl = document.getElementById('heroSlideshow');
     if (!track) return;
 
-    const DEFAULT_SLIDE = {
-      tag: 'Drop 01 · Official Away Kit 26/27',
-      titleHtml: 'Thank you, <em class="accent-shimmer">KBFC!</em>',
-      caption: "Order period closed. We would like to announce that the order period has closed. Thank you for your support — please stay tuned for any updates.",
-      isDefault: true
-    };
-    let slides = [DEFAULT_SLIDE];
+    let slides = [];
     let current = 0;
     let autoTimer = null;
 
@@ -1936,12 +1999,19 @@
     function applySlideText(slide){
       // Short fade so switching slides feels intentional rather than an
       // abrupt swap — text fades out, content updates, fades back in.
-      [titleEl, captionEl, tagEl].forEach(el => { if (el) el.style.opacity = '0'; });
+      // textContent (not innerHTML) throughout, since this is now 100%
+      // admin-typed text with no built-in markup to preserve.
+      [titleEl, captionEl].forEach(el => { if (el) el.style.opacity = '0'; });
       setTimeout(() => {
-        if (tagEl) tagEl.textContent = slide.tag || DEFAULT_SLIDE.tag;
-        if (titleEl) titleEl.innerHTML = slide.isDefault ? slide.titleHtml : escapeHtml_(slide.title || 'Kelapa Bali FC');
-        if (captionEl) captionEl.textContent = slide.caption || '';
-        [titleEl, captionEl, tagEl].forEach(el => { if (el) el.style.opacity = '1'; });
+        if (titleEl){
+          if (slide.title) { titleEl.textContent = slide.title; titleEl.style.display = ''; }
+          else { titleEl.style.display = 'none'; }
+        }
+        if (captionEl){
+          if (slide.caption) { captionEl.textContent = slide.caption; captionEl.style.display = ''; }
+          else { captionEl.style.display = 'none'; }
+        }
+        [titleEl, captionEl].forEach(el => { if (el) el.style.opacity = '1'; });
       }, 220);
     }
 
@@ -1966,15 +2036,12 @@
 
     if (prevBtn) prevBtn.addEventListener('click', () => { prev(); pauseAutoRotate(); startAutoRotate(); });
     if (nextBtn) nextBtn.addEventListener('click', () => { next(); pauseAutoRotate(); startAutoRotate(); });
-    // Clicking the photo itself also advances — the slideshow doubles as
-    // its own "next" button, no need to hunt for the arrow.
     // Listens on the whole hero, not just the photo layer — the text/CTA
     // overlay (.hero-content) sits on top and would otherwise swallow
     // every click before it reaches the photo underneath. Clicks on an
     // actual button or link (Check my order, Meet the squad, prev/next)
     // are excluded so they keep doing their own thing instead of also
     // advancing the slide.
-    const heroEl = document.getElementById('heroSlideshow');
     if (heroEl) {
       heroEl.addEventListener('click', (e) => {
         if (slides.length <= 1) return;
@@ -1983,20 +2050,32 @@
       });
     }
 
-    (async function loadExtraSlides(){
+    function renderSlideLayers(){
+      track.innerHTML = '';
+      slides.forEach((slide, i) => {
+        const layer = document.createElement('div');
+        layer.className = 'hero-bg' + (i === 0 ? ' active' : '');
+        layer.dataset.slide = String(i);
+        const img = document.createElement('img');
+        img.src = slide.imageUrl;
+        img.alt = '';
+        layer.appendChild(img);
+        track.appendChild(layer);
+      });
+    }
+
+    (async function loadSlides(){
       try {
         const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=SiteAssets`;
         const res = await fetch(url);
-        if (!res.ok) return;
+        if (!res.ok) throw new Error('fetch failed');
         const text = await res.text();
         const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
         const rows = (json.table && json.table.rows) || [];
-        if (!rows.length) return;
 
         const val = (row, i) => (row.c && row.c[i] ? row.c[i].v : '');
         // Columns per getSiteAssetsSheet_: Slot, Image URL, Size (KB),
-        // Uploaded At, Title, Caption. Oldest-uploaded first, right after
-        // the default slide — newest upload ends up last in the carousel.
+        // Uploaded At, Title, Caption. Oldest-uploaded first.
         rows.forEach(row => {
           const slot = String(val(row, 0) || '').trim();
           const imageUrl = String(val(row, 1) || '').trim();
@@ -2004,32 +2083,24 @@
           slides.push({
             imageUrl: imageUrl,
             title: String(val(row, 4) || '').trim(),
-            caption: String(val(row, 5) || '').trim(),
-            tag: DEFAULT_SLIDE.tag,
-            isDefault: false
+            caption: String(val(row, 5) || '').trim()
           });
         });
+      } catch (err) {
+        console.warn('Could not load hero slides from Site Assets — using fallback photo only.', err);
+      }
 
-        if (slides.length <= 1) return; // nothing uploaded — stays on the single default slide
+      if (slides.length === 0) {
+        // Nothing uploaded yet — plain photo, no text overlay at all.
+        slides = [{ imageUrl: FALLBACK_IMAGE, title: '', caption: '' }];
+      }
 
-        // Build a .hero-bg layer for every extra slide (slide 0's is already in the HTML).
-        slides.forEach((slide, i) => {
-          if (i === 0) return;
-          const layer = document.createElement('div');
-          layer.className = 'hero-bg';
-          layer.dataset.slide = String(i);
-          const img = document.createElement('img');
-          img.src = slide.imageUrl;
-          img.alt = '';
-          layer.appendChild(img);
-          track.appendChild(layer);
-        });
-
-        renderNav();
+      renderSlideLayers();
+      applySlideText(slides[0]);
+      renderNav();
+      if (slides.length > 1) {
         startAutoRotate();
         if (heroEl) heroEl.classList.add('hero-multi');
-      } catch (err) {
-        console.warn('Could not load extra hero slides from Site Assets — showing default slide only.', err);
       }
     })();
   })();
