@@ -78,12 +78,6 @@
   }
   .topbar-nav a:hover{ color:var(--ink); }
   .topbar-right{ display:flex; align-items:center; gap:16px; flex-shrink:0; }
-  .topbar-login-link{
-    font-family:'Inter',sans-serif; font-size:12px; font-weight:600;
-    letter-spacing:.03em; color:var(--muted); text-decoration:none;
-    white-space:nowrap; transition:color .2s ease;
-  }
-  .topbar-login-link:hover{ color:var(--ink); }
   .btn-pill-cta{
     display:inline-flex; align-items:center; gap:8px;
     background:var(--accent); color:#fff; border:1px solid var(--accent);
@@ -147,7 +141,7 @@
   .drawer-sep{ height:14px; }
 
   @media (max-width:980px){
-    .topbar-nav, .topbar-login-link{ display:none; }
+    .topbar-nav{ display:none; }
     .btn-mini.menu-toggle-btn{ display:flex; }
   }
   @media (max-width:560px){
@@ -446,6 +440,48 @@
     .news-arrow{ width:26px; height:26px; }
   }
 
+  /* ---------- shared form field styling (used by Join Us) ---------- */
+  .field{margin-bottom:26px;}
+  .field label{
+    display:block; margin-bottom:8px; font-size:11px; color:var(--muted);
+    text-transform:uppercase; letter-spacing:.06em; font-family:'JetBrains Mono',monospace;
+  }
+  .field label .req{ color:var(--accent); }
+  .field input{
+    width:100%; background:transparent; border:none;
+    border-bottom:1px solid var(--line);
+    padding:10px 2px 12px; font-size:15px; color:var(--ink);
+    font-family:'Inter',sans-serif;
+    outline:none;
+    transition:border-color .25s ease;
+  }
+  .field input::placeholder{color:var(--muted); opacity:.55;}
+  .field input:focus{border-color:var(--accent);}
+  .field select{
+    width:100%; background:transparent; border:none;
+    border-bottom:1px solid var(--line);
+    padding:10px 2px 12px; font-size:15px; color:var(--ink);
+    font-family:'Inter',sans-serif;
+    outline:none; cursor:pointer;
+    transition:border-color .25s ease;
+    appearance:none; -webkit-appearance:none; -moz-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 2px center; background-size:16px;
+  }
+  .field select:focus{border-color:var(--accent);}
+  .field select option{ color:#000; }
+  .field textarea{
+    width:100%; background:transparent; border:none;
+    border-bottom:1px solid var(--line);
+    padding:10px 2px 12px; font-size:15px; color:var(--ink); line-height:1.5;
+    font-family:'Inter',sans-serif;
+    outline:none; resize:vertical;
+    transition:border-color .25s ease;
+  }
+  .field textarea::placeholder{color:var(--muted); opacity:.55;}
+  .field textarea:focus{border-color:var(--accent);}
+  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:26px;}
+
   /* ---------- join us / enquiry ---------- */
   .join-us-section{ padding:80px 6vw; border-top:1px solid var(--line); }
   .join-us-grid{
@@ -483,25 +519,6 @@
   .join-us-success.active{ display:block; }
   @media (max-width:860px){
     .join-us-grid{ grid-template-columns:1fr; gap:40px; }
-  }
-
-  /* ---------- about us ---------- */
-  .about-section{ padding:80px 6vw; border-top:1px solid var(--line); }
-  .about-grid{
-    display:grid; grid-template-columns:1fr 1.15fr; gap:64px; align-items:center;
-  }
-  .about-photo{
-    aspect-ratio:4/3; overflow:hidden; border:1px solid var(--line); background:var(--surface);
-  }
-  .about-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
-  .about-copy h2{
-    font-size:clamp(28px,3.6vw,38px); font-weight:600; line-height:1.15; margin:0 0 18px;
-  }
-  .about-copy p{
-    font-size:14.5px; color:var(--muted); line-height:1.7; max-width:520px; white-space:pre-line;
-  }
-  @media (max-width:860px){
-    .about-grid{ grid-template-columns:1fr; gap:32px; }
   }
 
   /* ---------- thank-you note (merged into hero) ---------- */
@@ -577,6 +594,17 @@
     .login-promo-actions{ align-items:flex-start; width:100%; }
     .login-promo-actions .btn-primary{ width:100%; justify-content:center; }
   }
+
+  /* ---------- shared modal overlay (used by the signup promo popup) ---------- */
+  .modal-overlay{
+    position:fixed; inset:0; z-index:2000;
+    background:rgba(0,0,0,.6);
+    backdrop-filter:blur(4px);
+    display:none;
+    align-items:center; justify-content:center;
+    padding:24px;
+  }
+  .modal-overlay.active{ display:flex; }
 
   /* ---------- signup promo popup: shown to first-time visitors ---------- */
   .signup-promo-box{
@@ -885,234 +913,6 @@
   }
 
 
-  .order-wrap{
-    min-height:100vh;
-    display:flex; align-items:center; justify-content:center;
-    padding:140px 6vw 80px;
-  }
-  .order-card{
-    width:100%; max-width:560px;
-  }
-  .back-link{
-    display:inline-flex; align-items:center; gap:8px;
-    font-size:13px; color:var(--muted); cursor:pointer;
-    margin-bottom:34px; background:none; border:none; padding:0;
-    font-family:'Inter',sans-serif;
-  }
-  .back-link svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;}
-  .back-link:hover{color:var(--ink);}
-
-  .order-card h2{
-    font-size:clamp(32px,4.5vw,44px); font-weight:600; margin-bottom:16px;
-  }
-  .order-card > p.sub{color:var(--muted); font-size:14.5px; line-height:1.6; margin-bottom:44px; max-width:420px;}
-
-  .field{margin-bottom:26px;}
-  .field label{
-    display:block; font-size:11px; color:var(--muted); margin-bottom:10px;
-    text-transform:uppercase; letter-spacing:.04em;
-  }
-  .field label .req{ color:var(--accent); }
-  .field input{
-    width:100%; background:transparent; border:none;
-    border-bottom:1px solid var(--line);
-    padding:10px 2px 12px; font-size:17px; color:var(--ink);
-    font-family:'Inter',sans-serif;
-    outline:none;
-    transition:border-color .25s ease;
-  }
-  .field input::placeholder{color:var(--muted); opacity:.55;}
-  .field input:focus{border-color:var(--accent);}
-  .field select{
-    width:100%; background:transparent; border:none;
-    border-bottom:1px solid var(--line);
-    padding:10px 2px 12px; font-size:16px; color:var(--ink);
-    font-family:'Inter',sans-serif;
-    outline:none; cursor:pointer;
-    transition:border-color .25s ease;
-    -webkit-appearance:none; appearance:none;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-    background-repeat:no-repeat; background-position:right 2px center; background-size:16px;
-  }
-  .field select:focus{border-color:var(--accent);}
-  .field select option{ color:#000; }
-  .field textarea{
-    width:100%; background:transparent; border:none;
-    border-bottom:1px solid var(--line);
-    padding:10px 2px 12px; font-size:15px; color:var(--ink); line-height:1.5;
-    font-family:'Inter',sans-serif;
-    outline:none; resize:vertical;
-    transition:border-color .25s ease;
-  }
-  .field textarea::placeholder{color:var(--muted); opacity:.55;}
-  .field textarea:focus{border-color:var(--accent);}
-  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:26px;}
-
-  .qty-stepper{
-    display:inline-flex; align-items:center; gap:20px;
-    border:1px solid var(--line); padding:8px 6px;
-  }
-  .qty-btn{
-    width:32px; height:32px; border:none; background:transparent;
-    color:var(--ink); font-size:18px; cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-    transition:color .2s ease;
-  }
-  .qty-btn:hover{ color:var(--accent); }
-  .qty-value{ min-width:20px; text-align:center; font-size:15px; }
-
-  .main-info-box{
-    background:var(--surface);
-    border:1px solid var(--line);
-    padding:30px 26px;
-    margin-bottom:28px;
-  }
-
-  .jersey-entry{
-    background:var(--surface);
-    border:1px solid var(--line);
-    padding:26px 26px 30px;
-    margin-bottom:20px;
-  }
-  .jersey-entry .field:last-of-type{ margin-bottom:0; }
-  .jersey-entry-label{
-    display:inline-flex; align-items:center; gap:8px;
-    font-size:11px; color:var(--muted); margin-bottom:16px;
-    text-transform:uppercase; letter-spacing:.04em;
-  }
-  .jersey-entry-label::before{
-    content:""; width:16px; height:1px; background:var(--accent);
-  }
-  .jersey-error{
-    font-size:12px; color:var(--accent); margin-top:8px; display:none;
-  }
-  .jersey-error.active{ display:block; }
-
-  .submit-btn{
-    width:100%; margin-top:10px;
-    background:var(--ink); color:var(--bg);
-    border:none; padding:18px; font-size:14.5px; font-weight:600;
-    cursor:pointer; letter-spacing:.01em;
-    display:flex; align-items:center; justify-content:center; gap:10px;
-    transition:background .3s ease;
-  }
-  .submit-btn:hover{background:var(--accent); color:#fff;}
-  .submit-btn:disabled{opacity:.5; cursor:default;}
-
-  .form-note{font-size:12px; color:var(--muted); margin-top:16px; text-align:center;}
-
-  .total-row{
-    display:flex; align-items:center; justify-content:space-between;
-    border-top:1px solid var(--line); border-bottom:1px solid var(--line);
-    padding:20px 2px; margin:30px 0 24px;
-  }
-  .total-row .mono{ font-size:12px; color:var(--muted); }
-  .total-amount{
-    font-family:'Oswald',sans-serif; font-size:26px; font-weight:600;
-  }
-
-  .success-box{
-    display:none; text-align:center; padding:40px 20px;
-  }
-  .success-box.active{display:block;}
-  .success-box .num-badge{
-    width:56px;height:56px;border-radius:50%;
-    border:1px solid var(--accent); color:var(--accent);
-    display:flex;align-items:center;justify-content:center;
-    margin:0 auto 22px; font-family:'JetBrains Mono',monospace; font-size:13px;
-  }
-  .success-box h3{font-size:26px; font-weight:600; margin-bottom:10px;}
-  .success-box p{color:var(--muted); font-size:14px; max-width:340px; margin:0 auto;}
-
-  /* ---------- duplicate number modal ---------- */
-  .modal-overlay{
-    display:none; position:fixed; inset:0; z-index:100;
-    background:rgba(10,10,10,0.55);
-    backdrop-filter:blur(4px);
-    align-items:center; justify-content:center;
-    padding:24px;
-  }
-  .modal-overlay.active{display:flex;}
-  .modal-box{
-    background:var(--surface); border:1px solid var(--line);
-    max-width:400px; width:100%;
-    padding:36px 32px;
-    text-align:center;
-    max-height:calc(100vh - 48px);
-    overflow-y:auto;
-    -webkit-overflow-scrolling:touch;
-  }
-  .modal-icon{
-    width:44px;height:44px;border-radius:50%;
-    border:1px solid var(--accent); color:var(--accent);
-    display:flex;align-items:center;justify-content:center;
-    margin:0 auto 20px; font-size:16px;
-  }
-  .modal-box h3{font-size:22px; font-weight:600; margin-bottom:10px;}
-  .modal-msg{font-size:14px; color:var(--ink); margin-bottom:6px;}
-  .modal-sub{font-size:13px; color:var(--muted); margin-bottom:20px;}
-  .modal-contacts{
-    display:flex; flex-direction:column; gap:10px; margin-bottom:24px;
-  }
-  .modal-contact{
-    display:flex; align-items:center; justify-content:space-between;
-    border:1px solid var(--line); padding:12px 16px;
-    text-decoration:none; color:var(--ink); font-size:13.5px;
-    transition:border-color .2s ease;
-  }
-  .modal-contact:hover{ border-color:var(--accent); }
-  .modal-contact .mono{ color:var(--muted); font-size:11px; }
-  .modal-close-btn{
-    width:100%; background:var(--ink); color:var(--bg);
-    border:none; padding:14px; font-size:13.5px; font-weight:600;
-    cursor:pointer; transition:background .3s ease;
-  }
-  .modal-close-btn:hover{ background:var(--accent); color:#fff; }
-
-  /* ---------- payment modal ---------- */
-  .payment-modal .modal-msg{ margin-bottom:20px; }
-  .qr-container{
-    display:flex; justify-content:center; margin:24px 0;
-    padding:20px; background:var(--bg); border:1px solid var(--line);
-    border-radius:0;
-  }
-  .qr-image{
-    width:280px; height:auto; max-width:90%;
-  }
-  .payment-note{
-    font-size:14px; color:var(--ink); margin:16px 0 20px;
-    font-weight:500;
-  }
-  .payment-note span{
-    color:var(--accent); font-family:'Oswald',sans-serif; font-size:18px;
-  }
-  .payment-actions{
-    margin-bottom:20px;
-  }
-  .whatsapp-btn{
-    display:flex; align-items:center; justify-content:center; gap:8px;
-    background:#25D366; color:#fff;
-    padding:14px 20px; width:100%;
-    font-weight:600; text-decoration:none;
-    border:none; cursor:pointer;
-    transition:background .3s ease;
-  }
-  .whatsapp-btn:hover{ background:#1FAE52; }
-  .payment-sub{
-    font-size:13px; color:var(--muted);
-    margin-bottom:20px;
-  }
-  .pay-later-check{
-    display:flex; align-items:flex-start; gap:10px;
-    text-align:left; font-size:13px; color:var(--muted);
-    margin:20px 0; cursor:pointer; user-select:none;
-  }
-  .pay-later-check input[type="checkbox"]{
-    margin-top:2px; width:16px; height:16px; flex-shrink:0;
-    accent-color:var(--accent); cursor:pointer;
-  }
-
-
   @media (max-width: 780px){
     .hero-cta-row{ gap:10px; }
     .hero-cta-row .btn-primary,
@@ -1132,18 +932,10 @@
     .footer-bottom{ padding:16px 0; }
 
     .modal-overlay{ padding:16px; align-items:flex-start; overflow-y:auto; }
-    .modal-box{
-      max-height:calc(100vh - 32px);
-      padding:28px 22px;
-      margin:16px auto;
-    }
     /* Signup promo popup: has its own max-height + scroll (see .signup-promo-box),
-       so unlike the other modals it's safe to center vertically instead of
-       pinning to the top. */
+       so unlike a top-pinned modal it's safe to center vertically instead. */
     #signupPromoOverlay{ align-items:center; overflow-y:hidden; }
     .signup-promo-box{ max-height:calc(100vh - 32px); }
-    .qr-image{ width:200px; }
-    .qr-container{ padding:14px; margin:18px 0; }
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -1168,7 +960,7 @@
   
   </div>
   <nav class="topbar-nav" aria-label="Primary">
-    <a href="#aboutSection">About Us</a>
+    <a href="/about/">About Us</a>
     <a href="/players/">Players</a>
     <a href="/sponsors/">Sponsors</a>
     <a href="#fixturesResultsSection">Fixtures</a>
@@ -1178,7 +970,7 @@
     <a href="https://instagram.com/kelapabalifc/" target="_blank" rel="noopener">Contact Us</a>
   </nav>
   <div class="topbar-right">
-    <button class="btn-pill-cta topbar-login-link" onclick="window.location.href='/login/'">Log in / Sign up</button>
+    <button class="btn-pill-cta" onclick="window.location.href='/login/'">Log in / Sign up</button>
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark theme">
       <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="4" y1="4" x2="5.8" y2="5.8"/><line x1="18.2" y1="18.2" x2="20" y2="20"/><line x1="1.5" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22.5" y2="12"/><line x1="4" y1="20" x2="5.8" y2="18.2"/><line x1="18.2" y1="5.8" x2="20" y2="4"/></svg>
       <svg class="moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg>
@@ -1196,7 +988,7 @@
       <svg viewBox="0 0 24 24"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
     </button>
   </div>
-  <a class="drawer-link" href="#aboutSection">About Us</a>
+  <a class="drawer-link" href="/about/">About Us</a>
   <a class="drawer-link" href="/players/">Players</a>
   <a class="drawer-link" href="/sponsors/">Sponsors</a>
   <a class="drawer-link" href="#fixturesResultsSection">Fixtures</a>
@@ -1251,19 +1043,6 @@
       <span class="ticker-item">Community Football Club</span><span class="ticker-dot"></span>
     </div>
   </div>
-
-  <section class="about-section" id="aboutSection" style="display:none;">
-    <div class="about-grid">
-      <div class="about-photo" id="aboutPhotoWrap" style="display:none;">
-        <img id="aboutPhotoImg" src="" alt="" onerror="this.closest('.about-photo').style.display='none';">
-      </div>
-      <div class="about-copy">
-        <div class="season-tag mono">About Us</div>
-        <h2 id="aboutTitle"></h2>
-        <p id="aboutBody"></p>
-      </div>
-    </div>
-  </section>
 
   <section class="fixtures-results" id="fixturesResultsSection">
     <div class="ps-header">
@@ -1486,66 +1265,7 @@
   </footer>
 </section>
 
-<!-- ============ VIEW 2: ORDER FORM ============ -->
-<section class="view" id="view-order">
-  <div class="order-wrap">
-    <div class="order-card">
-      <button class="back-link" id="backBtn">
-        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg> Back to kit
-      </button>
-
-      <div id="formBox">
-        <h2>Reserve your kit</h2>
-        <p class="sub">Fill in your details below. This locks in your size, number and name print for the 26/27 away kit.</p>
-        <p class="sub" style="margin-bottom: 20px;"></p>
-
-        <form id="orderForm">
-          <div class="main-info-box">
-            <div class="field">
-              <label class="mono">Name <span class="req">*</span></label>
-              <input type="text" name="Name" placeholder="Full Name" required>
-            </div>
-            <div class="field">
-              <label class="mono">Email <span class="req">*</span></label>
-              <input type="email" name="Email" placeholder="you@email.com" required>
-            </div>
-            <div class="field">
-              <label class="mono">Phone number <span class="req">*</span></label>
-              <input type="tel" name="Phone Number" placeholder="e.g. 012-3456789" required>
-            </div>
-
-            <div class="field" style="margin-bottom:0;">
-              <label class="mono">Quantity</label>
-              <div class="qty-stepper">
-                <button type="button" class="qty-btn" id="qtyMinus" aria-label="Decrease quantity">−</button>
-                <span class="qty-value mono" id="qtyValue">1</span>
-                <button type="button" class="qty-btn" id="qtyPlus" aria-label="Increase quantity">+</button>
-              </div>
-            </div>
-          </div>
-
-          <div id="jerseyEntries"></div>
-
-          <div class="total-row">
-            <span class="mono">Total amount to transfer</span>
-            <span class="total-amount" id="totalAmount">RM 0</span>
-          </div>
-
-          <button type="submit" class="submit-btn" id="submitBtn">Confirm pre-order</button>
-          <p class="form-note">Your details are sent straight to our team's order sheet. Each jersey number is checked against existing orders. Our system dont allowed duplicates.</p>
-        </form>
-      </div>
-
-      <div class="success-box" id="successBox">
-        <div class="num-badge mono">✓</div>
-        <h3 id="successTitle">You're on the list</h3>
-        <p id="successMsg">Thank you Forza Bali! your pre-order has been recorded. We'll reach out on WhatsApp for any updates.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ============ PAYMENT CONFIRMATION POPUP ============ -->
+<!-- ============ SIGNUP PROMO POPUP ============ -->
 <div class="modal-overlay" id="signupPromoOverlay">
   <div class="signup-promo-box" id="signupPromoBox">
     <button class="signup-promo-close" id="signupPromoClose" aria-label="Close">
@@ -1627,57 +1347,6 @@
       </span>
       <button class="signup-promo-later" id="signupPromoLater">Maybe later</button>
     </div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="paymentModalOverlay">
-  <div class="modal-box payment-modal">
-    <div class="modal-icon mono">$</div>
-    <h3>Complete your payment</h3>
-    <p class="modal-msg">Scan the QR code below to pay via DuitNow, then send the receipt to confirm.</p>
-    
-    <div class="qr-container">
-      <img src="../images/payment-qr.jpg" alt="DuitNow QR Code" class="qr-image">
-    </div>
-
-    <p class="payment-note"><strong>Amount:</strong> <span id="paymentAmount">RM 0</span></p>
-    <p class="payment-note"><strong>Order ID:</strong> <span id="paymentOrderId">—</span></p>
-    <p class="payment-sub">Please write this Order ID as the payment remark / reference so we can match your receipt.</p>
-
-    <div class="modal-contacts">
-      <a class="modal-contact" id="whatsappSendReceipt" href="https://wa.me/601126291968?text=Hi%20Aliff,%20I%27ve%20completed%20my%20payment%20for%20the%20jersey%20pre-order.%20Please%20find%20the%20receipt%20screenshot%20attached." target="_blank" rel="noopener">
-        <span>Send receipt to Aliff</span>
-        <span class="mono">+60 11 2629 1968</span>
-      </a>
-    </div>
-
-    <label class="pay-later-check">
-      <input type="checkbox" id="payLaterCheckbox">
-      <span>I'm not paying right now — mark this order as unpaid so the team can follow up.</span>
-    </label>
-
-    <p class="payment-sub">Once you've sent the receipt, close this popup.</p>
-    <button class="modal-close-btn" id="paymentModalClose">Done, Proceed</button>
-  </div>
-</div>
-
-<!-- ============ DUPLICATE NUMBER POPUP ============ -->
-<div class="modal-overlay" id="dupModalOverlay">
-  <div class="modal-box">
-    <div class="modal-icon mono">!</div>    <h3>That number's taken</h3>
-    <p class="modal-msg" id="dupModalMsg"></p>
-    <p class="modal-sub">Pick a different number, or reach out to sort out a clash:</p>
-    <div class="modal-contacts">
-      <a class="modal-contact" href="https://wa.me/601135594075" target="_blank" rel="noopener">
-        <span class="mono">AKEEM</span>
-        <span>+60 11 3559 4075</span>
-      </a>
-      <a class="modal-contact" href="https://wa.me/60172740981" target="_blank" rel="noopener">
-        <span class="mono">DANISH</span>
-        <span>+60 17 274 0981</span>
-      </a>
-    </div>
-    <button class="modal-close-btn" id="dupModalClose">Got it, I'll change it</button>
   </div>
 </div>
 
@@ -1905,49 +1574,6 @@
     }
   })();
 
-  /* ---------------- ABOUT US ---------------- */
-  // Reads the "PageContent" tab — one row per section key, always
-  // overwritten in place by the admin dashboard rather than appended
-  // (same single-record pattern as NextMatch). Looks for the row whose
-  // Section column is "about-us". Stays hidden until admin has actually
-  // saved something — no placeholder copy shown in the meantime.
-  (async function loadAboutSection(){
-    const PLAYERS_SHEET_ID = '1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM';
-    try {
-      const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=PageContent&_ts=${Date.now()}`;
-      const res = await fetch(url, { cache: 'no-store' });
-      if (!res.ok) return;
-      const text = await res.text();
-      const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
-      const rows = gvizRows_(json);
-      if (!rows.length) return;
-
-      const val = (row, i) => (row.c && row.c[i] ? row.c[i].v : '');
-      // Columns: Section, Title, Body, Image URL, UpdatedAt.
-      let content = null;
-      rows.forEach(row => {
-        if (String(val(row, 0) || '').trim() === 'about-us') {
-          content = {
-            title: String(val(row, 1) || '').trim(),
-            body: String(val(row, 2) || '').trim(),
-            image: String(val(row, 3) || '').trim()
-          };
-        }
-      });
-      if (!content || (!content.title && !content.body)) return; // nothing saved yet
-
-      if (content.title) document.getElementById('aboutTitle').textContent = content.title;
-      if (content.body) document.getElementById('aboutBody').textContent = content.body;
-      if (content.image) {
-        document.getElementById('aboutPhotoImg').src = content.image;
-        document.getElementById('aboutPhotoWrap').style.display = '';
-      }
-      document.getElementById('aboutSection').style.display = 'block';
-    } catch (err) {
-      console.warn('Could not load About Us content — section stays hidden.', err);
-    }
-  })();
-
   /* ---------------- HOMEPAGE HERO CAROUSEL ---------------- */
   // Slide 0 is always the built-in "Thank you, KBFC!" content already in
   // the HTML (photo + title + caption + Check my order / Meet the squad —
@@ -2000,7 +1626,7 @@
           Club News
           <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>
-        <a class="btn-secondary" href="#aboutSection">
+        <a class="btn-secondary" href="/about/">
           About Us
           <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>`
@@ -2345,21 +1971,16 @@
   }
 
   /* ---------------- VIEW SWITCH ---------------- */
-  const landing = document.getElementById('view-landing');
-  const order = document.getElementById('view-order');
+  // The order form (view-order) is gone — jersey pre-orders now happen
+  // through a separate page (/checker/), not in-page. This site only has
+  // one view left, so "going home" just means scrolling back to the top.
   const checkOrderBtnNav = document.getElementById('checkOrderBtnNav');
   if (checkOrderBtnNav) checkOrderBtnNav.addEventListener('click', ()=>{
     window.location.href = '/checker/';
   });
-  const backBtn = document.getElementById('backBtn');
-  if (backBtn) backBtn.addEventListener('click', ()=>{
-    order.classList.remove('active'); landing.classList.add('active');
-    window.scrollTo(0,0);
-  });
 
   const brandHome = document.getElementById('brandHome');
   const goHome = ()=>{
-    order.classList.remove('active'); landing.classList.add('active');
     window.scrollTo({top:0, behavior:'smooth'});
   };
   if (brandHome) {
@@ -2369,463 +1990,11 @@
     });
   }
 
-  const dupModalClose = document.getElementById('dupModalClose');
-  const dupModalOverlay = document.getElementById('dupModalOverlay');
-  if (dupModalClose) dupModalClose.addEventListener('click', ()=>{
-    if (dupModalOverlay) dupModalOverlay.classList.remove('active');
-  });
-  if (dupModalOverlay) dupModalOverlay.addEventListener('click', (e)=>{
-    if(e.target.id === 'dupModalOverlay') e.currentTarget.classList.remove('active');
-  });
-
-  /* ---------------- QUANTITY & JERSEY ENTRIES ---------------- */
-  const MIN_QTY = 1, MAX_QTY = 10;
-  let qty = 1;
-  const qtyValueEl = document.getElementById('qtyValue');
-  const jerseyEntriesEl = document.getElementById('jerseyEntries');
-
-  const SET_PRICES = { 'Jersey Only': 55, 'Jersey + Shorts': 85 };
-
-  function renderJerseyEntries(){
-    // preserve values already typed when qty changes
-    const prevValues = Array.from(jerseyEntriesEl.querySelectorAll('.jersey-entry')).map(entry => ({
-      number: entry.querySelector('.jersey-number-input').value,
-      name: entry.querySelector('.jersey-name-input').value,
-      size: entry.querySelector('.jersey-size-input').value,
-      set: entry.querySelector('.jersey-set-input').value
-    }));
-
-    jerseyEntriesEl.innerHTML = '';
-    for(let i=0; i<qty; i++){
-      const wrap = document.createElement('div');
-      wrap.className = 'jersey-entry';
-      wrap.innerHTML = `
-        <div class="jersey-entry-label mono">Jersey ${String(i+1).padStart(2,'0')}</div>
-        <div class="field">
-          <label class="mono">Set <span class="req">*</span></label>
-          <select class="jersey-set-input" required>
-            <option value="" disabled selected>Select set</option>
-            <option value="Jersey Only">Jersey Only — RM 55</option>
-            <option value="Jersey + Shorts">Jersey + Shorts — RM 85</option>
-          </select>
-        </div>
-        <div class="field-row">
-          <div class="field">
-            <label class="mono">Jersey number <span class="req">*</span></label>
-            <input type="text" class="jersey-number-input" placeholder="e.g. 10" required>
-          </div>
-          <div class="field">
-            <label class="mono">Name on jersey <span class="req">*</span></label>
-            <input type="text" class="jersey-name-input" placeholder="e.g. DANISH, 8 at max" required>
-          </div>
-        </div>
-        <div class="field">
-          <label class="mono">Size <span class="req">*</span></label>
-          <select class="jersey-size-input" required>
-            <option value="" disabled selected>Select size</option>
-            <option value="XS">XS</option>
-            <option value="S">S</option>
-            <option value="M">M</option>
-            <option value="L">L</option>
-            <option value="XL">XL</option>
-            <option value="2XL">2XL</option>
-            <option value="3XL">3XL</option>
-            <option value="4XL">4XL</option>
-          </select>
-        </div>
-        <p class="jersey-error mono"></p>
-      `;
-      jerseyEntriesEl.appendChild(wrap);
-      if(prevValues[i]){
-        wrap.querySelector('.jersey-number-input').value = prevValues[i].number;
-        wrap.querySelector('.jersey-name-input').value = prevValues[i].name;
-        if(prevValues[i].size) wrap.querySelector('.jersey-size-input').value = prevValues[i].size;
-        if(prevValues[i].set) wrap.querySelector('.jersey-set-input').value = prevValues[i].set;
-      }
-    }
-    updateTotal();
-  }
-  renderJerseyEntries();
-
-  function updateTotal(){
-    const sets = Array.from(jerseyEntriesEl.querySelectorAll('.jersey-set-input')).map(el => el.value);
-    const total = sets.reduce((sum, s) => sum + (SET_PRICES[s] || 0), 0);
-    document.getElementById('totalAmount').textContent = 'RM ' + total;
-  }
-  jerseyEntriesEl.addEventListener('change', (e)=>{
-    if(e.target.classList.contains('jersey-set-input')) updateTotal();
-  });
-
-  const qtyMinusBtn = document.getElementById('qtyMinus');
-  if (qtyMinusBtn) qtyMinusBtn.addEventListener('click', ()=>{
-    if(qty > MIN_QTY){ qty--; qtyValueEl.textContent = qty; renderJerseyEntries(); }
-  });
-  const qtyPlusBtn = document.getElementById('qtyPlus');
-  if (qtyPlusBtn) qtyPlusBtn.addEventListener('click', ()=>{
-    if(qty < MAX_QTY){ qty++; qtyValueEl.textContent = qty; renderJerseyEntries(); }
-  });
-
-  /* ---------------- FORM SUBMIT -> GOOGLE SHEET ---------------- */
-  // 1. Deploy the Apps Script web app (see chat instructions).
-  // 2. Paste the deployment URL below.
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbybJZrAIPleUv6BqVbuwk8oiDcuhGKUW1t2wjDwh2J0ZB4oSuYa2l-dY3t9N3WrXz_V/exec";
-
-  const form = document.getElementById('orderForm');
-  const submitBtn = document.getElementById('submitBtn');
-
-  // Pull the list of jersey numbers already taken, so we can check before submitting.
-  // Loaded via JSONP (a <script> tag) rather than fetch(), because fetch() to an
-  // Apps Script URL gets blocked by the browser after Google's internal redirect —
-  // script tags aren't subject to that restriction, so this loads reliably.
-  let takenNumbers = new Set();
-  let currentOrderId = '';
-
-  // Simple, human-writable order ID: name initials + last 4 digits of phone
-  // (e.g. "ALI-1968"). Easy for a customer to jot down as a bank transfer remark.
-  function generateOrderId(name, phone){
-    const initials = (name || '').trim().split(/\s+/).filter(Boolean)
-      .map(w => w[0]).join('').toUpperCase().slice(0, 3) || 'ORD';
-    const digits = (phone || '').replace(/\D/g, '').slice(-4);
-    const fallback = Math.floor(1000 + Math.random() * 9000).toString();
-    return `${initials}-${digits || fallback}`;
-  }
-  function jsonpRequest(url, timeoutMs = 8000){
-    return new Promise((resolve, reject) => {
-      const cbName = 'jsonp_cb_' + Date.now() + '_' + Math.floor(Math.random()*100000);
-      const script = document.createElement('script');
-      const cleanup = () => { delete window[cbName]; script.remove(); };
-      const timer = setTimeout(() => { cleanup(); reject(new Error('JSONP request timed out')); }, timeoutMs);
-      window[cbName] = (data) => { clearTimeout(timer); cleanup(); resolve(data); };
-      script.src = url + (url.includes('?') ? '&' : '?') + 'callback=' + cbName;
-      script.onerror = () => { clearTimeout(timer); cleanup(); reject(new Error('JSONP request failed')); };
-      document.body.appendChild(script);
-    });
-  }
-
-  /* ---------- live Instagram feed ("From the club" section) ---------- */
-  async function loadInstagramFeed(){
-    const track = document.getElementById('clubPhotosTrack');
-    if (!track) return;
-    try {
-      const data = await jsonpRequest(SCRIPT_URL + '?action=getInstagramFeed');
-      if (!data.ok || !data.posts || !data.posts.length) {
-        // Leave the static placeholder photos showing — better than an
-        // empty section — but log WHY, since this used to fail completely
-        // silently (no console output at all when data.ok was false),
-        // making it impossible to tell "not configured yet" apart from
-        // "briefly no posts" apart from "this code never even ran."
-        console.warn('Instagram feed not showing live photos:', data.error || 'no posts returned', data);
-        return;
-      }
-      // Duplicate the set once so the CSS marquee still loops seamlessly,
-      // same trick the original static version used.
-      const items = data.posts.concat(data.posts).map(p => `
-        <div class="club-photo-item">
-          <a href="${p.permalink}" target="_blank" rel="noopener" style="display:block; width:100%; height:100%;">
-            <img src="${p.imageUrl}" alt="" loading="lazy" onerror="this.closest('.club-photo-item').style.display='none';">
-          </a>
-        </div>
-      `).join('');
-      track.innerHTML = items;
-      if (window.recalcClubPhotosWidth) window.recalcClubPhotosWidth(); // track's width just changed — refresh the cached measurement the scroller uses
-    } catch (err) {
-      console.warn('Could not load the Instagram feed — showing the placeholder photos instead.', err);
-    }
-  }
-  loadInstagramFeed();
-
-  /* ---------- steady, draggable "From the club" scroller ---------- */
-  (function initClubPhotosScroller(){
-    const viewport = document.getElementById('clubPhotosViewport');
-    const track = document.getElementById('clubPhotosTrack');
-    if (!viewport || !track) return;
-
-    const AUTO_SPEED = 0.35;      // px per frame — steady, actually visible drift
-    const RESUME_DELAY_MS = 500; // wait this long after any interaction before auto-scroll starts again
-    const CLICK_DRAG_THRESHOLD = 6; // px of movement before a "click" is treated as a drag instead
-
-    let isDragging = false;
-    let dragMoved = false;       // did this drag move enough to count as a real drag, not a click?
-    let startX = 0;
-    let startScrollLeft = 0;
-    let lastX = 0;                // previous pointer position during a drag, to detect direction frame-to-frame
-    let autoDirection = 1;        // +1 = normal forward drift, -1 = reversed — follows your last drag
-    let paused = false;          // true while hovering, mid-drag, or in the 5s settle window
-    let resumeTimer = null;
-
-    // Auto-scroll position tracked here as a plain JS number, separate
-    // from viewport.scrollLeft — some browsers round scrollLeft to whole
-    // pixels, which would silently throw away the fractional part of a
-    // slow AUTO_SPEED every frame and could make it look frozen. Keeping
-    // the real (fractional) position here means any speed, however slow,
-    // still accumulates correctly and eventually moves a pixel.
-    let scrollPos = 0;
-
-    // The photo list is duplicated once (see the markup / loadInstagramFeed
-    // above) purely so this can loop seamlessly — half the scrollable width
-    // is exactly one full lap through the real set.
-    //
-    // Cached rather than read fresh every frame: track.scrollWidth forces
-    // the browser to recalculate layout the instant you read it, and doing
-    // that 60 times a second was the actual cause of the stutter — not the
-    // scrolling itself. Only re-measure when the content genuinely changes
-    // (page load, window resize, or the Instagram feed swapping photos in).
-    let cachedHalfWidth = 0;
-    function recalcHalfWidth(){ cachedHalfWidth = track.scrollWidth / 2; }
-    recalcHalfWidth();
-    window.recalcClubPhotosWidth = recalcHalfWidth; // called by loadInstagramFeed() once real photos are in
-    window.addEventListener('resize', recalcHalfWidth);
-
-    function wrapValue(v){
-      const half = cachedHalfWidth;
-      if (half <= 0) return v;
-      if (v >= half) return v - half;
-      if (v < 0) return v + half;
-      return v;
-    }
-
-    function tick(){
-      if (!isDragging && !paused) {
-        scrollPos = wrapValue(scrollPos + AUTO_SPEED * autoDirection);
-        viewport.scrollLeft = scrollPos;
-      }
-      requestAnimationFrame(tick);
-    }
-    scrollPos = viewport.scrollLeft;
-    requestAnimationFrame(tick);
-
-    function cancelResumeTimer(){
-      if (resumeTimer) { clearTimeout(resumeTimer); resumeTimer = null; }
-    }
-    function scheduleResume(){
-      cancelResumeTimer();
-      resumeTimer = setTimeout(() => { paused = false; resumeTimer = null; }, RESUME_DELAY_MS);
-    }
-
-    // Hovering pauses immediately (so it's easy to aim a click), and once
-    // the pointer leaves, it waits the same settle delay before drifting
-    // again rather than snapping straight back into motion.
-    viewport.addEventListener('mouseenter', () => { paused = true; cancelResumeTimer(); });
-    viewport.addEventListener('mouseleave', () => {
-      if (!isDragging) scheduleResume();
-    });
-
-    function dragStart(x){
-      isDragging = true;
-      dragMoved = false;
-      paused = true;
-      cancelResumeTimer();
-      startX = x;
-      lastX = x;
-      startScrollLeft = viewport.scrollLeft;
-      viewport.classList.add('is-dragging');
-    }
-    function dragMove(x){
-      if (!isDragging) return;
-      const delta = x - startX;
-      if (Math.abs(delta) > CLICK_DRAG_THRESHOLD) dragMoved = true;
-      viewport.scrollLeft = wrapValue(startScrollLeft - delta);
-      scrollPos = viewport.scrollLeft; // keep the auto-scroll accumulator in sync while dragging
-
-      // Direction the visible content is moving THIS frame, not the whole
-      // drag — a pointer moving right feeds content back in (direction -1),
-      // a pointer moving left pulls new content in (direction +1). Only
-      // updates on real movement so a tiny jitter can't flip it by accident.
-      const frameDelta = x - lastX;
-      if (Math.abs(frameDelta) > 0.5) autoDirection = frameDelta > 0 ? -1 : 1;
-      lastX = x;
-    }
-    function dragEnd(){
-      isDragging = false;
-      viewport.classList.remove('is-dragging');
-      scrollPos = viewport.scrollLeft; // resync so the resumed drift continues from exactly where the drag left off
-      scheduleResume();
-    }
-
-    // A click only navigates when nothing was actually dragged — otherwise
-    // "drag then release over a photo" would also fire a click and send
-    // the visitor to Instagram by accident. Captured on the track so it
-    // runs before the <a> tag's own navigation.
-    track.addEventListener('click', e => {
-      if (dragMoved) { e.preventDefault(); e.stopPropagation(); }
-      dragMoved = false;
-    }, true);
-
-    // Mouse (desktop) — can drag either direction freely.
-    viewport.addEventListener('mousedown', e => { dragStart(e.pageX); e.preventDefault(); });
-    window.addEventListener('mousemove', e => dragMove(e.pageX));
-    window.addEventListener('mouseup', () => { if (isDragging) dragEnd(); });
-
-    // Touch (mobile) — same drag/click distinction, driven by touch points.
-    viewport.addEventListener('touchstart', e => dragStart(e.touches[0].pageX), { passive: true });
-    viewport.addEventListener('touchmove', e => dragMove(e.touches[0].pageX), { passive: true });
-    viewport.addEventListener('touchend', dragEnd);
-  })();
-
-  async function refreshTakenNumbers(){
-    try{
-      const data = await jsonpRequest(SCRIPT_URL);
-      takenNumbers = new Set((data.taken || []).map(n => String(n).trim()));
-    }catch(err){
-      console.warn('Could not refresh taken jersey numbers — duplicate check will be limited to this order only.', err);
-    }
-  }
-  refreshTakenNumbers();
-  const heroCtaRowEl = document.getElementById('heroCtaRow');
-  if (heroCtaRowEl) heroCtaRowEl.addEventListener('click', (e)=>{
-    if(e.target.closest('[data-cta="check-order"]')) refreshTakenNumbers();
-  });
-
-  function clearJerseyErrors(){
-    jerseyEntriesEl.querySelectorAll('.jersey-error').forEach(el => { el.textContent=''; el.classList.remove('active'); });
-  }
-
-  form.addEventListener('submit', async (e)=>{
-    e.preventDefault();
-    clearJerseyErrors();
-
-    const jerseyRows = Array.from(jerseyEntriesEl.querySelectorAll('.jersey-entry'));
-    const jerseys = jerseyRows.map(row => ({
-      Number: row.querySelector('.jersey-number-input').value.trim(),
-      Name: row.querySelector('.jersey-name-input').value.trim(),
-      Size: row.querySelector('.jersey-size-input').value.trim(),
-      Set: row.querySelector('.jersey-set-input').value.trim()
-    }));
-
-    // check 1: no duplicate numbers within this same order
-    const seen = new Map();
-    let hasLocalDupe = false;
-    jerseys.forEach((j, i) => {
-      if(seen.has(j.Number)){
-        hasLocalDupe = true;
-        const errEl = jerseyRows[i].querySelector('.jersey-error');
-        errEl.textContent = `No. ${j.Number} is already used earlier in this same order.`;
-        errEl.classList.add('active');
-      }
-      seen.set(j.Number, i);
-    });
-
-    // check 2: against numbers already recorded in the sheet
-    const clashes = [];
-    jerseys.forEach((j, i) => {
-      if(takenNumbers.has(j.Number)){
-        clashes.push(j.Number);
-        const errEl = jerseyRows[i].querySelector('.jersey-error');
-        errEl.textContent = `No. ${j.Number} has already been claimed by another order.`;
-        errEl.classList.add('active');
-      }
-    });
-
-    if(hasLocalDupe) return;
-    if(clashes.length){
-      document.getElementById('dupModalMsg').textContent =
-        `No. ${clashes.join(', ')} ${clashes.length > 1 ? 'have' : 'has'} already been claimed by another order.`;
-      document.getElementById('dupModalOverlay').classList.add('active');
-      return;
-    }
-
-    submitBtn.disabled = true;
-    submitBtn.textContent = 'Sending...';
-
-    const nameVal = form.querySelector('[name="Name"]').value;
-    const emailVal = form.querySelector('[name="Email"]').value;
-    const phoneVal = form.querySelector('[name="Phone Number"]').value;
-    currentOrderId = generateOrderId(nameVal, phoneVal);
-
-    const payload = {
-      Name: nameVal,
-      Email: emailVal,
-      "Phone Number": phoneVal,
-      "Order ID": currentOrderId,
-      Jerseys: jerseys
-    };
-
-    try{
-      await fetch(SCRIPT_URL, {
-        method: 'POST',
-        mode: 'no-cors', // Apps Script POST responses aren't reliably readable cross-origin
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(payload)
-      });
-
-      // optimistically mark these numbers as taken locally, so a second
-      // submission in the same session is caught immediately
-      jerseys.forEach(j => takenNumbers.add(j.Number));
-
-      // Calculate total amount
-      const total = jerseys.reduce((sum, j) => sum + (SET_PRICES[j.Set] || 0), 0);
-      const paymentAmountEl = document.getElementById('paymentAmount');
-      const paymentOrderIdEl = document.getElementById('paymentOrderId');
-      const paymentOverlay = document.getElementById('paymentModalOverlay');
-
-      if(paymentAmountEl) paymentAmountEl.textContent = 'RM ' + total;
-      if(paymentOrderIdEl) paymentOrderIdEl.textContent = currentOrderId;
-
-      const waLink = document.getElementById('whatsappSendReceipt');
-      if(waLink){
-        const waMsg = `Hi Alep, I've completed my payment for Order ${currentOrderId} (RM ${total}). Please find the receipt screenshot attached.`;
-        waLink.href = 'https://wa.me/601135594075?text=' + encodeURIComponent(waMsg);
-      }
-
-      // Show payment modal instead of success box immediately
-      document.getElementById('formBox').style.display = 'none';
-      if(paymentOverlay) paymentOverlay.classList.add('active');
-    }catch(err){
-      alert('Something went wrong sending your order. Please try again.');
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Confirm pre-order';
-    }
-  });
-
-  // Payment modal close handler - record payment status, then show success message
-  const paymentCloseBtn = document.getElementById('paymentModalClose');
-  const paymentModalOverlay = document.getElementById('paymentModalOverlay');
-  const payLaterCheckbox = document.getElementById('payLaterCheckbox');
-  const successMsgEl = document.getElementById('successMsg');
-  const DEFAULT_SUCCESS_MSG = successMsgEl ? successMsgEl.textContent : '';
-  const PAY_LATER_SUCCESS_MSG = "Thanks — your pre-order has been recorded. No rush on payment — we'll follow up with you on WhatsApp when you're ready to pay.";
-
-  async function finalizePaymentModal(){
-    const wantsPayLater = !!(payLaterCheckbox && payLaterCheckbox.checked);
-
-    // Record the payment decision against this order in the sheet.
-    if(currentOrderId){
-      try{
-        await fetch(SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors', // Apps Script POST responses aren't reliably readable cross-origin
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify({
-            "Order ID": currentOrderId,
-            "Payment Status": wantsPayLater ? 'Pay Later' : 'Paid'
-          })
-        });
-      }catch(err){
-        console.warn('Could not record payment status for this order.', err);
-      }
-    }
-
-    if(successMsgEl) successMsgEl.textContent = wantsPayLater ? PAY_LATER_SUCCESS_MSG : DEFAULT_SUCCESS_MSG;
-
-    paymentModalOverlay.classList.remove('active');
-    document.getElementById('successBox').classList.add('active');
-  }
-
-  if(paymentCloseBtn && paymentModalOverlay){
-    paymentCloseBtn.addEventListener('click', finalizePaymentModal);
-
-    // Also close payment modal if they click outside
-    paymentModalOverlay.addEventListener('click', (e)=>{
-      if(e.target.id === 'paymentModalOverlay') finalizePaymentModal();
-    });
-  }
-
   /* ---------------- JOIN US / ENQUIRY FORM -> GOOGLE SHEET ---------------- */
-  // Posts to the same Apps Script backend as the order form, tagged with
-  // FormType so the script can route it to its own sheet tab (e.g. an
-  // "Enquiries" tab) instead of the Jerseys order tab. Uses the same
-  // no-cors fire-and-forget pattern as the order submission above, since
-  // Apps Script POST responses aren't reliably readable cross-origin.
+  // Posts to the same Apps Script backend used elsewhere on this site,
+  // tagged with FormType so the script can route it to its own
+  // "Enquiries" tab. Fire-and-forget with mode:'no-cors', since Apps
+  // Script POST responses aren't reliably readable cross-origin.
   // NOTE: the Apps Script deployment needs a case for FormType === "Enquiry"
   // to actually record these — this only wires up the frontend.
   const joinUsForm = document.getElementById('joinUsForm');
