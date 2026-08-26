@@ -1022,6 +1022,31 @@
         <button class="action" id="mediaUploadBtn" disabled style="margin-top:14px;">Upload</button>
       </div>
 
+      <div id="mediaEditPanel" style="display:none; background:var(--surface); border:1px solid var(--accent); border-radius:12px; padding:20px; margin-top:16px; max-width:420px;">
+        <h3 style="margin:0 0 4px;">Edit slide details</h3>
+        <p style="font-size:11.5px; color:var(--muted); margin:0 0 16px;">Photo stays the same — only the text below changes.</p>
+        <input type="hidden" id="mediaEditRow" value="">
+        <div style="margin-bottom:12px;">
+          <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:6px;">Slide title</label>
+          <input type="text" id="mediaEditTitleInput" class="edit-input" style="max-width:100%;">
+        </div>
+        <div style="margin-bottom:12px;">
+          <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:6px;">Slide caption</label>
+          <input type="text" id="mediaEditCaptionInput" class="edit-input" style="max-width:100%;">
+        </div>
+        <div style="margin-bottom:16px;">
+          <label style="font-size:10.5px; color:var(--muted); display:block; margin-bottom:6px;">Buttons on this slide</label>
+          <select id="mediaEditCtaSelect" class="edit-input" style="max-width:100%;">
+            <option value="news">Club News &amp; About Us</option>
+            <option value="order">Check My Order &amp; Meet the Squad</option>
+          </select>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button class="action" id="mediaEditSaveBtn">Save changes</button>
+          <button class="ghost" id="mediaEditCancelBtn">Cancel</button>
+        </div>
+      </div>
+
       <h3 style="font-family:'Oswald',sans-serif; font-size:15px; font-weight:600; margin:0 0 4px;">Upload log</h3>
       <p style="font-size:12.5px;color:var(--muted);margin:0 0 14px;">Newest first. The top entry per slot is the one currently live on the site.</p>
       <div class="table-wrap">
@@ -1523,10 +1548,14 @@
               : 'Mark this order as Pay Later? This may email the customer a payment-pending notice. Continue?';
             if (!(await confirmDialog(confirmMsg, { okLabel: newStatus === 'Paid' ? 'Mark as Paid' : 'Mark as Pay later' }))) return;
 
-            await updateOrder(rows, { status: newStatus });
-            el.dataset.status = newStatus;
-            renderStatusControl(el);
-            showToast('Status updated');
+            const result = await updateOrder(rows, { status: newStatus });
+            if (result.ok) {
+              el.dataset.status = newStatus;
+              renderStatusControl(el);
+              showToast('Status updated');
+            } else {
+              showToast(result.error || 'Failed to update status.');
+            }
           });
         });
       };
@@ -1554,9 +1583,10 @@
         e.stopPropagation();
         if (!(await confirmDialog(`Delete order ${btn.dataset.orderId} entirely? This can't be undone.`, { okLabel: 'Delete order', danger: true }))) return;
         const params = new URLSearchParams({ action: 'adminDeleteOrder', token, rowNumbers: btn.dataset.rows });
-        await fetch(`${API_URL}?${params.toString()}`);
-        showToast('Order deleted');
-        loadOrders();
+        const res = await fetch(`${API_URL}?${params.toString()}`, { cache: 'no-store' });
+        const data = await res.json();
+        if (data.ok) { showToast('Order deleted'); loadOrders(); }
+        else showToast(data.error || 'Failed to delete order.');
       });
     });
 
@@ -1697,26 +1727,35 @@
     });
     if (!proceed) return;
 
+    let failedCount = 0;
     for (const c of changes){
       const params = new URLSearchParams({
         action: 'adminUpdateOrderItem', token, rowNumber: c.rowNumber,
         nameOnJersey: c.nameOnJersey, jerseyNumber: c.jerseyNumber, size: c.size, adultKid: c.adultKid, set: c.set
       });
-      await fetch(`${API_URL}?${params.toString()}`);
+      const res = await fetch(`${API_URL}?${params.toString()}`, { cache: 'no-store' });
+      const data = await res.json();
+      if (!data.ok) failedCount++;
     }
 
     pendingItemChanges = {};
-    showToast(`Saved ${changes.length} change${changes.length === 1 ? '' : 's'}`);
+    if (failedCount === 0) {
+      showToast(`Saved ${changes.length} change${changes.length === 1 ? '' : 's'}`);
+    } else {
+      showToast(`Saved ${changes.length - failedCount} of ${changes.length} — ${failedCount} failed, check and retry.`);
+    }
     loadOrders();
   }
 
   async function updateOrder(rowNumbers, fields){
     const params = new URLSearchParams({ action: 'adminUpdateOrder', token, rowNumbers, ...fields });
-    await fetch(`${API_URL}?${params.toString()}`);
+    const res = await fetch(`${API_URL}?${params.toString()}`, { cache: 'no-store' });
+    const data = await res.json();
+    return data;
   }
 
   async function loadOrders(){
-    const data = await (await fetch(`${API_URL}?action=adminGetOrders&token=${encodeURIComponent(token)}`)).json();
+    const data = await (await fetch(`${API_URL}?action=adminGetOrders&token=${encodeURIComponent(token)}&_ts=${Date.now()}`, { cache: 'no-store' })).json();
     if (!data.ok) { showToast(data.error || 'Failed to load orders'); return; }
     allOrders = data.orders;
     renderOrderStats();
@@ -1863,25 +1902,31 @@
     els.membersTableBody.querySelectorAll('[data-kind="member-premium"]').forEach(btn => {
       btn.addEventListener('click', async () => {
         const nowOn = !btn.classList.contains('on');
-        btn.classList.toggle('on', nowOn);
         const params = new URLSearchParams({ action: 'adminUpdateMember', token, rowNumber: btn.dataset.row, premium: String(nowOn) });
-        await fetch(`${API_URL}?${params.toString()}`);
-        showToast(nowOn ? 'Premium granted' : 'Premium removed');
+        const res = await fetch(`${API_URL}?${params.toString()}`, { cache: 'no-store' });
+        const data = await res.json();
+        if (data.ok) {
+          btn.classList.toggle('on', nowOn);
+          showToast(nowOn ? 'Premium granted' : 'Premium removed');
+        } else {
+          showToast(data.error || 'Failed to update — sheet was not changed.');
+        }
       });
     });
     els.membersTableBody.querySelectorAll('[data-kind="delete-member"]').forEach(btn => {
       btn.addEventListener('click', async () => {
         if (!(await confirmDialog(`Delete the account for ${btn.dataset.email}? This can't be undone.`, { okLabel: 'Delete account', danger: true }))) return;
         const params = new URLSearchParams({ action: 'adminDeleteMember', token, rowNumber: btn.dataset.row });
-        await fetch(`${API_URL}?${params.toString()}`);
-        showToast('Member deleted');
-        loadMembers();
+        const res = await fetch(`${API_URL}?${params.toString()}`, { cache: 'no-store' });
+        const data = await res.json();
+        if (data.ok) { showToast('Member deleted'); loadMembers(); }
+        else showToast(data.error || 'Failed to delete member.');
       });
     });
   }
 
   async function loadMembers(){
-    const data = await (await fetch(`${API_URL}?action=adminGetMembers&token=${encodeURIComponent(token)}`)).json();
+    const data = await (await fetch(`${API_URL}?action=adminGetMembers&token=${encodeURIComponent(token)}&_ts=${Date.now()}`, { cache: 'no-store' })).json();
     if (!data.ok) { showToast(data.error || 'Failed to load members'); return; }
     allMembers = data.members;
     renderMembersTable();
@@ -1950,10 +1995,16 @@
         const cleanSheets = tr.querySelector('[data-field="cleanSheets"]').value;
         btn.textContent = 'Saving…';
         const params = new URLSearchParams({ action: 'adminUpdatePlayer', token, rowNumber, number, name, position, appearances, goals, assists, cleanSheets });
-        await fetch(`${API_URL}?${params.toString()}`);
-        btn.textContent = 'Saved';
-        btn.classList.add('saved');
-        setTimeout(() => { btn.textContent = 'Save'; btn.classList.remove('saved'); }, 1500);
+        const res = await fetch(`${API_URL}?${params.toString()}`, { cache: 'no-store' });
+        const data = await res.json();
+        if (data.ok) {
+          btn.textContent = 'Saved';
+          btn.classList.add('saved');
+          setTimeout(() => { btn.textContent = 'Save'; btn.classList.remove('saved'); }, 1500);
+        } else {
+          btn.textContent = 'Save';
+          showToast(data.error || 'Failed to save — sheet was not changed.');
+        }
       });
     });
 
@@ -1963,9 +2014,10 @@
         const name = tr.querySelector('[data-field="name"]').value || 'this player';
         if (!(await confirmDialog(`Delete ${name} from the Players list? This can't be undone.`, { okLabel: 'Delete player', danger: true }))) return;
         const params = new URLSearchParams({ action: 'adminDeletePlayer', token, rowNumber: tr.dataset.row });
-        await fetch(`${API_URL}?${params.toString()}`);
-        showToast('Player deleted');
-        loadPlayers();
+        const res = await fetch(`${API_URL}?${params.toString()}`, { cache: 'no-store' });
+        const data = await res.json();
+        if (data.ok) { showToast('Player deleted'); loadPlayers(); }
+        else showToast(data.error || 'Failed to delete player.');
       });
     });
 
@@ -2001,7 +2053,7 @@
   }
 
   async function loadPlayers(){
-    const data = await (await fetch(`${API_URL}?action=adminGetPlayers&token=${encodeURIComponent(token)}`)).json();
+    const data = await (await fetch(`${API_URL}?action=adminGetPlayers&token=${encodeURIComponent(token)}&_ts=${Date.now()}`, { cache: 'no-store' })).json();
     if (!data.ok) { showToast(data.error || 'Failed to load players'); return; }
     allPlayers = data.players;
     renderPlayersTable();
@@ -2057,7 +2109,7 @@
     if (!number){ showToast('Jersey number is required.'); return; }
     if (!name){ showToast('Name is required.'); return; }
     const params = new URLSearchParams({ action: 'adminAddPlayer', token, number, name, position });
-    const res = await fetch(`${API_URL}?${params.toString()}`);
+    const res = await fetch(`${API_URL}?${params.toString()}`, { cache: 'no-store' });
     const data = await res.json();
     if (!data.ok){ showToast(data.error || 'Failed to add player'); return; }
     document.getElementById('newPlayerNumber').value = '';
@@ -2201,7 +2253,7 @@
   });
 
   async function loadPlayerPhotoLog(){
-    const data = await (await fetch(`${API_URL}?action=adminGetPlayerPhotoLog&token=${encodeURIComponent(token)}`)).json();
+    const data = await (await fetch(`${API_URL}?action=adminGetPlayerPhotoLog&token=${encodeURIComponent(token)}&_ts=${Date.now()}`, { cache: 'no-store' })).json();
     if (!data.ok) { playerPhotoEls.logBody.innerHTML = `<p style="font-size:12.5px;color:var(--muted);">Couldn't load the log.</p>`; return; }
     if (data.log.length === 0){
       playerPhotoEls.logBody.innerHTML = `<p style="font-size:12.5px;color:var(--muted);">No uploads yet.</p>`;
@@ -2285,7 +2337,7 @@
   let lastProductionData = null;
 
   async function loadProduction(){
-    const data = await (await fetch(`${API_URL}?action=adminGetProductionSummary&token=${encodeURIComponent(token)}`)).json();
+    const data = await (await fetch(`${API_URL}?action=adminGetProductionSummary&token=${encodeURIComponent(token)}&_ts=${Date.now()}`, { cache: 'no-store' })).json();
     if (!data.ok) { showToast(data.error || 'Failed to load production summary'); return; }
     lastProductionData = data;
     renderProductionSummary(data.breakdown, data.totalPaid, data.totalPending);
@@ -2341,10 +2393,16 @@
         const status = tr.querySelector('[data-field="status"]').value;
         btn.textContent = 'Saving…';
         const params = new URLSearchParams({ action: 'adminUpdateDrop', token, rowNumber, name, price, imageUrl, status });
-        await fetch(`${API_URL}?${params.toString()}`);
-        btn.textContent = 'Saved';
-        btn.classList.add('saved');
-        setTimeout(() => { btn.textContent = 'Save'; btn.classList.remove('saved'); }, 1500);
+        const res = await fetch(`${API_URL}?${params.toString()}`, { cache: 'no-store' });
+        const data = await res.json();
+        if (data.ok) {
+          btn.textContent = 'Saved';
+          btn.classList.add('saved');
+          setTimeout(() => { btn.textContent = 'Save'; btn.classList.remove('saved'); }, 1500);
+        } else {
+          btn.textContent = 'Save';
+          showToast(data.error || 'Failed to save — sheet was not changed.');
+        }
       });
     });
     els.dropsTableBody.querySelectorAll('[data-kind="delete-drop"]').forEach(btn => {
@@ -2353,15 +2411,16 @@
         const name = tr.querySelector('[data-field="name"]').value || 'this item';
         if (!(await confirmDialog(`Remove "${name}" from the shop?`, { okLabel: 'Remove item', danger: true }))) return;
         const params = new URLSearchParams({ action: 'adminDeleteDrop', token, rowNumber: tr.dataset.row });
-        await fetch(`${API_URL}?${params.toString()}`);
-        showToast('Drop removed');
-        loadDrops();
+        const res = await fetch(`${API_URL}?${params.toString()}`, { cache: 'no-store' });
+        const data = await res.json();
+        if (data.ok) { showToast('Drop removed'); loadDrops(); }
+        else showToast(data.error || 'Failed to remove drop.');
       });
     });
   }
 
   async function loadDrops(){
-    const data = await (await fetch(`${API_URL}?action=adminGetDrops&token=${encodeURIComponent(token)}`)).json();
+    const data = await (await fetch(`${API_URL}?action=adminGetDrops&token=${encodeURIComponent(token)}&_ts=${Date.now()}`, { cache: 'no-store' })).json();
     if (!data.ok) { showToast(data.error || 'Failed to load drops'); return; }
     allDrops = data.drops;
     renderDropsTable();
@@ -2374,12 +2433,17 @@
     const status = document.getElementById('newDropStatus').value;
     if (!name){ showToast('Item name is required.'); return; }
     const params = new URLSearchParams({ action: 'adminAddDrop', token, name, price, imageUrl, status });
-    await fetch(`${API_URL}?${params.toString()}`);
-    document.getElementById('newDropName').value = '';
-    document.getElementById('newDropPrice').value = '';
-    document.getElementById('newDropImage').value = '';
-    showToast('Item added');
-    loadDrops();
+    const res = await fetch(`${API_URL}?${params.toString()}`, { cache: 'no-store' });
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('newDropName').value = '';
+      document.getElementById('newDropPrice').value = '';
+      document.getElementById('newDropImage').value = '';
+      showToast('Item added');
+      loadDrops();
+    } else {
+      showToast(data.error || 'Failed to add item.');
+    }
   });
 
   // ---------------- SITE MEDIA ----------------
@@ -2538,23 +2602,64 @@
         <td class="mono">${entry.uploadedAt ? entry.uploadedAt.split('T')[0] : '—'}</td>
         <td class="mono">${entry.sizeKb} KB</td>
         <td>${liveRowNumbers.has(entry.rowNumber) ? '<span style="color:var(--success); font-weight:600; font-size:11.5px;">● Live</span>' : '<span style="color:var(--muted); font-size:11.5px;">Archived</span>'}</td>
-        <td><button class="save-btn" data-row="${entry.rowNumber}" data-kind="delete-media">Delete</button></td>
+        <td style="white-space:nowrap;">
+          ${entry.slot === 'homepage-hero' ? `<button class="ghost edit-media-btn" data-row="${entry.rowNumber}" data-title="${(entry.title || '').replace(/"/g, '&quot;')}" data-caption="${(entry.caption || '').replace(/"/g, '&quot;')}" data-cta="${entry.cta || 'news'}" style="padding:4px 10px; font-size:11.5px;">Edit</button>` : ''}
+          <button class="save-btn" data-row="${entry.rowNumber}" data-kind="delete-media">Delete</button>
+        </td>
       </tr>
     `).join('');
+
+    els.mediaLogTableBody.querySelectorAll('.edit-media-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.getElementById('mediaEditRow').value = btn.dataset.row;
+        document.getElementById('mediaEditTitleInput').value = btn.dataset.title || '';
+        document.getElementById('mediaEditCaptionInput').value = btn.dataset.caption || '';
+        document.getElementById('mediaEditCtaSelect').value = btn.dataset.cta || 'news';
+        document.getElementById('mediaEditPanel').style.display = 'block';
+        document.getElementById('mediaEditPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    });
 
     els.mediaLogTableBody.querySelectorAll('[data-kind="delete-media"]').forEach(btn => {
       btn.addEventListener('click', async () => {
         if (!(await confirmDialog('Delete this upload? If it is the live image for its slot, the site will fall back to whatever was uploaded before it (or the default placeholder).', { okLabel: 'Delete upload', danger: true }))) return;
         const params = new URLSearchParams({ action: 'adminDeleteSiteImage', token, rowNumber: btn.dataset.row });
-        await fetch(`${API_URL}?${params.toString()}`);
-        showToast('Upload deleted');
-        loadSiteAssets();
+        const res = await fetch(`${API_URL}?${params.toString()}`, { cache: 'no-store' });
+        const data = await res.json();
+        if (data.ok) { showToast('Upload deleted'); loadSiteAssets(); }
+        else showToast(data.error || 'Failed to delete — the file was not removed.');
       });
     });
   }
 
+  document.getElementById('mediaEditCancelBtn').addEventListener('click', () => {
+    document.getElementById('mediaEditPanel').style.display = 'none';
+  });
+  document.getElementById('mediaEditSaveBtn').addEventListener('click', async () => {
+    const rowNumber = document.getElementById('mediaEditRow').value;
+    if (!rowNumber) return;
+    const btn = document.getElementById('mediaEditSaveBtn');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    const params = new URLSearchParams({
+      action: 'adminUpdateSiteImageMeta', token, rowNumber,
+      title: document.getElementById('mediaEditTitleInput').value.trim(),
+      caption: document.getElementById('mediaEditCaptionInput').value.trim(),
+      cta: document.getElementById('mediaEditCtaSelect').value
+    });
+    const res = await fetch(`${API_URL}?${params.toString()}`, { cache: 'no-store' });
+    const data = await res.json();
+    btn.disabled = false; btn.textContent = 'Save changes';
+    if (data.ok) {
+      showToast('Slide updated');
+      document.getElementById('mediaEditPanel').style.display = 'none';
+      loadSiteAssets();
+    } else {
+      showToast(data.error || 'Failed to save changes.');
+    }
+  });
+
   async function loadSiteAssets(){
-    const data = await (await fetch(`${API_URL}?action=adminGetSiteAssets&token=${encodeURIComponent(token)}`)).json();
+    const data = await (await fetch(`${API_URL}?action=adminGetSiteAssets&token=${encodeURIComponent(token)}&_ts=${Date.now()}`, { cache: 'no-store' })).json();
     if (!data.ok) { showToast(data.error || 'Failed to load site media'); return; }
     mediaLog = data.log;
     renderMediaLog();
@@ -2564,7 +2669,7 @@
   let aboutClearPhotoFlag = false;
 
   async function loadAboutContent(){
-    const data = await (await fetch(`${API_URL}?action=adminGetAboutContent&token=${encodeURIComponent(token)}`)).json();
+    const data = await (await fetch(`${API_URL}?action=adminGetAboutContent&token=${encodeURIComponent(token)}&_ts=${Date.now()}`, { cache: 'no-store' })).json();
     const preview = document.getElementById('aboutPhotoPreview');
     const clearBtn = document.getElementById('aboutPhotoClearBtn');
     const placeholderSvg = preview.innerHTML;
@@ -2648,7 +2753,7 @@
   }
 
   async function loadNewsAdmin(){
-    const data = await (await fetch(`${API_URL}?action=adminGetNews&token=${encodeURIComponent(token)}`)).json();
+    const data = await (await fetch(`${API_URL}?action=adminGetNews&token=${encodeURIComponent(token)}&_ts=${Date.now()}`, { cache: 'no-store' })).json();
     const body = document.getElementById('newsTableBody');
     if (!data.ok){ showToast(data.error || 'Failed to load news'); return; }
     if (data.posts.length === 0){
@@ -2693,7 +2798,7 @@
       btn.addEventListener('click', async () => {
         if (!(await confirmDialog('Delete this post? It will disappear from the homepage too.', { okLabel: 'Delete post', danger: true }))) return;
         const params = new URLSearchParams({ action: 'adminDeleteNews', token, rowNumber: btn.dataset.row });
-        const res = await fetch(`${API_URL}?${params.toString()}`);
+        const res = await fetch(`${API_URL}?${params.toString()}`, { cache: 'no-store' });
         const resData = await res.json();
         if (resData.ok){ showToast('Post deleted'); loadNewsAdmin(); }
         else showToast(resData.error || 'Failed to delete.');
@@ -2766,7 +2871,7 @@
   let currentMatchContext = null; // { opponent, competition, date, venue } — feeds the Live Update panel
 
   async function loadNextMatch(){
-    const data = await (await fetch(`${API_URL}?action=getNextMatch`)).json(); // public read, no token needed
+    const data = await (await fetch(`${API_URL}?action=getNextMatch&_ts=${Date.now()}`, { cache: 'no-store' })).json(); // public read, no token needed
     const msgEl = document.getElementById('nextMatchLastUpdated');
     const preview = document.getElementById('nextMatchLogoPreview');
     const clearBtn = document.getElementById('nextMatchLogoClearBtn');
@@ -2799,7 +2904,7 @@
 
   async function loadNextMatchLog(){
     const logBody = document.getElementById('nextMatchLogBody');
-    const data = await (await fetch(`${API_URL}?action=adminGetNextMatchLog&token=${encodeURIComponent(token)}`)).json();
+    const data = await (await fetch(`${API_URL}?action=adminGetNextMatchLog&token=${encodeURIComponent(token)}&_ts=${Date.now()}`, { cache: 'no-store' })).json();
     if (!data.ok || data.log.length === 0){
       logBody.innerHTML = `<p style="font-size:12px;color:var(--muted);">No history yet.</p>`;
       return;
@@ -2818,7 +2923,7 @@
   // just to check what's live, and can remove a bad entry with one click.
   async function loadMatchHistoryAdmin(){
     const body = document.getElementById('matchHistoryAdminBody');
-    const data = await (await fetch(`${API_URL}?action=getMatchHistory`)).json();
+    const data = await (await fetch(`${API_URL}?action=getMatchHistory&_ts=${Date.now()}`, { cache: 'no-store' })).json();
     if (!data.ok || !data.matches || data.matches.length === 0){
       body.innerHTML = `<p style="font-size:12px;color:var(--muted);">No completed matches logged yet.</p>`;
       return;
@@ -2845,7 +2950,7 @@
       btn.addEventListener('click', async () => {
         if (!(await confirmDialog('Remove this match from Completed matches? It\'ll disappear from the public homepage too.', { okLabel: 'Remove', danger: true }))) return;
         const params = new URLSearchParams({ action: 'adminDeleteMatchHistory', token, rowNumber: btn.dataset.row });
-        const res = await fetch(`${API_URL}?${params.toString()}`);
+        const res = await fetch(`${API_URL}?${params.toString()}`, { cache: 'no-store' });
         const data = await res.json();
         if (data.ok) loadMatchHistoryAdmin();
         else showToast(data.error || 'Failed to remove.');
@@ -3015,7 +3120,7 @@
   // ---------------- CHANGE REQUESTS ----------------
   async function loadChangeRequests(){
     const tbody = document.getElementById('changeRequestsTableBody');
-    const data = await (await fetch(`${API_URL}?action=adminGetChangeRequests&token=${encodeURIComponent(token)}`)).json();
+    const data = await (await fetch(`${API_URL}?action=adminGetChangeRequests&token=${encodeURIComponent(token)}&_ts=${Date.now()}`, { cache: 'no-store' })).json();
     if (!data.ok){ tbody.innerHTML = `<tr><td colspan="8" class="empty">Couldn't load change requests.</td></tr>`; return; }
     if (data.requests.length === 0){
       tbody.innerHTML = `<tr><td colspan="8" class="empty">No requests yet.</td></tr>`;
@@ -3443,7 +3548,7 @@
   async function loadSocialLog(){
     const body = document.getElementById('socialLogBody');
     if (!body) return;
-    const data = await (await fetch(`${API_URL}?action=adminGetSocialLog&token=${encodeURIComponent(token)}`)).json();
+    const data = await (await fetch(`${API_URL}?action=adminGetSocialLog&token=${encodeURIComponent(token)}&_ts=${Date.now()}`, { cache: 'no-store' })).json();
     if (!data.ok || !data.log || data.log.length === 0){
       body.innerHTML = `<tr><td colspan="6" style="color:var(--muted); font-size:12.5px;">No updates posted yet.</td></tr>`;
       document.getElementById('socialLogToggle').style.display = 'none';
