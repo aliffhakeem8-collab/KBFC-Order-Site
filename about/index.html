@@ -31,22 +31,30 @@
     --shadow: 0 20px 60px rgba(0,0,0,0.45);
   }
   *{margin:0;padding:0;box-sizing:border-box;}
-  html,body{height:100%;}
+  html,body{height:100%; overflow-x:hidden;}
   body{
     background:var(--bg);
     color:var(--ink);
     font-family:'Inter',sans-serif;
     -webkit-font-smoothing:antialiased;
-    overflow-x:hidden;
     transition:background .35s ease, color .35s ease;
   }
   .mono{font-family:'JetBrains Mono',monospace; letter-spacing:0.06em;}
 
-  /* ---------- topbar (matches index.html) ---------- */
+  .social-row{ display:flex; align-items:center; gap:10px; padding-left:2px; }
+  .social-icon{
+    color:var(--muted); display:flex; opacity:.85;
+    transition:color .2s ease, opacity .2s ease;
+  }
+  .social-icon:hover{ color:var(--accent); opacity:1; }
+  .social-icon svg{ width:16px; height:16px; }
+
+  /* ---------- topbar (matches index.html exactly) ---------- */
   .topbar{
     position:fixed; top:0; left:0; right:0; z-index:50;
-    display:flex; align-items:center; justify-content:space-between;
-    padding:18px 32px;
+    display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between;
+    gap:10px 24px;
+    padding:16px 32px;
     background:var(--bg);
     border-bottom:1px solid var(--line);
     color:var(--ink);
@@ -61,29 +69,37 @@
   .brand-logo{ width:24px; height:24px; object-fit:contain; }
   .brand span{font-family:'JetBrains Mono',monospace;}
 
-  .social-row{ display:flex; align-items:center; gap:10px; padding-left:2px; }
-  .social-icon{
-    color:var(--muted); display:flex; opacity:.85;
-    transition:color .2s ease, opacity .2s ease;
+  .topbar-nav{
+    display:flex; align-items:center; gap:24px;
+    flex:1 1 auto; min-width:0;
+    overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none;
   }
-  .social-icon:hover{ color:var(--accent); opacity:1; }
-  .social-icon svg{ width:16px; height:16px; }
-
-  .theme-toggle{
-    width:40px;height:40px;border-radius:50%;
-    border:1px solid var(--line);
-    background:transparent;
-    display:flex;align-items:center;justify-content:center;
-    cursor:pointer;
-    color:var(--ink);
+  .topbar-nav::-webkit-scrollbar{ display:none; }
+  .topbar-nav a{
+    font-family:'Inter',sans-serif; font-size:12px; font-weight:600;
+    letter-spacing:.07em; text-transform:uppercase; color:var(--muted);
+    text-decoration:none; transition:color .2s ease; white-space:nowrap;
   }
-  .theme-toggle svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;}
-  .theme-toggle .moon{display:none;}
-  html[data-theme="dark"] .theme-toggle .sun{display:none;}
-  html[data-theme="dark"] .theme-toggle .moon{display:block;}
+  .topbar-nav a:hover{ color:var(--ink); }
+  .topbar-nav a.is-current{ color:var(--accent); }
+  .topbar-right{ display:flex; align-items:center; gap:16px; flex-shrink:0; }
+  .btn-pill-cta{
+    display:inline-flex; align-items:center; gap:8px;
+    background:var(--accent); color:#fff; border:1px solid var(--accent);
+    padding:10px 20px; border-radius:0;
+    font-family:'Inter',sans-serif; font-weight:700; font-size:12px;
+    letter-spacing:.05em; text-transform:uppercase; cursor:pointer;
+    transition:transform .2s ease, background .2s ease; white-space:nowrap;
+  }
+  .btn-pill-cta:hover{ background:#96101c; transform:translateY(-1px); }
 
-  /* ---------- hamburger drawer (matches index.html) ---------- */
-  .topbar-actions{display:flex; align-items:center; gap:14px; position:relative;}
+  /* ---------- mobile: hamburger + slide-in drawer replaces the inline nav ---------- */
+  .btn-mini.menu-toggle-btn{
+    display:none; width:40px; height:40px; padding:0; border-radius:50%;
+    align-items:center; justify-content:center;
+    border:1px solid var(--line); background:transparent; color:var(--ink); cursor:pointer;
+  }
+  .menu-toggle-btn svg{ width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2; }
   .menu-overlay{
     position:fixed; inset:0; background:rgba(0,0,0,0.45);
     opacity:0; pointer-events:none;
@@ -105,7 +121,7 @@
   .topbar-menu.active{ transform:translateX(0); }
   .topbar-menu-head{
     display:flex; align-items:center; justify-content:space-between;
-    margin-bottom:18px; padding-bottom:16px;
+    margin-bottom:10px; padding-bottom:16px;
     border-bottom:1px solid var(--line);
   }
   .topbar-menu-head span{
@@ -118,48 +134,38 @@
     display:flex; align-items:center; justify-content:center;
   }
   .menu-close-btn svg{ width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2; }
-  .btn-mini{
-    display:inline-flex; align-items:center; gap:8px;
+  .drawer-link{
+    display:block; width:100%; text-align:left;
+    padding:16px 4px; border-bottom:1px solid var(--line);
+    border:none; border-bottom:1px solid var(--line);
+    background:none; color:var(--ink);
+    font-family:'Inter',sans-serif; font-size:14px; font-weight:600;
+    letter-spacing:.02em; text-decoration:none; cursor:pointer;
+  }
+  .drawer-link-accent{ color:var(--accent); }
+  .drawer-link.is-current{ color:var(--accent); }
+  .drawer-sep{ height:14px; }
+
+  @media (max-width:980px){
+    .topbar-nav{ display:none; }
+    .btn-mini.menu-toggle-btn{ display:flex; }
+  }
+  @media (max-width:560px){
+    .btn-pill-cta{ padding:9px 16px; font-size:11px; }
+  }
+
+  .theme-toggle{
+    width:40px;height:40px;border-radius:50%;
     border:1px solid var(--line);
-    background:transparent; color:var(--ink);
-    padding:9px 16px; border-radius:999px;
-    font-family:'Inter',sans-serif; font-size:12.5px; font-weight:600;
-    letter-spacing:0.01em; cursor:pointer;
-    transition:transform .2s ease, border-color .25s ease;
-    outline:none; text-decoration:none;
+    background:transparent;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    color:var(--ink);
   }
-  .btn-mini:hover{transform:translateY(-1px); border-color:var(--accent);}
-  .btn-mini:focus-visible{ border-color:var(--accent); }
-  .btn-mini svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.4;}
-  .topbar-menu .btn-mini{
-    width:100%; justify-content:flex-start; gap:12px;
-    font-size:14px !important; padding:16px 4px;
-    border:none; border-radius:0;
-    border-bottom:1px solid var(--line);
-  }
-  .topbar-menu .btn-mini svg{ width:16px; height:16px; }
-  .menu-group-label{
-    font-size:10.5px; font-weight:700; letter-spacing:.08em;
-    color:var(--accent); text-transform:uppercase;
-    padding:16px 4px 6px;
-  }
-  .topbar-menu .menu-group-label:first-of-type{ padding-top:4px; }
-  .topbar-menu .btn-mini:disabled{
-    cursor:not-allowed; opacity:.5;
-  }
-  .topbar-menu .btn-mini.is-locked{
-    cursor:not-allowed; opacity:.5;
-  }
-  .topbar-menu .btn-mini.is-current{
-    color:var(--accent); border-color:var(--accent);
-  }
-  .menu-item-current{ font-size:10px; opacity:.85; margin-left:2px; }
-  .menu-item-soon{ font-size:10px; opacity:.8; margin-left:2px; }
-  .btn-mini.menu-toggle-btn{
-    display:flex; width:40px; height:40px; padding:0;
-    align-items:center; justify-content:center; border-radius:50%;
-  }
-  .menu-toggle-btn svg{ width:16px; height:16px; }
+  .theme-toggle svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.6;}
+  .theme-toggle .moon{display:none;}
+  html[data-theme="dark"] .theme-toggle .sun{display:none;}
+  html[data-theme="dark"] .theme-toggle .moon{display:block;}
 
   /* ---------- page header ---------- */
   .about-hero{
@@ -190,7 +196,7 @@
   .moving-gallery:hover .gallery-track{ animation-play-state:paused; }
   .gallery-item{
     flex-shrink:0; width:260px; height:170px;
-    border-radius:10px; overflow:hidden;
+    overflow:hidden;
     border:1px solid var(--line); background:var(--surface);
   }
   .gallery-item img{ width:100%; height:100%; object-fit:cover; display:block; }
@@ -199,20 +205,25 @@
     to{ transform:translateX(-50%); }
   }
 
-  /* ---------- history section ---------- */
+  /* ---------- history section (dashboard-editable via About Us panel) ---------- */
   .history-section{
     max-width:760px; margin:0 auto;
     padding:24px 6vw 72px;
+    display:none;
   }
-  .history-note{
-    display:flex; align-items:center; gap:8px;
-    margin-bottom:24px; padding:12px 14px;
-    border:1px dashed var(--line); font-size:12px; color:var(--muted);
+  .history-photo{
+    aspect-ratio:16/9; overflow:hidden; margin-bottom:32px;
+    border:1px solid var(--line); background:var(--surface);
+    display:none;
   }
-  .history-note svg{ width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:1.8; flex-shrink:0; }
+  .history-photo img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .history-section h2{
+    font-size:clamp(24px,3vw,32px); font-weight:600; margin-bottom:18px;
+    display:none;
+  }
   .history-section p{
-    font-size:15px; color:var(--muted); line-height:1.75; margin-bottom:18px;
-    font-style:italic; opacity:.85;
+    font-size:15px; color:var(--muted); line-height:1.75;
+    white-space:pre-line;
   }
 
   @media (max-width: 780px){
@@ -291,7 +302,18 @@
       <span>KELAPA BALI FC <span style="color:inherit;opacity:.7">SEASON 26/27</span></span>
     </div>
   </div>
-  <div class="topbar-actions">
+  <nav class="topbar-nav" aria-label="Primary">
+    <a href="/about/" class="is-current">About Us</a>
+    <a href="/players/">Players</a>
+    <a href="/sponsors/">Sponsors</a>
+    <a href="/#fixturesResultsSection">Fixtures</a>
+    <a href="/#newsSection">News</a>
+    <a href="/released-jerseys/">Club Jersey</a>
+    <a href="/#joinUsSection">Join Us</a>
+    <a href="https://instagram.com/kelapabalifc/" target="_blank" rel="noopener">Contact Us</a>
+  </nav>
+  <div class="topbar-right">
+    <button class="btn-pill-cta" onclick="window.location.href='/login/'">Log in / Sign up</button>
     <button class="theme-toggle" id="themeToggle" aria-label="Toggle light and dark theme">
       <svg class="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><line x1="12" y1="1.5" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22.5"/><line x1="4" y1="4" x2="5.8" y2="5.8"/><line x1="18.2" y1="18.2" x2="20" y2="20"/><line x1="1.5" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22.5" y2="12"/><line x1="4" y1="20" x2="5.8" y2="18.2"/><line x1="18.2" y1="5.8" x2="20" y2="4"/></svg>
       <svg class="moon" viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"/></svg>
@@ -309,42 +331,17 @@
       <svg viewBox="0 0 24 24"><line x1="5" y1="5" x2="19" y2="19"/><line x1="19" y1="5" x2="5" y2="19"/></svg>
     </button>
   </div>
-
-  <div class="menu-group-label mono">Club</div>
-  <button class="btn-mini is-current" disabled title="You're here">
-    About Us <span class="menu-item-current">· current page</span>
-    <svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M12 16v-4"/><circle cx="12" cy="8" r=".6" fill="currentColor" stroke="none"/></svg>
-  </button>
-  <a class="btn-mini" href="https://instagram.com/kelapabalifc/" target="_blank" rel="noopener">
-    Contact Us
-    <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg>
-  </a>
-  <a class="btn-mini" href="/players/">
-    Players
-    <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17.5" cy="9.5" r="2.6"/><path d="M15.5 20c0-2.6 2-4.7 4.6-4.9"/></svg>
-  </a>
-  <a class="btn-mini" href="/sponsors/">
-    Sponsors
-    <svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>
-  </a>
-
-  <div class="menu-group-label mono">Shop</div>
-  <a class="btn-mini" href="/released-jerseys/">
-    Club Jersey
-    <svg viewBox="0 0 24 24"><path d="M20.59 13.41 12 22l-9-9V4h9z"/><circle cx="7.5" cy="7.5" r="1.2" fill="currentColor" stroke="none"/></svg>
-  </a>
-
-  <div class="menu-group-label mono">Orders</div>
-  <a class="btn-mini" href="/checker/">
-    Check order
-    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-  </a>
-
-  <div class="menu-group-label mono">Account</div>
-  <a class="btn-mini" href="/login/">
-    Log in / Sign up
-    <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
-  </a>
+  <a class="drawer-link is-current" href="/about/">About Us</a>
+  <a class="drawer-link" href="/players/">Players</a>
+  <a class="drawer-link" href="/sponsors/">Sponsors</a>
+  <a class="drawer-link" href="/#fixturesResultsSection">Fixtures</a>
+  <a class="drawer-link" href="/#newsSection">News</a>
+  <a class="drawer-link" href="/released-jerseys/">Club Jersey</a>
+  <a class="drawer-link" href="/#joinUsSection">Join Us</a>
+  <a class="drawer-link" href="https://instagram.com/kelapabalifc/" target="_blank" rel="noopener">Contact Us</a>
+  <div class="drawer-sep"></div>
+  <a class="drawer-link" href="/login/">Log in / Sign up</a>
+  <button class="drawer-link drawer-link-accent" id="checkOrderBtnDrawer">Check order</button>
 </div>
 
 <div class="about-hero">
@@ -370,13 +367,12 @@
   </div>
 </section>
 
-<section class="history-section">
-  <div class="history-note">
-    <svg viewBox="0 0 24 24"><path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z"/><path d="M12 8v4"/><circle cx="12" cy="16" r=".5" fill="currentColor" stroke="none"/></svg>
-    This history hasn't been filled in yet — placeholder text below.
+<section class="history-section" id="historySection">
+  <div class="history-photo" id="historyPhotoWrap">
+    <img id="historyPhotoImg" src="" alt="" onerror="this.closest('.history-photo').style.display='none';">
   </div>
-  <p>Kelapa Bali FC's history hasn't been written up yet. This is where the club's founding story goes — when and how it started, who brought the first group of players together, and what "40200" means to everyone who's played here since.</p>
-  <p>Add a few paragraphs here: the club's early days, the community it grew out of, and what's changed (or stayed the same) on the way to Season 26/27.</p>
+  <h2 id="historyTitle"></h2>
+  <p id="historyBody"></p>
 </section>
 
 <footer>
@@ -431,7 +427,7 @@
 
   document.getElementById('brandHome').addEventListener('click', () => { window.location.href = '/'; });
 
-  /* ---------------- MOBILE TOPBAR MENU (hamburger / slide-in drawer) ---------------- */
+  /* ---------------- MOBILE TOPBAR MENU (hamburger / slide-in drawer, matches index.html) ---------------- */
   const menuToggleBtn = document.getElementById('menuToggleBtn');
   const menuCloseBtn = document.getElementById('menuCloseBtn');
   const topbarMenu = document.getElementById('topbarMenu');
@@ -467,11 +463,77 @@
   menuCloseBtn.addEventListener('click', closeTopbarMenu);
   menuOverlay.addEventListener('click', closeTopbarMenu);
   topbarMenu.addEventListener('click', (e)=>{
-    if(e.target.closest('.btn-mini')) closeTopbarMenu();
+    if(e.target.closest('.drawer-link')) closeTopbarMenu();
   });
   document.addEventListener('keydown', (e)=>{
     if(e.key === 'Escape') closeTopbarMenu();
   });
+  const checkOrderBtnDrawer = document.getElementById('checkOrderBtnDrawer');
+  if(checkOrderBtnDrawer){
+    checkOrderBtnDrawer.addEventListener('click', ()=>{
+      window.location.href = '/checker/';
+    });
+  }
+
+  /**
+   * Same header-detection-failure fix used on the homepage: Google's gviz
+   * endpoint sometimes fails to auto-strip the header row (when every
+   * column in a sheet is uniformly typed as text, it can't tell header
+   * from data) and reports parsedNumHeaders: 0. This strips it ourselves
+   * whenever that happens.
+   */
+  function gvizRows_(json){
+    const table = json.table || {};
+    const rows = table.rows || [];
+    return (table.parsedNumHeaders || 0) > 0 ? rows : rows.slice(1);
+  }
+
+  /* ---------------- ABOUT US CONTENT ---------------- */
+  // Reads the same "PageContent" tab (row where Section === "about-us")
+  // the admin dashboard's About Us panel writes to — single source of
+  // truth shared with the homepage's old inline teaser, so it only needs
+  // editing in one place. Section stays hidden until something's saved.
+  (async function loadHistoryContent(){
+    const PLAYERS_SHEET_ID = '1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM';
+    try {
+      const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=PageContent&_ts=${Date.now()}`;
+      const res = await fetch(url, { cache: 'no-store' });
+      if (!res.ok) return;
+      const text = await res.text();
+      const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
+      const rows = gvizRows_(json);
+      if (!rows.length) return;
+
+      const val = (row, i) => (row.c && row.c[i] ? row.c[i].v : '');
+      // Columns: Section, Title, Body, Image URL, UpdatedAt.
+      let content = null;
+      rows.forEach(row => {
+        if (String(val(row, 0) || '').trim() === 'about-us') {
+          content = {
+            title: String(val(row, 1) || '').trim(),
+            body: String(val(row, 2) || '').trim(),
+            image: String(val(row, 3) || '').trim()
+          };
+        }
+      });
+      if (!content || (!content.title && !content.body)) return; // nothing saved yet
+
+      if (content.title) {
+        document.getElementById('historyTitle').textContent = content.title;
+        document.getElementById('historyTitle').style.display = '';
+      }
+      if (content.body) {
+        document.getElementById('historyBody').textContent = content.body;
+      }
+      if (content.image) {
+        document.getElementById('historyPhotoImg').src = content.image;
+        document.getElementById('historyPhotoWrap').style.display = '';
+      }
+      document.getElementById('historySection').style.display = 'block';
+    } catch (err) {
+      console.warn('Could not load About Us content — section stays hidden.', err);
+    }
+  })();
 </script>
 </body>
 </html>
