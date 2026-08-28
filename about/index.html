@@ -520,14 +520,14 @@
 
       if (content.title) {
         document.getElementById('historyTitle').textContent = content.title;
-        document.getElementById('historyTitle').style.display = '';
+        document.getElementById('historyTitle').style.display = 'block';
       }
       if (content.body) {
         document.getElementById('historyBody').textContent = content.body;
       }
       if (content.image) {
         document.getElementById('historyPhotoImg').src = content.image;
-        document.getElementById('historyPhotoWrap').style.display = '';
+        document.getElementById('historyPhotoWrap').style.display = 'block';
       }
       document.getElementById('historySection').style.display = 'block';
     } catch (err) {
