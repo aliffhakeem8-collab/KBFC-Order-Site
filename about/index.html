@@ -251,9 +251,19 @@
 
   /* ===== HERO — type only ===== */
   .ab-hero{
-    min-height:70vh; min-height:70svh; display:flex; flex-direction:column; justify-content:flex-end;
-    padding:110px var(--pad) 18px;
+    position:relative; overflow:hidden; isolation:isolate;
+    min-height:82vh; min-height:82svh; display:flex; flex-direction:column; justify-content:flex-end;
+    padding:110px var(--pad) 18px; background:#000; color:#fff;
   }
+  .ab-hero-bg{ position:absolute; inset:0; z-index:-1; }
+  .ab-hero-bg img{
+    width:100%; height:100%; object-fit:cover; opacity:0; transform:scale(1.08);
+    transition:opacity 1.2s ease, transform 8s linear;
+  }
+  .ab-hero-bg.loaded img{ opacity:1; transform:scale(1); }
+  /* 50% darkness over the photo so the type stays readable */
+  .ab-hero-bg::after{ content:""; position:absolute; inset:0; background:rgba(0,0,0,.5); }
+  .ab-hero .ab-hero-upper span, .ab-hero .ab-hero-foot{ color:rgba(255,255,255,.75); }
   .ab-hero-upper{ display:flex; justify-content:space-between; align-items:flex-end; gap:20px; margin-bottom:clamp(12px, 2vw, 24px); font-size:14px; }
   .ab-hero-upper p{ font-size:clamp(18px, 1.9vw, 26px); line-height:1.2; letter-spacing:-.015em; max-width:28ch; }
   .ab-hero-upper span{ color:var(--muted); }
@@ -267,7 +277,7 @@
   body.is-loading .ab-wordmark .ch{ transform:translateY(105%); }
   .ab-wordmark .sp{ display:inline-block; width:.28em; }
   .ab-hero-foot{ display:flex; justify-content:space-between; gap:16px; margin-top:14px; font-size:13px; color:var(--muted); }
-  @media (max-width:640px){ .ab-hero{ min-height:58svh; } .ab-hero-upper{ flex-direction:column; align-items:flex-start; } }
+  @media (max-width:640px){ .ab-hero{ min-height:66svh; } .ab-hero-upper{ flex-direction:column; align-items:flex-start; } }
 
   /* ===== MOVING GALLERY — mixed frame sizes, full bleed ===== */
   .moving-gallery{ overflow:hidden; padding:clamp(20px, 3vw, 40px) 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
@@ -293,13 +303,6 @@
     font-size:clamp(18px, 1.7vw, 23px); line-height:1.45; letter-spacing:-.01em; max-width:40ch;
     white-space:pre-line;
   }
-  .history-photo{
-    display:none; margin-top:clamp(50px, 7vw, 100px); aspect-ratio:16/9; overflow:hidden; border-radius:4px; background:var(--surface);
-    clip-path:inset(0 0 100% 0); transition:clip-path 1.3s var(--ease-io);
-  }
-  .history-photo-trigger.is-in .history-photo{ clip-path:inset(0 0 0 0); }
-  .history-photo img{ width:100%; height:100%; object-fit:cover; transform:scale(1.1); transition:transform 1.8s var(--ease-out); }
-  .history-photo-trigger.is-in .history-photo img{ transform:scale(1); }
   @media (max-width:800px){ .history-grid{ grid-template-columns:1fr; } .history-side{ position:static; } }
 
   /* ===== CTA ===== */
@@ -319,7 +322,6 @@
     *, *::before, *::after{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; transition-delay:0s !important; }
     .preloader{ display:none; }
     .line-mask > span, .ab-wordmark .ch{ transform:none !important; }
-    .history-photo{ clip-path:none !important; }
     .gallery-track{ animation:none; }
   }
 </style>
@@ -386,7 +388,8 @@
 </div>
 
 <main>
-  <section class="ab-hero">
+  <section class="ab-hero" id="abHero">
+    <div class="ab-hero-bg" aria-hidden="true"><img id="historyPhotoImg" src="" alt=""></div>
     <div class="ab-hero-upper">
       <p>A community football club from Shah Alam, built by the people who turn up.</p>
       <span>Our story</span>
@@ -422,11 +425,6 @@
       <div>
         <h2 id="historyTitle"></h2>
         <p id="historyBody"></p>
-      </div>
-    </div>
-    <div class="history-photo-trigger" id="historyPhotoTrigger">
-      <div class="history-photo" id="historyPhotoWrap">
-        <img id="historyPhotoImg" src="" alt="" onerror="this.closest('.history-photo').style.display='none';">
       </div>
     </div>
   </section>
@@ -664,6 +662,26 @@
     return (table.parsedNumHeaders || 0) > 0 ? rows : rows.slice(1);
   }
 
+  /* ---------------- HERO PHOTO ---------------- */
+  // Uses the photo saved with the About Us text in the dashboard. Until
+  // the sheet answers (or if it has no photo), the first gallery photo is
+  // used. If a photo fails to load, the hero just stays black.
+  const heroBg = document.querySelector('.ab-hero-bg');
+  const heroImg = document.getElementById('historyPhotoImg');
+  let heroFromSheet = false;
+  function setHeroPhoto(src, fromSheet = true){
+    if (!src) return;
+    if (!fromSheet && heroFromSheet) return;
+    heroFromSheet = heroFromSheet || fromSheet;
+    const probe = new Image();
+    probe.onload = () => {
+      if (!fromSheet && heroFromSheet) return;
+      heroImg.src = src;
+      requestAnimationFrame(() => heroBg.classList.add('loaded'));
+    };
+    probe.src = src;
+  }
+
   /* ---------------- ABOUT US CONTENT ---------------- */
   // Reads the same "PageContent" tab (row where Section === "about-us")
   // the admin dashboard's About Us panel writes to. Section stays hidden
@@ -673,11 +691,11 @@
     try {
       const url = `https://docs.google.com/spreadsheets/d/${PLAYERS_SHEET_ID}/gviz/tq?tqx=out:json&sheet=PageContent&_ts=${Date.now()}`;
       const res = await fetch(url, { cache: 'no-store' });
-      if (!res.ok) return;
+      if (!res.ok) { setHeroPhoto('../images/gallery-1.jpg', false); return; }
       const text = await res.text();
       const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
       const rows = gvizRows_(json);
-      if (!rows.length) return;
+      if (!rows.length) { setHeroPhoto('../images/gallery-1.jpg', false); return; }
 
       const val = (row, i) => (row.c && row.c[i] ? row.c[i].v : '');
       // Columns: Section, Title, Body, Image URL, UpdatedAt.
@@ -691,6 +709,7 @@
           };
         }
       });
+      if (!content || !content.image) setHeroPhoto('../images/gallery-1.jpg', false);
       if (!content || (!content.title && !content.body)) return; // nothing saved yet
 
       if (content.title) {
@@ -700,19 +719,10 @@
       if (content.body) {
         document.getElementById('historyBody').textContent = content.body;
       }
-      const photoWrap = document.getElementById('historyPhotoWrap');
-      if (content.image) {
-        document.getElementById('historyPhotoImg').src = content.image;
-        photoWrap.style.display = 'block';
-      }
+      if (content.image) setHeroPhoto(content.image);
       document.getElementById('historySection').style.display = 'block';
-      // photo wipes open when scrolled to
-      if (content.image) {
-        // observe the unclipped wrapper; a fully clipped element never reports as visible
-        const trigger = document.getElementById('historyPhotoTrigger');
-        if (revealObserver && !reduceMotion) revealObserver.observe(trigger); else trigger.classList.add('is-in');
-      }
     } catch (err) {
+      setHeroPhoto('../images/gallery-1.jpg', false);
       console.warn('Could not load About Us content — section stays hidden.', err);
     }
   })();
