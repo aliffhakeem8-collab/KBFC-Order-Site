@@ -377,7 +377,13 @@
   }
   .form-dots em.win{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
   .form-dots em.loss{ background:var(--accent); color:#fff; border-color:var(--accent); }
+  /* phones: 4 numbers in the row, win rate moves up beside "Record" */
+  .record-rate-m{ display:none; color:var(--ink); font-size:14px; }
+  .record-rate-m b{ font-weight:700; font-variation-settings:"wdth" 115; font-size:22px; letter-spacing:-.03em; font-variant-numeric:tabular-nums; margin-right:3px; }
   @media (max-width:640px){
+    .record-head{ align-items:center; }
+    .record-scope{ display:none; }
+    .record-rate-m{ display:inline; }
     .record-grid{ grid-template-columns:repeat(4, 1fr); }
     .record-stat.rate{ display:none; }
     .record-stat + .record-stat{ padding-left:10px; }
@@ -1155,7 +1161,7 @@
     const rate = Math.round(w / played * 100);
     const toneOf = { W: 'win', D: 'draw', L: 'loss' };
     box.innerHTML = `
-      <div class="record-head"><span>Record</span><span>All logged matches</span></div>
+      <div class="record-head"><span>Record</span><span class="record-scope">All logged matches</span><span class="record-rate-m"><b data-count="${rate}" data-suffix="%">${rate}%</b> win rate</span></div>
       <div class="record-grid">
         <div class="record-stat"><b data-count="${played}">${played}</b><span>Played</span></div>
         <div class="record-stat won"><b data-count="${w}">${w}</b><span>Won</span></div>
@@ -1167,7 +1173,7 @@
         <i class="w" style="--pct:${pct(w)}"></i><i class="d" style="--pct:${pct(d)}"></i><i class="l" style="--pct:${pct(l)}"></i>
       </div>
       <div class="record-foot">
-        <span class="form-dots" aria-label="Last ${form.length} results, newest first">Last 5 Matches&nbsp;${form.map(k => `<em class="${toneOf[k]}">${k}</em>`).join('')}</span>
+        <span class="form-dots" aria-label="Last ${form.length} matches, newest first">Last ${form.length} ${form.length === 1 ? 'Match' : 'Matches'}&nbsp;${form.map(k => `<em class="${toneOf[k]}">${k}</em>`).join('')}</span>
         ${scored ? `<span>${gf} scored, ${ga} conceded${scored < played ? ` (${scored} with scores)` : ''}</span>` : ''}
       </div>`;
 
