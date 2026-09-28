@@ -350,6 +350,39 @@
   .mh-meta{ font-size:13px; color:var(--muted); }
   .mh-score{ font-weight:700; font-variation-settings:"wdth" 115; font-size:clamp(20px, 2.4vw, 34px); letter-spacing:-.03em; font-variant-numeric:tabular-nums; }
 
+  /* record: played / won / drawn / lost across every logged match */
+  .record{ padding:22px 0 26px; border-bottom:1px solid var(--line); }
+  .record-head{ display:flex; justify-content:space-between; align-items:baseline; gap:16px; font-size:13px; color:var(--muted); margin-bottom:14px; }
+  .record-grid{ display:grid; grid-template-columns:repeat(5, 1fr); }
+  .record-stat{ padding-right:12px; }
+  .record-stat + .record-stat{ padding-left:14px; border-left:1px solid var(--line); }
+  .record-stat b{
+    display:block; font-weight:700; font-variation-settings:"wdth" 115;
+    font-size:clamp(34px, 4.6vw, 72px); line-height:.9; letter-spacing:-.045em; font-variant-numeric:tabular-nums;
+  }
+  .record-stat span{ display:block; font-size:13px; color:var(--muted); margin-top:8px; }
+  .record-stat.won b{ color:var(--ink); }
+  .record-stat.lost b{ color:var(--accent); }
+  .record-bar{ display:flex; height:6px; border-radius:999px; overflow:hidden; background:var(--line); margin-top:20px; }
+  .record-bar i{ display:block; height:100%; width:0; transition:width 1.2s var(--ease-out); }
+  .record-bar .w{ background:var(--ink); }
+  .record-bar .d{ background:var(--muted); }
+  .record-bar .l{ background:var(--accent); }
+  .record.is-in .record-bar i{ width:var(--pct); }
+  .record-foot{ display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; margin-top:14px; font-size:13px; color:var(--muted); }
+  .form-dots{ display:inline-flex; align-items:center; gap:6px; }
+  .form-dots em{
+    font-style:normal; width:24px; height:24px; border-radius:50%; border:1px solid var(--line);
+    display:inline-flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:var(--ink);
+  }
+  .form-dots em.win{ background:var(--ink); color:var(--bg); border-color:var(--ink); }
+  .form-dots em.loss{ background:var(--accent); color:#fff; border-color:var(--accent); }
+  @media (max-width:640px){
+    .record-grid{ grid-template-columns:repeat(4, 1fr); }
+    .record-stat.rate{ display:none; }
+    .record-stat + .record-stat{ padding-left:10px; }
+  }
+
   /* =========================================================
      ACCOUNT ROW
      ========================================================= */
@@ -637,7 +670,7 @@
     <a href="/about/">about</a>
     <a href="/players/">players</a>
     <a href="#fixturesResultsSection">fixtures</a>
-    <a href="#newsSection">news</a>
+    <a href="/news/">news</a>
     <a href="/released-jerseys/">jersey</a>
     <a href="/sponsors/">sponsors</a>
     <a href="#joinUsSection">join us</a>
@@ -664,7 +697,7 @@
     <a class="drawer-link" style="--i:0" href="/about/"><span>about us</span></a>
     <a class="drawer-link" style="--i:1" href="/players/"><span>players</span></a>
     <a class="drawer-link" style="--i:2" href="#fixturesResultsSection"><span>fixtures</span></a>
-    <a class="drawer-link" style="--i:3" href="#newsSection"><span>news</span></a>
+    <a class="drawer-link" style="--i:3" href="/news/"><span>news</span></a>
     <a class="drawer-link" style="--i:4" href="/released-jerseys/"><span>club jersey</span></a>
     <a class="drawer-link" style="--i:5" href="/sponsors/"><span>sponsors</span></a>
     <a class="drawer-link" style="--i:6" href="#joinUsSection"><span>join us</span></a>
@@ -747,6 +780,7 @@
         </div>
       </div>
       <div class="match-history" id="matchHistorySection" style="display:none;">
+        <div class="record" id="matchRecord" aria-label="Season record"></div>
         <div class="fr-col-label">Recent results</div>
         <div class="match-history-list" id="matchHistoryList"></div>
       </div>
@@ -828,8 +862,8 @@
   <section class="section news-section" id="newsSection" style="display:none;">
     <div class="sec-head reveal">
       <h2 class="sec-title"><span class="line-mask"><span>Club news</span></span></h2>
-      <a class="text-link news-archive-link" href="https://instagram.com/kelapabalifc/" target="_blank" rel="noopener">
-        Full archive
+      <a class="text-link news-archive-link" href="/news/">
+        All news
         <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
       </a>
     </div>
@@ -1099,6 +1133,67 @@
   // here automatically, so this section stays hidden until there's a real
   // result to show. Result is optional free text like "W 3-1"; parsed
   // just enough to color a badge, everything else displayed as typed.
+  /* Season record: reads the "W 3-1" / "D 1-1" / "L 0-2" results the
+     admin logs. Rows with no result yet are left out of the counts. */
+  function renderRecord(matches){
+    const box = document.getElementById('matchRecord');
+    if (!box) return;
+    let w = 0, d = 0, l = 0, gf = 0, ga = 0, scored = 0;
+    const form = [];
+    matches.forEach(m => {
+      const r = m.result.toUpperCase();
+      const k = r.startsWith('W') ? 'W' : r.startsWith('D') ? 'D' : r.startsWith('L') ? 'L' : '';
+      if (!k) return;
+      if (k === 'W') w++; else if (k === 'D') d++; else l++;
+      if (form.length < 5) form.push(k);
+      const sc = m.result.match(/(\d+)\s*[-–:]\s*(\d+)/);
+      if (sc) { gf += Number(sc[1]); ga += Number(sc[2]); scored++; }
+    });
+    const played = w + d + l;
+    if (!played) { box.style.display = 'none'; return; }
+    const pct = n => (n / played * 100).toFixed(1) + '%';
+    const rate = Math.round(w / played * 100);
+    const toneOf = { W: 'win', D: 'draw', L: 'loss' };
+    box.innerHTML = `
+      <div class="record-head"><span>Record</span><span>All logged matches</span></div>
+      <div class="record-grid">
+        <div class="record-stat"><b data-count="${played}">${played}</b><span>Played</span></div>
+        <div class="record-stat won"><b data-count="${w}">${w}</b><span>Won</span></div>
+        <div class="record-stat"><b data-count="${d}">${d}</b><span>Drawn</span></div>
+        <div class="record-stat lost"><b data-count="${l}">${l}</b><span>Lost</span></div>
+        <div class="record-stat rate"><b data-count="${rate}" data-suffix="%">${rate}%</b><span>Win rate</span></div>
+      </div>
+      <div class="record-bar" role="img" aria-label="${w} won, ${d} drawn, ${l} lost">
+        <i class="w" style="--pct:${pct(w)}"></i><i class="d" style="--pct:${pct(d)}"></i><i class="l" style="--pct:${pct(l)}"></i>
+      </div>
+      <div class="record-foot">
+        <span class="form-dots" aria-label="Last ${form.length} results, newest first">Form&nbsp;${form.map(k => `<em class="${toneOf[k]}">${k}</em>`).join('')}</span>
+        ${scored ? `<span>${gf} scored, ${ga} conceded${scored < played ? ` (${scored} with scores)` : ''}</span>` : ''}
+      </div>`;
+
+    // numbers count up and the bar fills when the block scrolls into view
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const start = () => {
+      box.classList.add('is-in');
+      if (reduce) return;
+      box.querySelectorAll('b[data-count]').forEach(el => {
+        const end = Number(el.dataset.count), suf = el.dataset.suffix || '';
+        const t0 = performance.now(), dur = 1100;
+        (function tick(now){
+          const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3);
+          el.textContent = Math.round(end * e) + suf;
+          if (p < 1) requestAnimationFrame(tick);
+        })(t0);
+      });
+    };
+    if (!('IntersectionObserver' in window) || reduce) { start(); return; }
+    box.querySelectorAll('b[data-count]').forEach(el => { el.textContent = '0' + (el.dataset.suffix || ''); });
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some(e => e.isIntersecting)) { io.disconnect(); start(); }
+    }, { threshold: 0.3 });
+    io.observe(box);
+  }
+
   (async function loadMatchHistory(){
     const PLAYERS_SHEET_ID = '1VSTIn7kl7nddpGhq1CsUIFz_q2DhiTq2tHe_cxzWVlM';
     try {
@@ -1122,10 +1217,11 @@
           opponentLogo: String(val(row, 6) || '').trim()
         }))
         .filter(m => m.opponent)
-        .reverse() // newest first — sheet rows are appended in chronological order
-        .slice(0, 20);
+        .reverse(); // newest first — sheet rows are appended in chronological order
 
       if (!matches.length) return;
+      renderRecord(matches);
+      matches.splice(20); // the list below shows the latest 20; the record counts everything
 
       const list = document.getElementById('matchHistoryList');
       list.innerHTML = matches.map(m => {
@@ -1286,7 +1382,7 @@
           <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>`,
       news: `
-        <a class="btn-primary" href="#newsSection">
+        <a class="btn-primary" href="/news/">
           Club news
           <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </a>
