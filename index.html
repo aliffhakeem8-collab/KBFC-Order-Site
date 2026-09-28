@@ -474,12 +474,24 @@
      CLUB PHOTOS
      ========================================================= */
   .club-photos-viewport{ margin:22px calc(var(--pad) * -1) 0; overflow:hidden; }
-  .club-photos-track{ display:flex; gap:clamp(8px, 1vw, 14px); width:max-content; animation:clubScroll 60s linear infinite; }
-  .club-photos-viewport:hover .club-photos-track{ animation-play-state:paused; }
-  @keyframes clubScroll{ to{ transform:translateX(-50%); } }
+  .club-photos-track{ display:flex; gap:clamp(8px, 1vw, 14px); width:max-content; will-change:transform; }
+  /* the strip is moved by script: drag it, and it keeps going the way you last dragged */
+  .club-photos-viewport{ cursor:grab; touch-action:pan-y; user-select:none; -webkit-user-select:none; }
+  .club-photos-viewport.dragging{ cursor:grabbing; }
+  .club-photos-viewport.dragging a{ pointer-events:none; }
+  .club-photos-viewport img{ -webkit-user-drag:none; user-drag:none; }
   .club-photo-item{ width:clamp(220px, 26vw, 380px); aspect-ratio:4/5; overflow:hidden; border-radius:4px; background:var(--surface); flex-shrink:0; }
   .club-photo-item img{ width:100%; height:100%; object-fit:cover; transition:transform 1.2s var(--ease-out); }
   .club-photo-item:hover img{ transform:scale(1.05); }
+  .club-ig-card{
+    display:flex; flex-direction:column; justify-content:flex-end; gap:14px; align-items:flex-start;
+    width:calc(100vw - var(--pad) * 2); margin-left:var(--pad); min-height:clamp(220px, 26vw, 340px);
+    padding:clamp(20px, 3vw, 36px); border:1px solid var(--line); border-radius:4px;
+    color:var(--ink); text-decoration:none; transition:border-color .3s;
+  }
+  .club-ig-card:hover{ border-color:var(--ink); }
+  .club-ig-handle{ font-weight:700; font-variation-settings:"wdth" 115; font-size:clamp(36px, 6vw, 92px); line-height:.9; letter-spacing:-.045em; }
+  .club-ig-line{ font-size:15px; color:var(--muted); }
   a.club-photo-item{ position:relative; display:block; color:#fff; text-decoration:none; }
   .club-photo-cap{
     position:absolute; left:0; right:0; bottom:0; padding:40px 14px 14px; font-size:13px; line-height:1.35;
@@ -1280,6 +1292,106 @@
     }
   })();
 
+  /* ---------------- FROM THE CLUB: DRAGGABLE STRIP ---------------- */
+  // Drifts on its own. Hover (mouse) = it eases to a stop. Drag or swipe
+  // = it follows your finger/mouse; let go and it glides, then keeps
+  // drifting in whichever direction you last dragged it.
+  (function initClubStrip(){
+    const viewport = document.getElementById('clubPhotosViewport');
+    const track = document.getElementById('clubPhotosTrack');
+    if (!viewport || !track) return;
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const SPEED = 45;          // drift speed, px per second
+    const MAX_FLING = 1800;    // cap on release speed, px per second
+
+    let setHTML = '', copies = 0, unit = 0, stopped = false;
+    let pos = 0, vel = -SPEED, dir = -1;
+    let hovering = false, dragging = false, moved = 0;
+    let startX = 0, startPos = 0, lastX = 0, lastT = 0, fling = 0;
+
+    const wrap = x => unit > 0 ? (((x % unit) + unit) % unit) - unit : 0;
+    function measure(){
+      if (stopped || !copies) return;
+      const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+      unit = (track.scrollWidth + gap) / copies;
+      if (unit < 40) { unit = 0; return; }
+      // make sure there's always enough strip to cover the screen, whatever the post count
+      const needed = Math.ceil(viewport.clientWidth / unit) + 1;
+      if (copies < needed) build(needed);
+    }
+    function build(n){
+      copies = Math.max(2, n);
+      track.innerHTML = setHTML.repeat(copies);
+      requestAnimationFrame(measure);
+    }
+    function render(oneSet){
+      stopped = false; setHTML = oneSet; pos = 0;
+      build(2);
+    }
+    function stop(){
+      stopped = true; unit = 0; copies = 0; pos = 0; track.style.transform = 'none';
+    }
+    window.kbfcStrip = { render, stop };
+
+    // start with the photos already in the page (first half = one set)
+    const kids = [...track.children];
+    render(kids.slice(0, Math.ceil(kids.length / 2)).map(el => el.outerHTML).join(''));
+
+    track.addEventListener('load', measure, true);   // images arriving change widths
+    track.addEventListener('error', measure, true);  // a missing image hides its tile
+    window.addEventListener('resize', measure);
+
+    let prev = performance.now();
+    (function frame(now){
+      const dt = Math.min(0.05, (now - prev) / 1000); prev = now;
+      if (!stopped && unit > 0) {
+        if (!dragging) {
+          const target = (hovering || reduce) ? 0 : dir * SPEED;
+          vel += (target - vel) * Math.min(1, dt * (Math.abs(vel) > SPEED * 1.5 ? 2.2 : 3.5));
+          pos = wrap(pos + vel * dt);
+        }
+        track.style.transform = `translate3d(${wrap(pos)}px,0,0)`;
+      }
+      requestAnimationFrame(frame);
+    })(prev);
+
+    viewport.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') hovering = true; });
+    viewport.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') hovering = false; });
+
+    viewport.addEventListener('pointerdown', e => {
+      if (stopped || !unit || (e.pointerType === 'mouse' && e.button !== 0)) return;
+      dragging = true; moved = 0; fling = 0;
+      startX = lastX = e.clientX; startPos = pos; lastT = performance.now();
+    });
+    window.addEventListener('pointermove', e => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      moved = Math.max(moved, Math.abs(dx));
+      if (moved > 5) viewport.classList.add('dragging');
+      pos = startPos + dx;
+      const t = performance.now(), step = e.clientX - lastX;
+      if (step !== 0) {
+        dir = step > 0 ? 1 : -1;                       // remember the last direction dragged
+        const v = step / Math.max(1, t - lastT) * 1000;
+        fling = fling * 0.6 + v * 0.4;                 // smoothed release speed
+      }
+      lastX = e.clientX; lastT = t;
+    });
+    function release(cancelled){
+      if (!dragging) return;
+      dragging = false;
+      pos = wrap(pos);
+      const idle = performance.now() - lastT > 120;    // held still before letting go = no fling
+      vel = (cancelled || idle) ? 0 : Math.max(-MAX_FLING, Math.min(MAX_FLING, fling));
+      requestAnimationFrame(() => viewport.classList.remove('dragging'));
+    }
+    window.addEventListener('pointerup', () => release(false));
+    window.addEventListener('pointercancel', () => release(true)); // e.g. the page scrolled vertically instead
+    // a drag shouldn't also count as a click on a post
+    viewport.addEventListener('click', e => { if (moved > 5) { e.preventDefault(); e.stopPropagation(); moved = 0; } }, true);
+    viewport.addEventListener('dragstart', e => e.preventDefault());
+  })();
+
   /* ---------------- FROM THE CLUB: INSTAGRAM FEED ---------------- */
   // Asks the Apps Script (through the Worker) for the latest posts; the
   // Instagram token never touches the browser. If the feed can't load,
@@ -1294,7 +1406,21 @@
       const items = [...track.querySelectorAll('.club-photo-item')];
       const pending = items.some(el => { const img = el.querySelector('img'); return img && !img.complete; });
       if (pending) return;
-      if (!items.some(el => el.style.display !== 'none')) section.style.display = 'none';
+      if (!items.some(el => el.style.display !== 'none')) showInstagramCard();
+    }
+    // Nothing to show (feed down and no local photos): keep the section,
+    // point people to the Instagram profile instead of leaving a blank gap.
+    function showInstagramCard(){
+      if (track.dataset.empty) return;
+      track.dataset.empty = '1';
+      if (window.kbfcStrip) window.kbfcStrip.stop();
+      track.innerHTML = `
+        <a class="club-ig-card" href="https://instagram.com/kelapabalifc/" target="_blank" rel="noopener">
+          <span class="club-ig-handle">@kelapabalifc</span>
+          <span class="club-ig-line">Matchdays, kit drops and everything in between.</span>
+          <span class="btn-secondary">See the latest posts
+            <svg viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg></span>
+        </a>`;
     }
     function watchFallback(){
       track.querySelectorAll('img').forEach(img => {
@@ -1329,8 +1455,8 @@
                     ${icon}${cap ? `<span class="club-photo-cap">${escapeHtml_(cap)}</span>` : ''}
                   </a>`;
         }).join('');
-        // twice back to back so the endless scroll loops seamlessly
-        track.innerHTML = one + one;
+        // the strip repeats this set as many times as it needs for a seamless loop
+        if (window.kbfcStrip) window.kbfcStrip.render(one); else track.innerHTML = one + one;
         watchFallback();
       } catch (err) {
         console.warn('Instagram feed could not load, keeping local photos.', err);
