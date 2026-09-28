@@ -1159,15 +1159,15 @@
       <div class="record-grid">
         <div class="record-stat"><b data-count="${played}">${played}</b><span>Played</span></div>
         <div class="record-stat won"><b data-count="${w}">${w}</b><span>Won</span></div>
-        <div class="record-stat"><b data-count="${d}">${d}</b><span>Drawn</span></div>
+        <div class="record-stat"><b data-count="${d}">${d}</b><span>Draw</span></div>
         <div class="record-stat lost"><b data-count="${l}">${l}</b><span>Lost</span></div>
         <div class="record-stat rate"><b data-count="${rate}" data-suffix="%">${rate}%</b><span>Win rate</span></div>
       </div>
-      <div class="record-bar" role="img" aria-label="${w} won, ${d} drawn, ${l} lost">
+      <div class="record-bar" role="img" aria-label="${w} won, ${d} draw, ${l} lost">
         <i class="w" style="--pct:${pct(w)}"></i><i class="d" style="--pct:${pct(d)}"></i><i class="l" style="--pct:${pct(l)}"></i>
       </div>
       <div class="record-foot">
-        <span class="form-dots" aria-label="Last ${form.length} results, newest first">Form&nbsp;${form.map(k => `<em class="${toneOf[k]}">${k}</em>`).join('')}</span>
+        <span class="form-dots" aria-label="Last ${form.length} results, newest first">Last 5 Matches&nbsp;${form.map(k => `<em class="${toneOf[k]}">${k}</em>`).join('')}</span>
         ${scored ? `<span>${gf} scored, ${ga} conceded${scored < played ? ` (${scored} with scores)` : ''}</span>` : ''}
       </div>`;
 
